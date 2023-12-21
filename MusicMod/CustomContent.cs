@@ -1,0 +1,460 @@
+﻿using UnityEngine;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Reflection;
+using ExitGames.Client.Photon;
+using MelonLoader;
+using System.IO;
+using System;
+using System.Collections.Generic;
+using FunPlusEssentials.Essentials;
+using FunPlusEssentials.Other;
+using CodeStage.AntiCheat.Storage;
+using CodeStage.AntiCheat.ObscuredTypes;
+using System.Collections;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
+using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
+using UnityEngine.Networking;
+using static MelonLoader.MelonLogger;
+using UnityEngine.Audio;
+using IniFile = FunPlusEssentials.Other.IniFile;
+using MelonLoader.TinyJSON;
+using static Il2CppSystem.Globalization.CultureInfo;
+using static UnityEngine.ScriptingUtility;
+using UnhollowerBaseLib;
+using System.Security.Policy;
+
+namespace FunPlusEssentials.CustomContent
+{
+    public class MapInfo
+    {
+        public LobbyMenu.AllMaps map;
+        public List<CustomWave> waves;
+        public string[] monsters;
+        public bool isOutside;
+        public string version;
+        public string bundlePath;
+        public string assetsPath;
+        public AudioClip ambient;
+    }
+    public class CustomWave
+    {
+        public int maxNPC = 15;
+        public CustomWaveInfo waveInfo;
+
+
+        public class CustomWaveInfo
+        {
+            public int totalCount = 5;
+
+            public AudioClip music;
+
+            public string defaultNPC = "Newborn_Bot";
+
+            public CustomWave.specialNPC[] npc;
+
+        }
+        public class specialNPC
+        {
+            public string npcName;
+            public int spawnChance;
+            public bool isBoss;
+        }
+    }
+    public static class MapManager
+    {
+        public static bool isCustomMap;
+        public static MapInfo currentMap;
+        public static string customMapsDirectory = Config.mainPath + @"\CustomMaps";
+        public static List<FileSystemInfo> mapsFiles = new List<FileSystemInfo>();
+        public static List<MapInfo> customMaps = new List<MapInfo>();
+        internal static int m_mapId, m_modeId;
+        internal static bool m_loaded;
+        internal static List<LobbyMenu.AllModes> m_allModes = new List<LobbyMenu.AllModes>();
+        internal static Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes> m_lastModes = new Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes>();
+
+        static List<FileSystemInfo> GetAllDirectories(string dir)
+        {
+            DirectoryInfo dirInfo = new DirectoryInfo(dir);
+            List<FileSystemInfo> allDirectories = new List<FileSystemInfo>();
+            allDirectories.AddRange(dirInfo.GetDirectories("*", SearchOption.AllDirectories));
+
+            return allDirectories;
+        }
+
+        public static void CheckMapsFolder()
+        {
+            Directory.CreateDirectory(customMapsDirectory);
+            mapsFiles = GetAllDirectories(customMapsDirectory);
+            foreach (FileSystemInfo dir in mapsFiles)
+            {
+                string iniPath = dir.FullName + @"\map.ini";
+                string wavesPath = dir.FullName + @"\waves.json";
+                string assets = dir.FullName;
+                string bundlePath = dir.FullName + @"\bundle";
+                if (!File.Exists(bundlePath))
+                {
+                    return;
+                    //BundleManager.LoadSceneBundle("", mapInfo.map.mapName, bundlePath);
+                }              
+                if (File.Exists(iniPath))
+                {
+                    List<CustomWave> w = null;
+                    if (File.Exists(wavesPath))
+                    {
+                        var json = File.ReadAllText(wavesPath);
+                        w = JSON.Load(json).Make<List<CustomWave>>();                    
+                    }
+                    var i = new IniFile(iniPath);
+                    var mapInfo = new MapInfo()
+                    {
+                        map = new LobbyMenu.AllMaps()
+                        {
+                            mapName = i.Read("mapName", "CustomMap"),
+                            useDayAndNight = Convert.ToBoolean(i.Read("useDayAndNight", "CustomMap")),
+                            size = Convert.ToInt32(i.Read("size", "CustomMap")),
+                            mapPreview = null
+                        },
+                        monsters = new string[]
+                        {
+                            i.Read("collectMonster", "CustomMap"),
+                            i.Read("versusMonster", "CustomMap"),
+                            i.Read("survivalMonster", "CustomMap")
+                        },
+                        isOutside = Convert.ToBoolean(i.Read("isOutside", "CustomMap")),
+                        version = i.Read("version", "CustomMap"),
+                        bundlePath = bundlePath,
+                        assetsPath = assets,
+                        waves = w
+                    };
+                    customMaps.Add(mapInfo);
+                }
+            }
+        }
+        public static void CheckForCustomMap(string mapName)
+        {
+            m_loaded = false;
+            isCustomMap = false;
+            var scene = mapName;
+            scene = scene.Replace(" (Day)", "");
+            scene = scene.Replace(" (Dusk)", "");
+            scene = scene.Replace(" (Night)", "");
+            foreach (MapInfo map in customMaps)
+            {
+                if (scene == map.map.mapName)
+                {
+                    isCustomMap = true;
+                    currentMap = customMaps.Find(m => m.map.mapName == scene);
+                    MelonCoroutines.Start(SpawnRoom());
+                }
+            }
+        }
+
+        public static void SetUp()
+        {
+            CheckMapsFolder();
+        }
+        public static void AddCustomMaps()
+        {
+            foreach (MapInfo mapInfo in customMaps)
+            {
+                if (File.Exists(mapInfo.assetsPath + @"\preview.png"))
+                {
+                    if (mapInfo.map.mapPreview == null)
+                    {
+                        mapInfo.map.mapPreview = Loader.LoadNewSprite(mapInfo.assetsPath + @"\preview.png");
+                    }
+                }
+                Helper.LobbyMenu.CFJBONPPILK.System_Collections_IList_Add(mapInfo.map);
+            }
+        }
+
+        public static void FillWeaponsArray(RoomMultiplayerMenu rmm = null)
+        {
+            if (ObscuredPrefs.GetBool("UseFlashlight"))
+            {
+                rmm.MHAJFEKJIKK = new Il2CppReferenceArray<ObscuredString>(new ObscuredString[] { "Flashlight" });
+            }
+            else
+            {
+                rmm.MHAJFEKJIKK = new Il2CppReferenceArray<ObscuredString>(new ObscuredString[] { "Camera" });
+            }
+            rmm.BNCGACNADOD = new Il2CppReferenceArray<ObscuredString>(new ObscuredString[] { "XIX", "Knife", "M249-Saw", "M4A1", "MP5N", "MP5KA4", "Deagle", "XIX II", "Shorty" });
+            rmm.PPMMEFIMPGL = new Il2CppReferenceArray<ObscuredString>(new ObscuredString[] { "MCS870", "XIX" });
+            rmm.KBEDBGMDJHA = new Il2CppReferenceArray<ObscuredString>(new ObscuredString[] { "XIX", "Knife" });
+            switch (rmm.KCIGKBNBPNN)
+            {
+                case "COOP":
+                    rmm.INCDKGADOBA = rmm.MHAJFEKJIKK;
+                    break;
+                case "INF":
+                    rmm.INCDKGADOBA = rmm.PPMMEFIMPGL;
+                    break;
+                case "SUR":
+                    rmm.INCDKGADOBA = rmm.KBEDBGMDJHA;
+                    break;
+                case "DM":
+                    rmm.INCDKGADOBA = rmm.BNCGACNADOD;
+                    break;
+                case "SBX":
+                    rmm.INCDKGADOBA = rmm.KBEDBGMDJHA;
+                    break;
+            }
+        }
+        public static void LoadMap(MapInfo map)
+        {
+            BundleManager.LoadSceneBundle("", map.map.mapName, map.bundlePath);
+        }
+
+        public static IEnumerator LoadMapMusic(MapInfo map)
+        {
+            if (File.Exists(map.assetsPath + @"\music\" + "ambient.mp3"))
+            {
+                WWW www = new WWW(@"file://" + map.assetsPath + @"\music\" + "ambient.mp3");
+                yield return www;
+                map.ambient = www.GetAudioClip();
+            }
+            if (map.waves != null)
+            {
+                for (int i = 1; i < map.waves.Count; i++)
+                {
+                    string FilePath = map.assetsPath + @"\music\" + "wave" + (i + 1).ToString() + ".mp3";
+                    CuteLogger.Meow(FilePath);
+                    if (File.Exists(FilePath))
+                    {
+                        string url = @"file://" + FilePath;
+                        WWW www = new WWW(url);
+                        yield return www;
+                        map.waves[i].waveInfo.music = www.GetAudioClip();
+                        map.waves[i].waveInfo.music.name = "0" + i.ToString();
+                    }
+                    if (GameObject.Find("__Room") != null)
+                    {
+                        Helper.SurvivalMechanics.LKKBNLDMNDL[i].music = map.waves[i].waveInfo.music;
+                    }
+                }
+
+            }
+            yield return null;
+        }
+
+        public static IEnumerator SetUpMusic(MapInfo map)
+        {
+            yield return MelonCoroutines.Start(LoadMapMusic(map));         
+        }
+
+
+        public static IEnumerator SetUpWaves(SurvivalMechanics __instance)
+        {
+            if (isCustomMap)
+            {
+                if (currentMap.waves != null)
+                {
+                    __instance.GFHEICDOFEP = currentMap.isOutside;
+                    __instance.LKKBNLDMNDL.Clear();
+                    int t = 0;
+                    foreach (CustomWave wave in currentMap.waves)
+                    {
+                        t++;
+                        var w = new SurvivalMechanics.waveInfo()
+                        {
+                            defaultNPC = wave.waveInfo.defaultNPC,
+                            totalCount = wave.waveInfo.totalCount,
+                            music = wave.waveInfo.music
+
+                        };
+                        if (wave.waveInfo.npc != null)
+                        {
+                            var arr = new SurvivalMechanics.specialNPC[wave.waveInfo.npc.Length];
+                            for (int i = 0; i < wave.waveInfo.npc.Length; i++)
+                            {
+                                arr[i] = new SurvivalMechanics.specialNPC()
+                                {
+                                    npcName = wave.waveInfo.npc[i].npcName,
+                                    spawnChance = wave.waveInfo.npc[i].spawnChance,
+                                    isBoss = wave.waveInfo.npc[i].isBoss
+                                };
+                            }
+                            w.NPC = new Il2CppReferenceArray<SurvivalMechanics.specialNPC>(arr);
+                        }
+                        else
+                        {
+                            w.NPC = new Il2CppReferenceArray<SurvivalMechanics.specialNPC>(0L);
+                        }
+                        __instance.LKKBNLDMNDL.Add(w);
+                    }
+                    __instance.LKKBNLDMNDL[0].music = Helper.Room.GetComponent<AudioSource>().clip;
+                    yield return null;
+                }
+                else
+                {
+                    __instance.FNKMHJJNLJF.defaultNPC = currentMap.monsters[2];
+                    var bossMusic = Loader.LoadAudioClip(currentMap.assetsPath + @"\boss.mp3");
+                    if (bossMusic != null) __instance.FNKMHJJNLJF.music = bossMusic;
+                    __instance.FNKMHJJNLJF.NPC[0].npcName = currentMap.monsters[2];
+                    __instance.LKKBNLDMNDL[0].music = Helper.Room.GetComponent<AudioSource>().clip;
+                }
+            }
+
+        }
+        public static IEnumerator SpawnRoom()
+        {
+            if (PhotonNetwork.isMasterClient)
+            {
+                Helper.SetRoomProperty("mapVersion", currentMap.version);
+                MelonLogger.Msg(PhotonNetwork.room.customProperties["mapVersion"].ToString());
+                // yield return new WaitForSeconds(1f);
+                PhotonNetwork.NOOU("__Room", Vector3.zero, new Quaternion(0f, 0f, 0f, 0f), 0, null);
+                RoomMultiplayerMenu roomMultiplayerMenu = UnityEngine.Object.FindObjectOfType<RoomMultiplayerMenu>();
+                roomMultiplayerMenu.gameObject.name = "__Room";
+                //FillWeaponsArray(roomMultiplayerMenu);
+            }
+            
+            var kz = GameObject.Find("Killzones");
+            if (kz != null)
+            {
+                foreach (Transform t in kz.transform.GetComponentsInChildren<Transform>())
+                {
+                    t.gameObject.AddComponent<KillZone>();
+                }
+            }
+            var dz = GameObject.Find("Damage zones");
+            if (dz != null)
+            {
+                foreach (Transform t in dz.transform.GetComponentsInChildren<Transform>())
+                {
+                    var s = t.name.Split(' ');
+                    if (!float.TryParse(s[0], out float damage)) { damage = 5f; }
+                    if (!float.TryParse(s[1], out float coolDown)) { coolDown = 1f; }
+                    var comp = t.gameObject.AddComponent<DamageZone>();
+                    comp.damage = damage;
+                    comp.coolDown = coolDown;
+                }
+            }
+            var wz = GameObject.Find("Water zones");
+            if (wz != null)
+            {
+                foreach (Transform t in wz.transform.GetComponentsInChildren<Transform>())
+                {
+                    t.name = t.name + " ";
+                    var s = t.name.Split(' ');
+                    if (!float.TryParse(s[0], out float gravity)) { gravity = 1f; }
+                    if (!float.TryParse(s[1], out float damage)) { damage = 5f; }
+                    if (!float.TryParse(s[2], out float coolDown)) { coolDown = 1f; }
+                    var comp = t.gameObject.AddComponent<WaterZone>();
+                    if (damage != 0) comp.isDamage = true;
+                    comp.gravity = gravity;
+                    comp.damage = damage;
+                    comp.coolDown = coolDown;
+                }
+            }
+            
+            var mixer = GameObject.FindObjectOfType<AudioMixerManager>().EEJANKGKOBO;
+            foreach (AudioSource s in GameObject.FindObjectsOfType<AudioSource>())
+            {
+                if (s.gameObject.name.Contains("Room"))
+                {
+                    s.outputAudioMixerGroup = mixer.FindMatchingGroups("Music")[0];
+                    continue;
+                }
+                s.volume = 1;
+                if (s.clip != null && s.clip.length >= 30)
+                {
+                    s.outputAudioMixerGroup = mixer.FindMatchingGroups("Music")[0];
+                }
+                if (s.clip != null && s.clip.length < 30)
+                {
+                    s.outputAudioMixerGroup = mixer.FindMatchingGroups("SFX")[0];
+                }
+            }
+            yield return null;
+        }
+    }
+
+    [RegisterTypeInIl2Cpp]
+    public class DamageZone : MonoBehaviour
+    {
+        public DamageZone(IntPtr ptr) : base(ptr) { }
+
+        public float damage = 5f;
+        public float coolDown = 1f;
+        private float timer = 0f;
+        private void OnTriggerStay(Collider coll)
+        {
+            if (coll.gameObject.tag == "Player")
+            {
+                if (timer > 0)
+                {
+                    timer -= Time.deltaTime;
+                }
+
+                if (timer <= 0)
+                {
+                    timer = coolDown;
+                    Helper.PlayerDamage.E10030(damage);
+                }
+            }
+        }
+        private void OnTriggerExit(Collider coll)
+        {
+            if (coll.gameObject.tag == "Player")
+            {
+                timer = 0f;
+            }
+        }
+    }
+    [RegisterTypeInIl2Cpp]
+    public class WaterZone : MonoBehaviour
+    {
+        public WaterZone(IntPtr ptr) : base(ptr) { }
+
+        public bool isDamage;
+        public float gravity = 4f;
+        public float damage = 5f;
+        public float coolDown = 1f;
+        private float timer = 0f;
+        private void OnTriggerStay(Collider coll)
+        {
+            if (isDamage)
+            {
+                if (coll.gameObject.tag == "Player")
+                {
+                    if (timer > 0)
+                    {
+                        timer -= Time.deltaTime;
+                    }
+
+                    if (timer <= 0)
+                    {
+                        timer = coolDown;
+                        Helper.PlayerDamage.E10030(damage);
+                    }
+                }
+            }
+        }
+        private void OnTriggerEnter(Collider coll)
+        {
+            if (coll.gameObject.tag == "Player")
+            {
+                Camera.main.gameObject.AddComponent<CameraFilterPack_Blur_Blurry>();
+                var rgb = Camera.main.gameObject.AddComponent<CameraFilterPack_Color_RGB>();
+                rgb.EDGGOPGCNLE = new Color(0.2096f, 0.8476f, 1f, 1f);
+                Helper.FPSController.HKCDMBALAAK.gravity = gravity;
+                Helper.FPSController.HKCDMBALAAK.maxFallSpeed = gravity;
+                Helper.FPSController.LGIGJCDJMNO.fallLimit = 9999999f;
+            }
+        }
+        private void OnTriggerExit(Collider coll)
+        {
+            if (coll.gameObject.tag == "Player")
+            {
+                Destroy(Camera.main.gameObject.GetComponent<CameraFilterPack_Blur_Blurry>());
+                Destroy(Camera.main.gameObject.GetComponent<CameraFilterPack_Color_RGB>());
+                Helper.FPSController.HKCDMBALAAK.gravity = 20f;
+                Helper.FPSController.HKCDMBALAAK.maxFallSpeed = 100f;
+                Helper.FPSController.LGIGJCDJMNO.fallLimit = 0.85f;
+            }
+        }
+    }
+}
