@@ -37,7 +37,7 @@ namespace FunPlusEssentials.CustomContent
 
             public string defaultNPC = "Newborn_Bot";
 
-            public CustomWave.specialNPC[] npc;
+            public specialNPC[] npc;
 
         }
         public class specialNPC
@@ -54,7 +54,6 @@ namespace FunPlusEssentials.CustomContent
         public static string customMapsDirectory = Config.mainPath + @"\CustomMaps";
         public static List<FileSystemInfo> mapsFiles = new List<FileSystemInfo>();
         public static List<MapInfo> customMaps = new List<MapInfo>();
-        internal static int m_mapId, m_modeId;
         internal static bool m_loaded;
         internal static List<LobbyMenu.AllModes> m_allModes = new List<LobbyMenu.AllModes>();
         internal static Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes> m_lastModes = new Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes>();
@@ -258,7 +257,33 @@ namespace FunPlusEssentials.CustomContent
                 roomMultiplayerMenu.gameObject.name = "__Room";
                 //FillWeaponsArray(roomMultiplayerMenu);
             }
-            
+            SetUpTriggers();
+            SetUpAudioSources();
+            yield return null;
+        }
+        public static void SetUpAudioSources()
+        {
+            var mixer = GameObject.FindObjectOfType<AudioMixerManager>().EEJANKGKOBO;
+            foreach (AudioSource s in GameObject.FindObjectsOfType<AudioSource>())
+            {
+                if (s.gameObject.name.Contains("Room"))
+                {
+                    s.outputAudioMixerGroup = mixer.FindMatchingGroups("Music")[0];
+                    continue;
+                }
+                s.volume = 1;
+                if (s.clip != null && s.clip.length >= 30)
+                {
+                    s.outputAudioMixerGroup = mixer.FindMatchingGroups("Music")[0];
+                }
+                if (s.clip != null && s.clip.length < 30)
+                {
+                    s.outputAudioMixerGroup = mixer.FindMatchingGroups("SFX")[0];
+                }
+            }
+        }
+        public static void SetUpTriggers()
+        {
             var kz = GameObject.Find("Killzones");
             if (kz != null)
             {
@@ -298,26 +323,6 @@ namespace FunPlusEssentials.CustomContent
                     comp.coolDown = coolDown;
                 }
             }
-            
-            var mixer = GameObject.FindObjectOfType<AudioMixerManager>().EEJANKGKOBO;
-            foreach (AudioSource s in GameObject.FindObjectsOfType<AudioSource>())
-            {
-                if (s.gameObject.name.Contains("Room"))
-                {
-                    s.outputAudioMixerGroup = mixer.FindMatchingGroups("Music")[0];
-                    continue;
-                }
-                s.volume = 1;
-                if (s.clip != null && s.clip.length >= 30)
-                {
-                    s.outputAudioMixerGroup = mixer.FindMatchingGroups("Music")[0];
-                }
-                if (s.clip != null && s.clip.length < 30)
-                {
-                    s.outputAudioMixerGroup = mixer.FindMatchingGroups("SFX")[0];
-                }
-            }
-            yield return null;
         }
     }
 
