@@ -57,6 +57,7 @@ namespace FunPlusEssentials.CustomContent
         internal static bool m_loaded;
         internal static List<LobbyMenu.AllModes> m_allModes = new List<LobbyMenu.AllModes>();
         internal static Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes> m_lastModes = new Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes>();
+        internal static Il2CppAssetBundle m_loadedBundle;
 
         static List<FileSystemInfo> GetAllDirectories(string dir)
         {
@@ -191,14 +192,15 @@ namespace FunPlusEssentials.CustomContent
                 string path = map.assetsPath + @"\music";
                 if (File.Exists(path))
                 {
-                    var bundle = BundleManager.LoadBundle(path);
-                    map.ambient = bundle.LoadAsset<AudioClip>("ambient");
+                    m_loadedBundle = BundleManager.LoadBundle(path);
+                    map.ambient = m_loadedBundle.LoadAsset<AudioClip>("ambient");
                     for (int i = 1; i < map.waves.Count; i++)
                     {
                         CuteLogger.Meow(path);
-                        map.waves[i].waveInfo.music = bundle.LoadAsset<AudioClip>("wave" + (i + 1).ToString());
+                        map.waves[i].waveInfo.music = m_loadedBundle.LoadAsset<AudioClip>("wave" + (i + 1).ToString());
                         map.waves[i].waveInfo.music.name = "0" + i.ToString();
                     }
+                    m_loadedBundle.Unload(false);
                 }
             }
             for (int i = 1; i < map.waves.Count; i++)
