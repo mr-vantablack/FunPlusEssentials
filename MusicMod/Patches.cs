@@ -522,24 +522,6 @@ public static class MultiplayerChatStart
         }
     }
 
-    /*[HarmonyLib.HarmonyPatch(typeof(NetworkingPeer), "RemoveInstantiatedGO")]
-    public static class RemoveInstantiatedGO
-    {
-        [HarmonyLib.HarmonyPrefix]
-        static bool Prefix(GameObject go, bool localOnly, NetworkingPeer __instance)
-        {
-            if (Config.securityEnabled)
-            {
-                if (go.name == "__Room")
-                {
-                    Msg(ConsoleColor.Red, "[AntiCheat] Attempt to delete a __Room GameObject.");
-                    return false;
-                }
-            }
-            return true;
-        }
-    }*/
-
     [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "OnDisconnectedFromPhoton")]
     public static class RmmOnDisconnectedFromPhoton
     {

@@ -240,41 +240,6 @@ namespace FunPlusEssentials.Essentials
                         else { SystemMsg("Please wait a while before using this command again."); }
                     }
                     break;
-
-                    /* case "TRY":
-                         string text2 = "";
-                         for (int i = 1; i < args.Length; i++)
-                         {
-                             text2 += " " + args[i];
-                         }
-                         int s = UnityEngine.Random.RandomRangeInt(0, 2);
-                         if (s < 1) { Helper.SendChatMessage(PhotonNetwork.player.name.Split('|')[0], text2 + "( ✘︎ )", new UnityEngine.Color(1, 0, 0, 1)); }
-                         else { Helper.SendChatMessage(PhotonNetwork.player.name.Split('|')[0], text2 + "( ✔︎ )", new UnityEngine.Color(0.227f, 0.969f, 0.408f, 1)); }
-                         break;/*
-
-                         /*case "BAN":
-                             if (sender == PhotonNetwork.masterClient)
-                             {
-                                 if (PhotonNetwork.isMasterClient)
-                                 {
-                                     if (TargetPlayerExist(args[1]))
-                                     {
-
-                                         Msg(ConsoleColor.DarkRed, $"Banned {args[1]}.");
-                                     }
-
-                                     PhotonNetwork.room.open = true;
-                                 }
-                                 CommandHandler.SystemMsg($"The master opened the room.", "Team A");
-                             }
-                             break;*/
-                    /*case "HIDE":
-                        Msg(ConsoleColor.Magenta, "Hide");
-                        if (PhotonNetwork.isMasterClient)
-                        {
-                            ObscuredPrefs.SetBool("HideCommands", Convert.ToBoolean(args[1]));
-                        }
-                        break;*/
             }
         }
         public static IEnumerator RespawnCooldown(float time)
