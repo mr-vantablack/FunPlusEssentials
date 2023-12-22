@@ -34,6 +34,7 @@ namespace FunPlusEssentials
             if (sceneName != "Updater" && sceneName != "MainMenu")
             {
                 PhotonNetwork.isMessageQueueRunning = true;
+
             }
             if (sceneName == "MainMenu")
             {          
