@@ -2,21 +2,11 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Reflection;
-using ExitGames.Client.Photon;
 using MelonLoader;
 using System.IO;
 using System;
-using System.Collections.Generic;
 using FunPlusEssentials.Essentials;
-using CodeStage.AntiCheat.Storage;
-using CodeStage.AntiCheat.ObscuredTypes;
-using System.Collections;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using UnityEngine.Networking;
-using static MelonLoader.MelonLogger;
-using UnityEngine.Audio;
 
 namespace FunPlusEssentials.Other
 {

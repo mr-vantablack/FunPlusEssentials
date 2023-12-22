@@ -1,13 +1,11 @@
 ﻿using System;
 using Convert = System.Convert;
 using File = System.IO.File;
-using static MelonLoader.MelonLogger;
 using FunPlusEssentials.Fun;
 using FunPlusEssentials.Other;
 using IniFile = FunPlusEssentials.Other.IniFile;
 using UnityEngine;
 using System.Text.RegularExpressions;
-using System.Xml;
 using MelonLoader;
 using System.Collections.Generic;
 using System.Collections;
@@ -15,7 +13,6 @@ using System.Linq;
 using System.IO;
 using CodeStage.AntiCheat.Storage;
 using UnhollowerBaseLib;
-using ExitGames.Client.Photon;
 using UnityEngine.SceneManagement;
 
 namespace FunPlusEssentials.Essentials
@@ -382,7 +379,7 @@ namespace FunPlusEssentials.Essentials
            // updated = false;
         }
     }
-    public class PlayerEntry
+    public record PlayerEntry
     {
         public PlayerEntry(PhotonPlayer player, int kills, int death, string teamName)
         {

@@ -1,5 +1,4 @@
 ﻿using System;
-using static MelonLoader.MelonLogger;
 using FunPlusEssentials.Essentials;
 using FunPlusEssentials.Other;
 using FunPlusEssentials.CustomContent;
@@ -8,11 +7,7 @@ using System.Text.RegularExpressions;
 using FunPlusEssentials.Fun;
 using UnityEngine.SceneManagement;
 using MelonLoader;
-using Il2CppSystem.Reflection;
 using ExitGames.Client.Photon;
-using UnhollowerBaseLib;
-using HarmonyLib;
-using Harmony;
 
 namespace FunPlusEssentials.Patches 
 {

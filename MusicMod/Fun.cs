@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Collections;
 using UnityEngine;
 using MelonLoader;
@@ -9,7 +8,6 @@ using static MelonLoader.MelonLogger;
 using UnityEngine.Networking;
 using FunPlusEssentials.Essentials;
 using FunPlusEssentials.Other;
-using UnityStandardAssets.ImageEffects;
 
 namespace FunPlusEssentials.Fun
 {

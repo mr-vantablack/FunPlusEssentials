@@ -1,29 +1,14 @@
 ﻿using UnityEngine;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Reflection;
-using ExitGames.Client.Photon;
 using MelonLoader;
 using System.IO;
 using System;
 using System.Collections.Generic;
 using FunPlusEssentials.Essentials;
 using FunPlusEssentials.Other;
-using CodeStage.AntiCheat.Storage;
-using CodeStage.AntiCheat.ObscuredTypes;
 using System.Collections;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using UnityEngine.Networking;
-using static MelonLoader.MelonLogger;
-using UnityEngine.Audio;
 using IniFile = FunPlusEssentials.Other.IniFile;
 using MelonLoader.TinyJSON;
-using static Il2CppSystem.Globalization.CultureInfo;
-using static UnityEngine.ScriptingUtility;
 using UnhollowerBaseLib;
-using System.Security.Policy;
 
 namespace FunPlusEssentials.CustomContent
 {
