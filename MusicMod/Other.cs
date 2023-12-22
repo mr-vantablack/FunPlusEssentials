@@ -7,6 +7,9 @@ using System.IO;
 using System;
 using FunPlusEssentials.Essentials;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
+using System.Collections.Generic;
+using UnhollowerBaseLib;
+using UnhollowerRuntimeLib;
 
 namespace FunPlusEssentials.Other
 {
@@ -186,7 +189,7 @@ namespace FunPlusEssentials.Other
         }
         public static AudioClip LoadAudioBundle(string prefabName, string path)
         {
-            CuteLogger.Meow("loading bundle " + prefabName);
+            CuteLogger.Meow("loading audio bundle " + prefabName);
             var bundle = Il2CppAssetBundleManager.LoadFromFile(path);
             if (bundle == null)
             {
@@ -194,6 +197,17 @@ namespace FunPlusEssentials.Other
                 return null;
             }
             return bundle.LoadAsset<AudioClip>(prefabName);
+        }
+        public static Il2CppAssetBundle LoadAudioBundle2(string path)
+        {
+            CuteLogger.Meow("loading audio bundle");
+            var bundle = Il2CppAssetBundleManager.LoadFromFile(path);
+            if (bundle == null)
+            {
+                CuteLogger.Bark("Failed to load AssetBundle!");
+                return null;
+            }
+            return bundle;
         }
         public static void LoadSceneBundle(string bundleName, string prefabName, string path)
         {

@@ -161,32 +161,52 @@ namespace FunPlusEssentials.CustomContent
 
         public static IEnumerator SetUpMusic(MapInfo map)
         {
-            if (File.Exists(map.assetsPath + @"\music\" + "ambient.mp3"))
+            if (Directory.Exists(map.assetsPath + @"\music\"))
             {
-                WWW www = new WWW(@"file://" + map.assetsPath + @"\music\" + "ambient.mp3");
-                yield return www;
-                map.ambient = www.GetAudioClip();
-            }
-            if (map.waves != null)
-            {
-                for (int i = 1; i < map.waves.Count; i++)
+                if (File.Exists(map.assetsPath + @"\music\" + "ambient.mp3"))
                 {
-                    string FilePath = map.assetsPath + @"\music\" + "wave" + (i + 1).ToString() + ".mp3";
-                    CuteLogger.Meow(FilePath);
-                    if (File.Exists(FilePath))
+                    WWW www = new WWW(@"file://" + map.assetsPath + @"\music\" + "ambient.mp3");
+                    yield return www;
+                    map.ambient = www.GetAudioClip();
+                }
+                if (map.waves != null)
+                {
+                    for (int i = 1; i < map.waves.Count; i++)
                     {
-                        string url = @"file://" + FilePath;
-                        WWW www = new WWW(url);
-                        yield return www;
-                        map.waves[i].waveInfo.music = www.GetAudioClip();
-                        map.waves[i].waveInfo.music.name = "0" + i.ToString();
-                    }
-                    if (GameObject.Find("__Room") != null)
-                    {
-                        Helper.SurvivalMechanics.LKKBNLDMNDL[i].music = map.waves[i].waveInfo.music;
+                        string FilePath = map.assetsPath + @"\music\" + "wave" + (i + 1).ToString() + ".mp3";
+                        CuteLogger.Meow(FilePath);
+                        if (File.Exists(FilePath))
+                        {
+                            string url = @"file://" + FilePath;
+                            WWW www = new WWW(url);
+                            yield return www;
+                            map.waves[i].waveInfo.music = www.GetAudioClip();
+                            map.waves[i].waveInfo.music.name = "0" + i.ToString();
+                        }
                     }
                 }
-
+            }
+            else
+            {
+                string path = map.assetsPath + @"\music";
+                if (File.Exists(path))
+                {
+                    var bundle = BundleManager.LoadAudioBundle2(path);
+                    map.ambient = bundle.LoadAsset<AudioClip>("ambient");
+                    for (int i = 1; i < map.waves.Count; i++)
+                    {
+                        CuteLogger.Meow("wave" + (i + 1).ToString() + " | " + path);
+                        map.waves[i].waveInfo.music = bundle.LoadAsset<AudioClip>("wave" + (i + 1).ToString());
+                        map.waves[i].waveInfo.music.name = "0" + i.ToString();
+                    }
+                }
+            }
+            for (int i = 1; i < map.waves.Count; i++)
+            {
+                if (GameObject.Find("__Room") != null)
+                {
+                    Helper.SurvivalMechanics.LKKBNLDMNDL[i].music = map.waves[i].waveInfo.music;
+                }
             }
             yield return null;
         }
