@@ -207,7 +207,7 @@ namespace FunPlusEssentials.CustomContent
             BundleManager.LoadSceneBundle("", map.map.mapName, map.bundlePath);
         }
 
-        public static IEnumerator LoadMapMusic(MapInfo map)
+        public static IEnumerator SetUpMusic(MapInfo map)
         {
             if (File.Exists(map.assetsPath + @"\music\" + "ambient.mp3"))
             {
@@ -237,11 +237,6 @@ namespace FunPlusEssentials.CustomContent
 
             }
             yield return null;
-        }
-
-        public static IEnumerator SetUpMusic(MapInfo map)
-        {
-            yield return MelonCoroutines.Start(LoadMapMusic(map));         
         }
 
 
