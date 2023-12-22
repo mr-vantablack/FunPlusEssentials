@@ -169,39 +169,7 @@ namespace FunPlusEssentials.CustomContent
                 Helper.LobbyMenu.CFJBONPPILK.System_Collections_IList_Add(mapInfo.map);
             }
         }
-
-        public static void FillWeaponsArray(RoomMultiplayerMenu rmm = null)
-        {
-            if (ObscuredPrefs.GetBool("UseFlashlight"))
-            {
-                rmm.MHAJFEKJIKK = new Il2CppReferenceArray<ObscuredString>(new ObscuredString[] { "Flashlight" });
-            }
-            else
-            {
-                rmm.MHAJFEKJIKK = new Il2CppReferenceArray<ObscuredString>(new ObscuredString[] { "Camera" });
-            }
-            rmm.BNCGACNADOD = new Il2CppReferenceArray<ObscuredString>(new ObscuredString[] { "XIX", "Knife", "M249-Saw", "M4A1", "MP5N", "MP5KA4", "Deagle", "XIX II", "Shorty" });
-            rmm.PPMMEFIMPGL = new Il2CppReferenceArray<ObscuredString>(new ObscuredString[] { "MCS870", "XIX" });
-            rmm.KBEDBGMDJHA = new Il2CppReferenceArray<ObscuredString>(new ObscuredString[] { "XIX", "Knife" });
-            switch (rmm.KCIGKBNBPNN)
-            {
-                case "COOP":
-                    rmm.INCDKGADOBA = rmm.MHAJFEKJIKK;
-                    break;
-                case "INF":
-                    rmm.INCDKGADOBA = rmm.PPMMEFIMPGL;
-                    break;
-                case "SUR":
-                    rmm.INCDKGADOBA = rmm.KBEDBGMDJHA;
-                    break;
-                case "DM":
-                    rmm.INCDKGADOBA = rmm.BNCGACNADOD;
-                    break;
-                case "SBX":
-                    rmm.INCDKGADOBA = rmm.KBEDBGMDJHA;
-                    break;
-            }
-        }
+  
         public static void LoadMap(MapInfo map)
         {
             BundleManager.LoadSceneBundle("", map.map.mapName, map.bundlePath);
