@@ -323,6 +323,7 @@ namespace FunPlusEssentials.CustomContent
                     if (!float.TryParse(s[0], out float damage)) { damage = 5f; }
                     if (!float.TryParse(s[1], out float coolDown)) { coolDown = 1f; }
                     var comp = t.gameObject.AddComponent<DamageZone>();
+                    if (damage > 0) comp.isDamage = true;
                     comp.damage = damage;
                     comp.coolDown = coolDown;
                 }
@@ -338,7 +339,7 @@ namespace FunPlusEssentials.CustomContent
                     if (!float.TryParse(s[1], out float damage)) { damage = 5f; }
                     if (!float.TryParse(s[2], out float coolDown)) { coolDown = 1f; }
                     var comp = t.gameObject.AddComponent<WaterZone>();
-                    if (damage != 0) comp.isDamage = true;
+                    if (damage > 0) comp.isDamage = true;
                     comp.gravity = gravity;
                     comp.damage = damage;
                     comp.coolDown = coolDown;
@@ -372,44 +373,11 @@ namespace FunPlusEssentials.CustomContent
     {
         public DamageZone(IntPtr ptr) : base(ptr) { }
 
-        public float damage = 5f;
-        public float coolDown = 1f;
-        private float timer = 0f;
-        private void OnTriggerStay(Collider coll)
-        {
-            if (coll.gameObject.tag == "Player")
-            {
-                if (timer > 0)
-                {
-                    timer -= Time.deltaTime;
-                }
-
-                if (timer <= 0)
-                {
-                    timer = coolDown;
-                    Helper.PlayerDamage.E10030(damage);
-                }
-            }
-        }
-        private void OnTriggerExit(Collider coll)
-        {
-            if (coll.gameObject.tag == "Player")
-            {
-                timer = 0f;
-            }
-        }
-    }
-    [RegisterTypeInIl2Cpp]
-    public class WaterZone : MonoBehaviour
-    {
-        public WaterZone(IntPtr ptr) : base(ptr) { }
-
         public bool isDamage;
-        public float gravity = 4f;
         public float damage = 5f;
         public float coolDown = 1f;
         private float timer = 0f;
-        private void OnTriggerStay(Collider coll)
+        public virtual void OnTriggerStay(Collider coll)
         {
             if (isDamage)
             {
@@ -428,7 +396,21 @@ namespace FunPlusEssentials.CustomContent
                 }
             }
         }
-        private void OnTriggerEnter(Collider coll)
+        public virtual void OnTriggerExit(Collider coll)
+        {
+            if (coll.gameObject.tag == "Player")
+            {
+                timer = 0f;
+            }
+        }
+    }
+    [RegisterTypeInIl2Cpp]
+    public class WaterZone : DamageZone
+    {
+        public WaterZone(IntPtr ptr) : base(ptr) { }
+        public float gravity = 4f;
+
+        public virtual void OnTriggerEnter(Collider coll)
         {
             if (coll.gameObject.tag == "Player")
             {
@@ -440,8 +422,9 @@ namespace FunPlusEssentials.CustomContent
                 Helper.FPSController.LGIGJCDJMNO.fallLimit = 9999999f;
             }
         }
-        private void OnTriggerExit(Collider coll)
+        public override void OnTriggerExit(Collider coll)
         {
+            base.OnTriggerExit(coll);
             if (coll.gameObject.tag == "Player")
             {
                 Destroy(Camera.main.gameObject.GetComponent<CameraFilterPack_Blur_Blurry>());
