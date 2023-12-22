@@ -191,11 +191,11 @@ namespace FunPlusEssentials.CustomContent
                 string path = map.assetsPath + @"\music";
                 if (File.Exists(path))
                 {
-                    var bundle = BundleManager.LoadAudioBundle2(path);
+                    var bundle = BundleManager.LoadBundle(path);
                     map.ambient = bundle.LoadAsset<AudioClip>("ambient");
                     for (int i = 1; i < map.waves.Count; i++)
                     {
-                        CuteLogger.Meow("wave" + (i + 1).ToString() + " | " + path);
+                        CuteLogger.Meow(path);
                         map.waves[i].waveInfo.music = bundle.LoadAsset<AudioClip>("wave" + (i + 1).ToString());
                         map.waves[i].waveInfo.music.name = "0" + i.ToString();
                     }

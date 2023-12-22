@@ -198,7 +198,7 @@ namespace FunPlusEssentials.Other
             }
             return bundle.LoadAsset<AudioClip>(prefabName);
         }
-        public static Il2CppAssetBundle LoadAudioBundle2(string path)
+        public static Il2CppAssetBundle LoadBundle(string path)
         {
             CuteLogger.Meow("loading audio bundle");
             var bundle = Il2CppAssetBundleManager.LoadFromFile(path);
