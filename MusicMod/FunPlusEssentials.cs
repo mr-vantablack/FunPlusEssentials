@@ -40,6 +40,11 @@ namespace FunPlusEssentials
                 if (ServerManager.enabled) { ServerManager.AddCustomServers(); }
                 MelonCoroutines.Start(MapManager.CheckMainMenuOverride());
             }
+            if (sceneName == "Research Lab")
+            {
+                var t = GameObject.Find("Offlink (7)").transform.GetChild(0);
+                GameObject.CreatePrimitive(PrimitiveType.Cube).transform.position = t.position;
+            }
         }
 
         public override void OnApplicationStart()
