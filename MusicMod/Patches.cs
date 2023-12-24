@@ -11,51 +11,55 @@ using ExitGames.Client.Photon;
 
 namespace FunPlusEssentials.Patches 
 {
-[HarmonyLib.HarmonyPatch(typeof(MultiplayerChat), "HLIDELGJEON")]
-public static class MPChatPatch
-{
-    //Prefix - Код ДО выполнения метода, Postfix - код ПОСЛЕ выполнения метода
-    [HarmonyLib.HarmonyPrefix]
-    static bool Prefix(ref string NAEFFPHCJKL, ref string NOFLIGCKLDF, ref string PBPBALMOMEM, MultiplayerChat __instance)
+
+    #region MultiplayerChat
+    [HarmonyLib.HarmonyPatch(typeof(MultiplayerChat), "HLIDELGJEON")]
+    public static class MPChatPatch
     {
-        string name = NAEFFPHCJKL;
-        if (!NAEFFPHCJKL.Contains(FPE.AppInfo.Name))
+        //Prefix - Код ДО выполнения метода, Postfix - код ПОСЛЕ выполнения метода
+        [HarmonyLib.HarmonyPrefix]
+        static bool Prefix(ref string NAEFFPHCJKL, ref string NOFLIGCKLDF, ref string PBPBALMOMEM, MultiplayerChat __instance)
         {
-            try
+            string name = NAEFFPHCJKL;
+            if (!NAEFFPHCJKL.Contains(FPE.AppInfo.Name))
             {
-                PhotonPlayer sender = CommandHandler.GetSenderPlayer(NAEFFPHCJKL);
-                string c = Helper.GetProperty(sender, "nicknameColor").ToString();
-                if (sender.isMasterClient) { NAEFFPHCJKL = NAEFFPHCJKL.Remove(NAEFFPHCJKL.Length - 2) + " (master):"; }
-                if (c != "" && !Config.noRichText) { NAEFFPHCJKL = Helper.Paint(NAEFFPHCJKL, c); }
+                try
+                {
+                    PhotonPlayer sender = CommandHandler.GetSenderPlayer(NAEFFPHCJKL);
+                    string c = Helper.GetProperty(sender, "nicknameColor").ToString();
+                    if (sender.isMasterClient) { NAEFFPHCJKL = NAEFFPHCJKL.Remove(NAEFFPHCJKL.Length - 2) + " (master):"; }
+                    if (c != "" && !Config.noRichText) { NAEFFPHCJKL = Helper.Paint(NAEFFPHCJKL, c); }
+                }
+                catch { }
             }
-            catch { }
+            if (Config.noRichText) NOFLIGCKLDF = Regex.Replace(NOFLIGCKLDF, "<.*?>", string.Empty);
+            return !CommandHandler.HandleChat(name, NOFLIGCKLDF);
         }
-        if (Config.noRichText) NOFLIGCKLDF = Regex.Replace(NOFLIGCKLDF, "<.*?>", string.Empty);
-        return !CommandHandler.HandleChat(name, NOFLIGCKLDF);
-    }
 
-    static void Postfix(ref string NAEFFPHCJKL, ref string NOFLIGCKLDF, ref string PBPBALMOMEM, MultiplayerChat __instance)
-        {
-            MelonLogger.Msg($"{Blacklist.Translit(NAEFFPHCJKL)} {Blacklist.Translit(NOFLIGCKLDF)}");
-            string clearName = Regex.Replace(NAEFFPHCJKL, "<.*?>", string.Empty);
-            string clearMsg = Regex.Replace(NOFLIGCKLDF, "<.*?>", string.Empty);
-            CuteLogger.Log($"[Chat]{clearName} {clearMsg}");
-    }
-}
-
-[HarmonyLib.HarmonyPatch(typeof(MultiplayerChat), "Start")]
-public static class MultiplayerChatStart
-{ 
-    [HarmonyLib.HarmonyPrefix]
-    static void Prefix(MultiplayerChat __instance)
-        {
-            __instance.JELNPHBIKHK.richText = true;
-            CommandHandler.SystemMsg($" v{FPE.AppInfo.Version} was loaded.");
-            if (FPE.AppInfo.UpdateAvailable) CommandHandler.SystemMsg($"Your version of the mod is outdated. It's recommended to install the latest version from our Discord ({FPE.AppInfo.DiscordLink})."); ;
+        static void Postfix(ref string NAEFFPHCJKL, ref string NOFLIGCKLDF, ref string PBPBALMOMEM, MultiplayerChat __instance)
+            {
+                MelonLogger.Msg($"{Blacklist.Translit(NAEFFPHCJKL)} {Blacklist.Translit(NOFLIGCKLDF)}");
+                string clearName = Regex.Replace(NAEFFPHCJKL, "<.*?>", string.Empty);
+                string clearMsg = Regex.Replace(NOFLIGCKLDF, "<.*?>", string.Empty);
+                CuteLogger.Log($"[Chat]{clearName} {clearMsg}");
         }
     }
 
-[HarmonyLib.HarmonyPatch(typeof(PlayerNetworkController), "BCPFIMDIMJE")]
+    [HarmonyLib.HarmonyPatch(typeof(MultiplayerChat), "Start")]
+    public static class MultiplayerChatStart
+    { 
+        [HarmonyLib.HarmonyPrefix]
+        static void Prefix(MultiplayerChat __instance)
+            {
+                __instance.JELNPHBIKHK.richText = true;
+                CommandHandler.SystemMsg($" v{FPE.AppInfo.Version} was loaded.");
+                if (FPE.AppInfo.UpdateAvailable) CommandHandler.SystemMsg($"Your version of the mod is outdated. It's recommended to install the latest version from our Discord ({FPE.AppInfo.DiscordLink})."); ;
+            }
+    }
+    #endregion
+
+    #region PlayerNetworkController
+    [HarmonyLib.HarmonyPatch(typeof(PlayerNetworkController), "BCPFIMDIMJE")]
     public static class AntiCrashPatch
     {
         [HarmonyLib.HarmonyPrefix]
@@ -73,7 +77,9 @@ public static class MultiplayerChatStart
             return true;
         }
     }
+    #endregion
 
+    #region WhoKilledWho
     [HarmonyLib.HarmonyPatch(typeof(WhoKilledWho), "OnPhotonPlayerConnected")]
     public static class OnPhotonPlayerConnected
     {
@@ -95,7 +101,19 @@ public static class MultiplayerChatStart
             }
         }
     }
+    [HarmonyLib.HarmonyPatch(typeof(WhoKilledWho), "OnPhotonPlayerDisconnected")]
+    public static class OnPhotonPlayerDisconnected
+    {
+        [HarmonyLib.HarmonyPrefix]
+        static void Prefix(ref PhotonPlayer ANLAKOKFGCJ, WhoKilledWho __instance)
+        {
+            string clearName = ANLAKOKFGCJ.name.Split('|')[0];
+            CuteLogger.Meow(ConsoleColor.Red, $"{clearName} disconnected.");
+        }
+    }
+    #endregion
 
+    #region RoomMultiplayerMenu
     [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "FixedUpdate")]
     public static class RoomMultiplayerMenuFixedUpdate
     {
@@ -106,7 +124,7 @@ public static class MultiplayerChatStart
             //Msg("yes");
         }
     }
-    
+
     [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "Awake")]
     public static class RoomMultiplayerMenuAwake
     {
@@ -127,8 +145,63 @@ public static class MultiplayerChatStart
             }
         }
     }
+    [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu.ELNOHBJFICO), "MoveNext")]
+    public static class RoundEnd
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix()
+        {
+            string gm = Helper.RoomMultiplayerMenu.KCIGKBNBPNN;
+            if (gm == "SUR" || gm == "COOP" || gm == "VS")
+            {
+                if (PhotonNetwork.isMasterClient) MelonCoroutines.Start(RMMFix.Instance.LeaveRoom(5f));
+            }
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "SpawnPlayer")]
+    public static class SpawnPlayer
+    {
+        [HarmonyLib.HarmonyPrefix]
+        static void Prefix(ref string teamName, RoomMultiplayerMenu __instance)
+        {
 
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "OnLeftRoom")]
+    public static class RmmOnLeftRoom
+    {
+        [HarmonyLib.HarmonyPrefix]
+        static void Prefix(RoomMultiplayerMenu __instance)
+        {
+            foreach (MapInfo map in MapManager.customMaps)
+            {
+                if (SceneManager.GetActiveScene().name == map.map.mapName)
+                {
+                    PhotonNetwork.Disconnect();
+                }
+            }
 
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "OnDisconnectedFromPhoton")]
+    public static class RmmOnDisconnectedFromPhoton
+    {
+        [HarmonyLib.HarmonyPrefix]
+        static void Prefix(RoomMultiplayerMenu __instance)
+        {
+            foreach (MapInfo map in MapManager.customMaps)
+            {
+                if (SceneManager.GetActiveScene().name == map.map.mapName)
+                {
+                    SceneManager.LoadSceneAsync("MainMenu");
+                }
+            }
+
+        }
+    }
+    #endregion
+
+    #region LobbyMenu
     [HarmonyLib.HarmonyPatch(typeof(LobbyMenu), "OnJoinedRoom")]
     public static class LobbyOnJoinedRoom
     {
@@ -151,129 +224,6 @@ public static class MultiplayerChatStart
             }
         }
     }
-    [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu.ELNOHBJFICO), "MoveNext")]
-    public static class RoundEnd
-    {
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix()
-        {
-            string gm = Helper.RoomMultiplayerMenu.KCIGKBNBPNN;
-            if (gm == "SUR" || gm == "COOP" || gm == "VS")
-            {
-                if (PhotonNetwork.isMasterClient) MelonCoroutines.Start(RMMFix.Instance.LeaveRoom(5f));
-            }
-        }
-    }
-    [HarmonyLib.HarmonyPatch(typeof(PlayerMonster), "Awake")]
-    public static class ColliderFix2
-    {
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix(PlayerMonster __instance)
-        {
-            if (__instance.DFLJPEDEMDH)
-            {
-                GameObject.Destroy(__instance.GetComponent<CharacterController>());
-                GameObject.Destroy(__instance.GetComponent<CapsuleCollider>());
-            }
-        }
-    }
-    [HarmonyLib.HarmonyPatch(typeof(PlayerMonster), "KOFOOHFOGHL")]
-    public static class ColliderFix
-    {
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix(PlayerMonster __instance)
-        {
-            if (__instance.DFLJPEDEMDH)
-            {
-                GameObject.Destroy(__instance.GetComponent<CapsuleCollider>());
-            }
-        }
-    }
-
-    [HarmonyLib.HarmonyPatch(typeof(SurvivalMechanics), "BGHBEIGBGAA")]
-    public static class NextWave
-    {
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix(SurvivalMechanics __instance)
-        {
-            if (MapManager.isCustomMap && MapManager.currentMap.waves != null)
-            {
-                __instance.POJLLLGLPKL = MapManager.currentMap.waves[__instance.PKONLONPGNP].maxNPC;
-            }
-        }
-    }
-    [HarmonyLib.HarmonyPatch(typeof(WeaponScript), "Start")]
-    public static class WeaponScriptStart
-    {
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix(WeaponScript __instance)
-        {
-            if (Config.fov > 65 && Config.fov <= 100)
-            {
-            __instance.KKCIIEDNLEO = new Vector3(0f, 0f, ((65 - Config.fov) / 75) * -1);
-            __instance.FFGIIOODMGK = Config.fov;
-            
-            }        
-        }
-    }
-    [HarmonyLib.HarmonyPatch(typeof(WhoKilledWho), "OnPhotonPlayerDisconnected")]
-    public static class OnPhotonPlayerDisconnected
-    {
-        [HarmonyLib.HarmonyPrefix]
-        static void Prefix(ref PhotonPlayer ANLAKOKFGCJ, WhoKilledWho __instance)
-        {
-            string clearName = ANLAKOKFGCJ.name.Split('|')[0];
-            CuteLogger.Meow(ConsoleColor.Red, $"{clearName} disconnected.");
-        }
-    }
-
-    [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "SpawnPlayer")]
-    public static class SpawnPlayer
-    {
-        [HarmonyLib.HarmonyPrefix]
-        static void Prefix(ref string teamName, RoomMultiplayerMenu __instance)
-        {
-
-        }
-    }
-
-    [HarmonyLib.HarmonyPatch(typeof(NetworkingPeer), "DebugReturn")]
-    public static class OnConnectFailed
-    {
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix(ref DebugLevel level, ref string message, NetworkingPeer __instance)
-        {
-            if (level == DebugLevel.ERROR && message.Contains("Receive issue. State:"))
-            {
-                CuteLogger.Bark("Failed to establish connection with ST3 servers.");
-                if (ServerManager.customServers.Count != 0 && ServerManager.enabled)
-                {
-                    ServerManager.AddCustomServers();
-                }              
-            }
-        }
-    }
-
-    [HarmonyLib.HarmonyPatch(typeof(WaitForDestroy), "Awake")]
-    public static class WaitForDestroyAwake
-    {
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix(WaitForDestroy __instance)
-        {
-
-        }
-    }
-
-    [HarmonyLib.HarmonyPatch(typeof(CharacterCustomization), "Awake")]
-    public static class CharacterCustomizationAwake
-    {
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix(CharacterCustomization __instance)
-        {
-            GameObject.Find("Scene Elements/PLAYER_MODEL").AddComponent<Rotator>().rotate = true;
-        }
-    }
-
     [HarmonyLib.HarmonyPatch(typeof(LobbyMenu.DBENNALHBEM), "MoveNext")]
     public static class LobbyMenuLoadScene
     {
@@ -320,6 +270,139 @@ public static class MultiplayerChatStart
             }
         }
     }
+    [HarmonyLib.HarmonyPatch(typeof(LobbyMenu), "Awake")]
+    public static class LobbyMenuOnEnabled
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(LobbyMenu __instance)
+        {
+            MapManager.AddCustomMaps();
+        }
+    }
+    #endregion
+
+    #region SurvivalMechanics
+    [HarmonyLib.HarmonyPatch(typeof(SurvivalMechanics), "BGHBEIGBGAA")]
+    public static class NextWave
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(SurvivalMechanics __instance)
+        {
+            if (MapManager.isCustomMap && MapManager.currentMap.waves != null)
+            {
+                __instance.POJLLLGLPKL = MapManager.currentMap.waves[__instance.PKONLONPGNP].maxNPC;
+            }
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(SurvivalMechanics), "OnGUI")]
+    public static class SurvivalMechanicsGUI
+    {
+        [HarmonyLib.HarmonyPrefix]
+        static bool Prefix(SurvivalMechanics __instance)
+        {
+            if (HudHider.Instance != null)
+            {
+                if (HudHider.Instance.hidden)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(SurvivalMechanics), "Awake")]
+    public static class SurvivalMechanicsAwake
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(SurvivalMechanics __instance)
+        {
+            MelonCoroutines.Start(MapManager.SetUpWaves(__instance));
+        }
+    }
+    #endregion
+    [HarmonyLib.HarmonyPatch(typeof(PlayerMonster), "Awake")]
+    public static class ColliderFix2
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(PlayerMonster __instance)
+        {
+            if (__instance.DFLJPEDEMDH)
+            {
+                GameObject.Destroy(__instance.GetComponent<CharacterController>());
+                GameObject.Destroy(__instance.GetComponent<CapsuleCollider>());
+            }
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(PlayerMonster), "KOFOOHFOGHL")]
+    public static class ColliderFix
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(PlayerMonster __instance)
+        {
+            if (__instance.DFLJPEDEMDH)
+            {
+                GameObject.Destroy(__instance.GetComponent<CapsuleCollider>());
+            }
+        }
+    }
+
+    
+    [HarmonyLib.HarmonyPatch(typeof(WeaponScript), "Start")]
+    public static class WeaponScriptStart
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(WeaponScript __instance)
+        {
+            if (Config.fov > 65 && Config.fov <= 100)
+            {
+            __instance.KKCIIEDNLEO = new Vector3(0f, 0f, ((65 - Config.fov) / 75) * -1);
+            __instance.FFGIIOODMGK = Config.fov;
+            
+            }        
+        }
+    }
+    
+
+    
+
+    [HarmonyLib.HarmonyPatch(typeof(NetworkingPeer), "DebugReturn")]
+    public static class OnConnectFailed
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(ref DebugLevel level, ref string message, NetworkingPeer __instance)
+        {
+            if (level == DebugLevel.ERROR && message.Contains("Receive issue. State:"))
+            {
+                CuteLogger.Bark("Failed to establish connection with ST3 servers.");
+                if (ServerManager.customServers.Count != 0 && ServerManager.enabled)
+                {
+                    ServerManager.AddCustomServers();
+                }              
+            }
+        }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(WaitForDestroy), "Awake")]
+    public static class WaitForDestroyAwake
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(WaitForDestroy __instance)
+        {
+
+        }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(CharacterCustomization), "Awake")]
+    public static class CharacterCustomizationAwake
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(CharacterCustomization __instance)
+        {
+            GameObject.Find("Scene Elements/PLAYER_MODEL").AddComponent<Rotator>().rotate = true;
+        }
+    }
+
+    
 
     [HarmonyLib.HarmonyPatch(typeof(DrawPlayerName), "OnGUI")]
     public static class DrawPlayerNameGUI
@@ -372,22 +455,7 @@ public static class MultiplayerChatStart
         }
     }
 
-    [HarmonyLib.HarmonyPatch(typeof(SurvivalMechanics), "OnGUI")]
-    public static class SurvivalMechanicsGUI
-    {
-        [HarmonyLib.HarmonyPrefix]
-        static bool Prefix(SurvivalMechanics __instance)
-        {
-            if (HudHider.Instance != null)
-            {
-                if (HudHider.Instance.hidden)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
+    
 
     [HarmonyLib.HarmonyPatch(typeof(WeaponPickUp), "Start")]
     public static class WeaponPickUpStart
@@ -414,25 +482,9 @@ public static class MultiplayerChatStart
             }
         }
     }
-    [HarmonyLib.HarmonyPatch(typeof(LobbyMenu), "Awake")]
-    public static class LobbyMenuOnEnabled
-    {
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix(LobbyMenu __instance)
-        {
-            MapManager.AddCustomMaps();
-        }
-    }
+    
 
-    [HarmonyLib.HarmonyPatch(typeof(SurvivalMechanics), "Awake")]
-    public static class SurvivalMechanicsAwake
-    {
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix(SurvivalMechanics __instance)
-        {          
-            MelonCoroutines.Start(MapManager.SetUpWaves(__instance));
-        }
-    }
+    
 
     [HarmonyLib.HarmonyPatch(typeof(FPScontroller), "Update")]
     public static class FPScontrollerUpdate
@@ -477,22 +529,7 @@ public static class MultiplayerChatStart
         }
     }
 
-    [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "OnLeftRoom")]
-    public static class RmmOnLeftRoom
-    {
-        [HarmonyLib.HarmonyPrefix]
-        static void Prefix(RoomMultiplayerMenu __instance)
-        {
-            foreach (MapInfo map in MapManager.customMaps)
-            {
-                if (SceneManager.GetActiveScene().name == map.map.mapName)
-                {
-                    PhotonNetwork.Disconnect();
-                }
-            }
-
-        }
-    }
+    
     [HarmonyLib.HarmonyPatch(typeof(FlyCamController), "Update")]
     public static class FlyCamUpdate
     {
@@ -517,20 +554,5 @@ public static class MultiplayerChatStart
         }
     }
 
-    [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "OnDisconnectedFromPhoton")]
-    public static class RmmOnDisconnectedFromPhoton
-    {
-        [HarmonyLib.HarmonyPrefix]
-        static void Prefix(RoomMultiplayerMenu __instance)
-        {
-            foreach (MapInfo map in MapManager.customMaps)
-            {
-                if (SceneManager.GetActiveScene().name == map.map.mapName)
-                {
-                    SceneManager.LoadSceneAsync("MainMenu");
-                }
-            }
-
-        }
-    }
+    
 }
