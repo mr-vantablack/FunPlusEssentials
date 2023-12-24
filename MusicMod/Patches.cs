@@ -320,6 +320,7 @@ namespace FunPlusEssentials.Patches
         }
     }
     #endregion
+
     [HarmonyLib.HarmonyPatch(typeof(PlayerMonster), "Awake")]
     public static class ColliderFix2
     {
@@ -331,8 +332,16 @@ namespace FunPlusEssentials.Patches
                 GameObject.Destroy(__instance.GetComponent<CharacterController>());
                 GameObject.Destroy(__instance.GetComponent<CapsuleCollider>());
             }
+            if (!Config.filtersEnabled)
+            {
+                GameObject.Destroy(Camera.main.GetComponent<CameraFilterPack_Colors_Adjust_PreFilters>());
+                GameObject.Destroy(Camera.main.GetComponent<CameraFilterPack_Blur_Focus>());
+                GameObject.Destroy(Camera.main.GetComponent<CameraFilterPack_Film_Grain>());
+                GameObject.Destroy(Camera.main.GetComponent<CameraFilterPack_Color_RGB>());
+            }
         }
     }
+
     [HarmonyLib.HarmonyPatch(typeof(PlayerMonster), "KOFOOHFOGHL")]
     public static class ColliderFix
     {
@@ -346,7 +355,6 @@ namespace FunPlusEssentials.Patches
         }
     }
 
-    
     [HarmonyLib.HarmonyPatch(typeof(WeaponScript), "Start")]
     public static class WeaponScriptStart
     {
@@ -362,9 +370,6 @@ namespace FunPlusEssentials.Patches
         }
     }
     
-
-    
-
     [HarmonyLib.HarmonyPatch(typeof(NetworkingPeer), "DebugReturn")]
     public static class OnConnectFailed
     {
@@ -401,8 +406,6 @@ namespace FunPlusEssentials.Patches
             GameObject.Find("Scene Elements/PLAYER_MODEL").AddComponent<Rotator>().rotate = true;
         }
     }
-
-    
 
     [HarmonyLib.HarmonyPatch(typeof(DrawPlayerName), "OnGUI")]
     public static class DrawPlayerNameGUI
@@ -455,8 +458,6 @@ namespace FunPlusEssentials.Patches
         }
     }
 
-    
-
     [HarmonyLib.HarmonyPatch(typeof(WeaponPickUp), "Start")]
     public static class WeaponPickUpStart
     {
@@ -483,9 +484,6 @@ namespace FunPlusEssentials.Patches
         }
     }
     
-
-    
-
     [HarmonyLib.HarmonyPatch(typeof(FPScontroller), "Update")]
     public static class FPScontrollerUpdate
     {
@@ -529,7 +527,6 @@ namespace FunPlusEssentials.Patches
         }
     }
 
-    
     [HarmonyLib.HarmonyPatch(typeof(FlyCamController), "Update")]
     public static class FlyCamUpdate
     {
