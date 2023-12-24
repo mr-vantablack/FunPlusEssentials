@@ -173,12 +173,9 @@ namespace FunPlusEssentials.Patches
         [HarmonyLib.HarmonyPrefix]
         static void Prefix(RoomMultiplayerMenu __instance)
         {
-            foreach (MapInfo map in MapManager.customMaps)
+            if (MapManager.isCustomMap)
             {
-                if (SceneManager.GetActiveScene().name == map.map.mapName)
-                {
-                    PhotonNetwork.Disconnect();
-                }
+                PhotonNetwork.Disconnect();
             }
 
         }
@@ -189,14 +186,8 @@ namespace FunPlusEssentials.Patches
         [HarmonyLib.HarmonyPrefix]
         static void Prefix(RoomMultiplayerMenu __instance)
         {
-            foreach (MapInfo map in MapManager.customMaps)
-            {
-                if (SceneManager.GetActiveScene().name == map.map.mapName)
-                {
+            if (MapManager.isCustomMap)
                     SceneManager.LoadSceneAsync("MainMenu");
-                }
-            }
-
         }
     }
     #endregion
