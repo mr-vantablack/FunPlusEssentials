@@ -71,20 +71,6 @@ namespace FunPlusEssentials.CustomContent
 
             return allDirectories;
         }
-        public static void SetUpMainMenu()
-        {
-            
-            if (menuBackground != null)
-            {
-                GameObject.Find("Scene Elements/BG/Background").GetComponent<SpriteRenderer>().sprite = menuBackground;
-            }
-            if (menuMusic != null)
-            {
-                var source = GameObject.Find("Sound").GetComponent<AudioSource>();
-                source.clip = menuMusic;
-                source.Play();
-            }
-        }
         public static IEnumerator CheckMainMenuOverride()
         {
             Directory.CreateDirectory(mainMenuDirectory);
@@ -96,7 +82,7 @@ namespace FunPlusEssentials.CustomContent
                 {
                     menuMusic = www.GetAudioClip(true, true);
                 }
-                
+
             }
             if (File.Exists(mainMenuDirectory + @"\background.png"))
             {
@@ -105,6 +91,17 @@ namespace FunPlusEssentials.CustomContent
                 CuteLogger.Meow(www.texture.width.ToString() + " " + www.texture.height.ToString());
                 menuBackground = Loader.ConvertTextureToSprite(www.texture, new Vector2(.5f, .5f));
 
+            }
+            if (menuBackground != null)
+            {
+                GameObject.Find("Scene Elements/BG/Background").GetComponent<SpriteRenderer>().sprite = menuBackground;
+                Camera.main.GetComponent<CameraFilterPack_Colors_Adjust_PreFilters>().enabled = false;
+            }
+            if (menuMusic != null)
+            {
+                var source = GameObject.Find("Sound").GetComponent<AudioSource>();
+                source.clip = menuMusic;
+                source.Play();
             }
         }
         public static void CheckMapsFolder()

@@ -38,7 +38,7 @@ namespace FunPlusEssentials
             if (sceneName == "MainMenu")
             {
                 if (ServerManager.enabled) { ServerManager.AddCustomServers(); }
-                MapManager.SetUpMainMenu();
+                MelonCoroutines.Start(MapManager.CheckMainMenuOverride());
             }
         }
 
@@ -55,8 +55,7 @@ namespace FunPlusEssentials
             Config.SetUpConfig();
             Blacklist.CheckPlayer(" ");
             MapManager.SetUp();
-            CuteLogger.ClearLogs();
-            MelonCoroutines.Start(MapManager.CheckMainMenuOverride());           
+            CuteLogger.ClearLogs();      
         }
 
         public IEnumerator CheckModVersion()
