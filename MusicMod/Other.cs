@@ -80,7 +80,14 @@ namespace FunPlusEssentials.Other
 
             return NewSprite;
         }
+        public static Sprite ConvertTextureToSprite(Texture2D texture, Vector2 pivot)
+        {
+            // Converts a Texture2D to a sprite, assign this texture to a new sprite and return its reference
 
+            Sprite NewSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), pivot, 100f, 0, SpriteMeshType.Tight);
+
+            return NewSprite;
+        }
         public static Texture2D LoadTexture(string FilePath)
         {
             Texture2D Tex2D;

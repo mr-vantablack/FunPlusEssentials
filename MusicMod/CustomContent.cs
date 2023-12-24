@@ -47,13 +47,17 @@ namespace FunPlusEssentials.CustomContent
             public bool isBoss;
         }
     }
+
     public static class MapManager
     {
         public static bool isCustomMap;
         public static MapInfo currentMap;
         public static string customMapsDirectory = Config.mainPath + @"\CustomMaps";
+        public static string mainMenuDirectory = Config.mainPath + @"\MainMenu";
         public static List<FileSystemInfo> mapsFiles = new List<FileSystemInfo>();
         public static List<MapInfo> customMaps = new List<MapInfo>();
+        public static AudioClip menuMusic;
+        public static Sprite menuBackground;
         internal static bool m_loaded;
         internal static List<LobbyMenu.AllModes> m_allModes = new List<LobbyMenu.AllModes>();
         internal static Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes> m_lastModes = new Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes>();
@@ -67,7 +71,42 @@ namespace FunPlusEssentials.CustomContent
 
             return allDirectories;
         }
+        public static void SetUpMainMenu()
+        {
+            
+            if (menuBackground != null)
+            {
+                GameObject.Find("Scene Elements/BG/Background").GetComponent<SpriteRenderer>().sprite = menuBackground;
+            }
+            if (menuMusic != null)
+            {
+                var source = GameObject.Find("Sound").GetComponent<AudioSource>();
+                source.clip = menuMusic;
+                source.Play();
+            }
+        }
+        public static IEnumerator CheckMainMenuOverride()
+        {
+            Directory.CreateDirectory(mainMenuDirectory);
+            if (File.Exists(mainMenuDirectory + @"\ambient.mp3"))
+            {
+                WWW www = new WWW(@"file://" + mainMenuDirectory + @"\ambient.mp3");
+                yield return www;
+                if (menuMusic == null)
+                {
+                    menuMusic = www.GetAudioClip(true, true);
+                }
+                
+            }
+            if (File.Exists(mainMenuDirectory + @"\background.png"))
+            {
+                WWW www = new WWW(@"file://" + mainMenuDirectory + @"\background.png");
+                yield return www;
+                CuteLogger.Meow(www.texture.width.ToString() + " " + www.texture.height.ToString());
+                menuBackground = Loader.ConvertTextureToSprite(www.texture, new Vector2(.5f, .5f));
 
+            }
+        }
         public static void CheckMapsFolder()
         {
             Directory.CreateDirectory(customMapsDirectory);

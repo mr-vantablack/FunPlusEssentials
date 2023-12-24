@@ -36,8 +36,9 @@ namespace FunPlusEssentials
                 PhotonNetwork.isMessageQueueRunning = true;
             }
             if (sceneName == "MainMenu")
-            {          
+            {
                 if (ServerManager.enabled) { ServerManager.AddCustomServers(); }
+                MapManager.SetUpMainMenu();
             }
         }
 
@@ -55,6 +56,7 @@ namespace FunPlusEssentials
             Blacklist.CheckPlayer(" ");
             MapManager.SetUp();
             CuteLogger.ClearLogs();
+            MelonCoroutines.Start(MapManager.CheckMainMenuOverride());           
         }
 
         public IEnumerator CheckModVersion()
