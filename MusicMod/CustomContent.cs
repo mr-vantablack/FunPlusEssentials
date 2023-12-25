@@ -88,7 +88,6 @@ namespace FunPlusEssentials.CustomContent
             {
                 WWW www = new WWW(@"file://" + mainMenuDirectory + @"\background.png");
                 yield return www;
-                CuteLogger.Meow(www.texture.width.ToString() + " " + www.texture.height.ToString());
                 menuBackground = Loader.ConvertTextureToSprite(www.texture, new Vector2(.5f, .5f));
 
             }
@@ -211,7 +210,6 @@ namespace FunPlusEssentials.CustomContent
                     for (int i = 1; i < map.waves.Count; i++)
                     {
                         string FilePath = map.assetsPath + @"\music\" + "wave" + (i + 1).ToString() + ".mp3";
-                        CuteLogger.Meow(FilePath);
                         if (File.Exists(FilePath))
                         {
                             string url = @"file://" + FilePath;
@@ -219,6 +217,7 @@ namespace FunPlusEssentials.CustomContent
                             yield return www;
                             map.waves[i].waveInfo.music = www.GetAudioClip();
                             map.waves[i].waveInfo.music.name = "0" + i.ToString();
+                            CuteLogger.Meow("Loaded track " + "0" + i.ToString());
                         }
                     }
                 }

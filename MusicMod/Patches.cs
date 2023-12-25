@@ -234,7 +234,6 @@ namespace FunPlusEssentials.Patches
 
                     if (map.map.mapName == scene)
                     {
-                        MelonCoroutines.Start(MapManager.SetUpMusic(map));
                         if (map.map.useDayAndNight)
                         {
                             CuteLogger.Meow(Helper.LobbyMenu.NLAEKGFANJA.ToString() + " " +
