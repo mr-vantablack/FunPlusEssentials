@@ -310,7 +310,21 @@ namespace FunPlusEssentials.Patches
         }
     }
     #endregion
-
+    [HarmonyLib.HarmonyPatch(typeof(TPSCamera), "OnEnable")]
+    public static class RemoveFilters
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(TPSCamera __instance)
+        {
+            if (!Config.filtersEnabled)
+            {
+                GameObject.Destroy(__instance.GetComponent<CameraFilterPack_Colors_Adjust_PreFilters>());
+                GameObject.Destroy(__instance.GetComponent<CameraFilterPack_Blur_Focus>());
+                GameObject.Destroy(__instance.GetComponent<CameraFilterPack_Film_Grain>());
+                GameObject.Destroy(__instance.GetComponent<CameraFilterPack_Color_RGB>());
+            }
+        }
+    }
     [HarmonyLib.HarmonyPatch(typeof(PlayerMonster), "Awake")]
     public static class ColliderFix2
     {
@@ -321,13 +335,6 @@ namespace FunPlusEssentials.Patches
             {
                 GameObject.Destroy(__instance.GetComponent<CharacterController>());
                 GameObject.Destroy(__instance.GetComponent<CapsuleCollider>());
-            }
-            if (!Config.filtersEnabled)
-            {
-                GameObject.Destroy(Camera.main.GetComponent<CameraFilterPack_Colors_Adjust_PreFilters>());
-                GameObject.Destroy(Camera.main.GetComponent<CameraFilterPack_Blur_Focus>());
-                GameObject.Destroy(Camera.main.GetComponent<CameraFilterPack_Film_Grain>());
-                GameObject.Destroy(Camera.main.GetComponent<CameraFilterPack_Color_RGB>());
             }
         }
     }

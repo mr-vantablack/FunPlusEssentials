@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using FunPlusEssentials.Essentials;
 using FunPlusEssentials.Other;
+using FunPlusEssentials.CustomContent.Triggers;
 using System.Collections;
 using IniFile = FunPlusEssentials.Other.IniFile;
 using MelonLoader.TinyJSON;
@@ -386,9 +387,19 @@ namespace FunPlusEssentials.CustomContent
             }
         }
     }
-
+}
+namespace FunPlusEssentials.CustomContent.Triggers
+{
     [RegisterTypeInIl2Cpp]
-    public class DamageZone : MonoBehaviour
+    public class Trigger : MonoBehaviour
+    {
+        public Trigger(IntPtr ptr) : base(ptr) { }
+        public virtual void OnTriggerStay(Collider coll) { }
+        public virtual void OnTriggerEnter(Collider coll) { }
+        public virtual void OnTriggerExit(Collider coll) { }
+    }
+    [RegisterTypeInIl2Cpp]
+    public class DamageZone : Trigger
     {
         public DamageZone(IntPtr ptr) : base(ptr) { }
 
@@ -396,7 +407,7 @@ namespace FunPlusEssentials.CustomContent
         public float damage = 5f;
         public float coolDown = 1f;
         private float timer = 0f;
-        public virtual void OnTriggerStay(Collider coll)
+        public override void OnTriggerStay(Collider coll)
         {
             if (isDamage)
             {
@@ -415,7 +426,7 @@ namespace FunPlusEssentials.CustomContent
                 }
             }
         }
-        public virtual void OnTriggerExit(Collider coll)
+        public override void OnTriggerExit(Collider coll)
         {
             if (coll.gameObject.tag == "Player")
             {
@@ -452,6 +463,57 @@ namespace FunPlusEssentials.CustomContent
                 Helper.FPSController.HKCDMBALAAK.maxFallSpeed = 100f;
                 Helper.FPSController.LGIGJCDJMNO.fallLimit = 0.85f;
             }
+        }
+    }
+
+    [RegisterTypeInIl2Cpp]
+    public class AmbientController : MonoBehaviour
+    {
+        public AmbientController(IntPtr ptr) : base(ptr) { }
+
+        public static AmbientController Instance { get; set; }
+        public Color ambientColor, fogColor;
+        public FogMode fogMode { set { RenderSettings.fogMode = value; } }
+        public float fogDensity;
+        public void Start()
+        {
+            Instance = this;
+            fogColor = RenderSettings.fogColor;
+            ambientColor = RenderSettings.ambientLight;
+            fogMode = RenderSettings.fogMode;
+            fogDensity = RenderSettings.fogDensity;
+        }
+        public void Update()
+        {
+            RenderSettings.fogColor = Color.Lerp(RenderSettings.fogColor, fogColor, Mathf.Abs(Mathf.Sin(Time.time)));
+            RenderSettings.ambientLight = Color.Lerp(RenderSettings.ambientLight, ambientColor, Mathf.Abs(Mathf.Sin(Time.time)));
+            RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, fogDensity, Mathf.Abs(Mathf.Sin(Time.time)));
+        }
+    }
+
+    [RegisterTypeInIl2Cpp]
+    public class AmbientTriggerEnter : Trigger
+    {
+        public AmbientTriggerEnter(IntPtr ptr) : base(ptr) { }
+
+        public Color defaultAmbientColor, defaultFogColor, newAmbientColor, newFogColor;
+        public FogMode defaultFogMode, newFogMode;
+        public float defaultFogDensity, newFogDensity;
+
+
+        public override void OnTriggerEnter(Collider coll)
+        {
+            AmbientController.Instance.fogColor = newFogColor;
+            AmbientController.Instance.fogDensity = newFogDensity;
+            AmbientController.Instance.fogMode = newFogMode;
+            AmbientController.Instance.ambientColor = newAmbientColor;
+        }
+        public override void OnTriggerExit(Collider coll)
+        {
+            AmbientController.Instance.fogColor = defaultFogColor;
+            AmbientController.Instance.fogDensity = defaultFogDensity;
+            AmbientController.Instance.fogMode = defaultFogMode;
+            AmbientController.Instance.ambientColor = defaultAmbientColor;
         }
     }
 }
