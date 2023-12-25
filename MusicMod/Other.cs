@@ -246,11 +246,23 @@ namespace FunPlusEssentials.Other
         private static PlayerMonster _playerMonster;
         private static FPScontroller _fpsController;
         private static AmmoDisplay _ammoDisplay;
+        private static UpdaterV2 _updaterV2;
 
 
         #endregion
 
         #region PROPERTIES
+        public static UpdaterV2 UpdaterV2
+        {
+            get
+            {
+                if (_updaterV2 == null)
+                {
+                    _updaterV2 = GameObject.FindObjectOfType<UpdaterV2>();
+                }
+                return _updaterV2;
+            }
+        }
         public static SurvivalMechanics SurvivalMechanics
         {
             get

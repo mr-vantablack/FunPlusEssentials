@@ -5,7 +5,6 @@ using FunPlusEssentials.Essentials;
 using FunPlusEssentials.CustomContent;
 using UnityEngine;
 using System.Collections;
-using CodeStage.AntiCheat.Storage;
 using FunPlusEssentials.Other;
 
 [assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "2.8", "Vantablack")]

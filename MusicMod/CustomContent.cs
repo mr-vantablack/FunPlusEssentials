@@ -9,6 +9,7 @@ using System.Collections;
 using IniFile = FunPlusEssentials.Other.IniFile;
 using MelonLoader.TinyJSON;
 using UnhollowerBaseLib;
+using UnityEngine.UI;
 
 namespace FunPlusEssentials.CustomContent
 {
@@ -73,6 +74,9 @@ namespace FunPlusEssentials.CustomContent
         }
         public static IEnumerator CheckMainMenuOverride()
         {
+            Text text = GameObject.Find("Canvas/MainMenu/VersionText").GetComponent<Text>();
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.text = $"Slendytubbies 3 v{Helper.UpdaterV2.APGCFNOBPHD}\n<color=orange>FunPlusEssentials</color> v{FPE.AppInfo.Version}";
             Directory.CreateDirectory(mainMenuDirectory);
             if (File.Exists(mainMenuDirectory + @"\ambient.mp3"))
             {
