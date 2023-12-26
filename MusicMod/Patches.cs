@@ -83,9 +83,13 @@ namespace FunPlusEssentials.Patches
     [HarmonyLib.HarmonyPatch(typeof(WhoKilledWho), "OnPhotonPlayerConnected")]
     public static class OnPhotonPlayerConnected
     {
+        public delegate void Event(PhotonPlayer otherPlayer);
+        public static event Event onPhotonPlayerConnected;
+
         [HarmonyLib.HarmonyPrefix]
         static void Prefix(ref PhotonPlayer otherPlayer, WhoKilledWho __instance)
         {
+            onPhotonPlayerConnected?.Invoke(otherPlayer);
             if (Config.blacklistEnabled)
             {
                 string clearName = otherPlayer.name.Split('|')[0];
@@ -104,9 +108,13 @@ namespace FunPlusEssentials.Patches
     [HarmonyLib.HarmonyPatch(typeof(WhoKilledWho), "OnPhotonPlayerDisconnected")]
     public static class OnPhotonPlayerDisconnected
     {
+        public delegate void Event(PhotonPlayer otherPlayer);
+        public static event Event onPhotonPlayerDisonnected;
+
         [HarmonyLib.HarmonyPrefix]
         static void Prefix(ref PhotonPlayer ANLAKOKFGCJ, WhoKilledWho __instance)
         {
+            onPhotonPlayerDisonnected?.Invoke(ANLAKOKFGCJ);
             string clearName = ANLAKOKFGCJ.name.Split('|')[0];
             CuteLogger.Meow(ConsoleColor.Red, $"{clearName} disconnected.");
         }
@@ -128,9 +136,13 @@ namespace FunPlusEssentials.Patches
     [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "Awake")]
     public static class RoomMultiplayerMenuAwake
     {
+        public delegate void Event(RoomMultiplayerMenu instance);
+        public static event Event onRoomSpawned;
+
         [HarmonyLib.HarmonyPostfix]
         static void Postfix(RoomMultiplayerMenu __instance)
         {
+            onRoomSpawned?.Invoke(__instance);
             if (MapManager.isCustomMap)
             {
                 Helper.Room.GetComponent<AudioSource>().clip = MapManager.currentMap.ambient;
@@ -148,9 +160,12 @@ namespace FunPlusEssentials.Patches
     [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu.ELNOHBJFICO), "MoveNext")]
     public static class RoundEnd
     {
+        public delegate void Event();
+        public static event Event onRoundEnded;
         [HarmonyLib.HarmonyPostfix]
         static void Postfix()
         {
+            onRoundEnded?.Invoke();
             string gm = Helper.RoomMultiplayerMenu.KCIGKBNBPNN;
             if (gm == "SUR" || gm == "COOP" || gm == "VS")
             {
@@ -160,7 +175,7 @@ namespace FunPlusEssentials.Patches
     }
     [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "SpawnPlayer")]
     public static class SpawnPlayer
-    {
+    {       
         [HarmonyLib.HarmonyPrefix]
         static void Prefix(ref string teamName, RoomMultiplayerMenu __instance)
         {
@@ -183,9 +198,12 @@ namespace FunPlusEssentials.Patches
     [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "OnDisconnectedFromPhoton")]
     public static class RmmOnDisconnectedFromPhoton
     {
+        public delegate void Event();
+        public static event Event onDisconnectedFromPhoton;
         [HarmonyLib.HarmonyPrefix]
         static void Prefix(RoomMultiplayerMenu __instance)
         {
+            onDisconnectedFromPhoton?.Invoke();
             if (MapManager.isCustomMap)
                     SceneManager.LoadSceneAsync("MainMenu");
         }
@@ -196,9 +214,12 @@ namespace FunPlusEssentials.Patches
     [HarmonyLib.HarmonyPatch(typeof(LobbyMenu), "OnJoinedRoom")]
     public static class LobbyOnJoinedRoom
     {
+        public delegate void Event();
+        public static event Event onJoinedRoom;
         [HarmonyLib.HarmonyPostfix]
         static void Postfix()
         {
+            onJoinedRoom?.Invoke();
             if (PhotonNetwork.isOfflineMode) { return; }
             string mapName = PhotonNetwork.room.customProperties["MN002'"].ToString();
             foreach (MapInfo map in MapManager.customMaps)
@@ -218,9 +239,12 @@ namespace FunPlusEssentials.Patches
     [HarmonyLib.HarmonyPatch(typeof(LobbyMenu.DBENNALHBEM), "MoveNext")]
     public static class LobbyMenuLoadScene
     {
+        public delegate void Event(LobbyMenu.DBENNALHBEM scene);
+        public static event Event onLobbyRoomStarted;
         [HarmonyLib.HarmonyPrefix]
         static void Prefix(LobbyMenu.DBENNALHBEM __instance)
         {
+            onLobbyRoomStarted?.Invoke(__instance);
             if (!MapManager.m_loaded)
             {
                 MapManager.m_loaded = true;
@@ -261,8 +285,19 @@ namespace FunPlusEssentials.Patches
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(LobbyMenu), "Awake")]
+    public static class LobbyMenuAwake
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(LobbyMenu __instance)
+        {
+            MapManager.AddCustomMaps();
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(LobbyMenu), "OnEnable")]
     public static class LobbyMenuOnEnabled
     {
+        public delegate void Event(LobbyMenu.DBENNALHBEM scene);
+        public static event Event onLobbyRoomStarted;
         [HarmonyLib.HarmonyPostfix]
         static void Postfix(LobbyMenu __instance)
         {

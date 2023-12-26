@@ -14,6 +14,7 @@ using System.IO;
 using CodeStage.AntiCheat.Storage;
 using UnhollowerBaseLib;
 using UnityEngine.SceneManagement;
+using FunPlusEssentials.Patches;
 
 namespace FunPlusEssentials.Essentials
 {
@@ -251,6 +252,7 @@ namespace FunPlusEssentials.Essentials
         {
             if (inputText[1] != '/') return false;
             string[] args = inputText.Remove(0, 2).Split(' ');
+            MelonLogger.Msg(nickName);
             HandleCommand(GetSenderPlayer(nickName), args);
             return true;
         }
@@ -263,11 +265,10 @@ namespace FunPlusEssentials.Essentials
         public static PhotonPlayer GetSenderPlayer(string nickName)
         {
             string clearName = nickName.Substring(2, nickName.Length - 4);
-            clearName = Regex.Replace(clearName, "<.*?>", string.Empty) + "|2";
-           // Msg("clear" + " " + clearName);
+            clearName = Regex.Replace(clearName, "<.*?>", string.Empty);
             foreach (PhotonPlayer player in PhotonNetwork.playerList)
             {
-                if (player.name == clearName)
+                if (player.name.Split('|')[0] == clearName)
                 {
                     return player;
                 }
@@ -318,7 +319,7 @@ namespace FunPlusEssentials.Essentials
             }
         }
     }
-
+    
     [RegisterTypeInIl2Cpp]
     public class RMMFix : MonoBehaviour
     {
@@ -343,7 +344,6 @@ namespace FunPlusEssentials.Essentials
                 PhotonNetwork.Disconnect();
             }     
         }
-
         void Update()
         {
             // if (!updated)
@@ -356,7 +356,7 @@ namespace FunPlusEssentials.Essentials
         }
         public void SortList()
         {
-         //   updated = true;
+            //   updated = true;
             //yield return new WaitForSeconds(2);
             teamAPlayers.Clear();
             teamBPlayers.Clear();
@@ -378,8 +378,8 @@ namespace FunPlusEssentials.Essentials
                 leadingPlayer = teamAPlayers.Keys.First().name;
                 if (TabMenu.Instance != null) TabMenu.Instance.UpdatePlayersInfo(teamAPlayers, teamBPlayers);
             }
-           // updated = false;
-        }
+            // updated = false;
+        }      
     }
     public record PlayerEntry
     {

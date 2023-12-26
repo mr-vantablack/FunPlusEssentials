@@ -506,7 +506,7 @@ namespace FunPlusEssentials.CustomContent.Triggers
             AmbientController.Instance.fogColor = newFogColor;
             AmbientController.Instance.fogDensity = newFogDensity;
             AmbientController.Instance.fogMode = newFogMode;
-            AmbientController.Instance.ambientColor = newAmbientColor;
+            AmbientController.Instance.ambientColor = newAmbientColor;        
         }
         public override void OnTriggerExit(Collider coll)
         {
