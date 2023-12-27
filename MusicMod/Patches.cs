@@ -164,13 +164,13 @@ namespace FunPlusEssentials.Patches
         public static event Event onRoundEnded;
         [HarmonyLib.HarmonyPostfix]
         static void Postfix()
-        {
-            onRoundEnded?.Invoke();
+        {  
             string gm = Helper.RoomMultiplayerMenu.KCIGKBNBPNN;
             if (gm == "SUR" || gm == "COOP" || gm == "VS")
             {
                 if (PhotonNetwork.isMasterClient) MelonCoroutines.Start(RMMFix.Instance.LeaveRoom(5f));
             }
+            onRoundEnded?.Invoke();
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "SpawnPlayer")]
@@ -296,12 +296,25 @@ namespace FunPlusEssentials.Patches
     [HarmonyLib.HarmonyPatch(typeof(LobbyMenu), "OnEnable")]
     public static class LobbyMenuOnEnabled
     {
-        public delegate void Event(LobbyMenu.DBENNALHBEM scene);
-        public static event Event onLobbyRoomStarted;
+        public delegate void Event(LobbyMenu lobby);
+        public static event Event onLobbyEnabled;
+
         [HarmonyLib.HarmonyPostfix]
         static void Postfix(LobbyMenu __instance)
         {
-            MapManager.AddCustomMaps();
+            onLobbyEnabled?.Invoke(__instance);
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(LobbyMenu), "OnDisable")]
+    public static class LobbyMenuOnDisabled
+    {
+        public delegate void Event();
+        public static event Event onLobbyDisabled;
+
+        [HarmonyLib.HarmonyPostfix]
+        static void Prefix()
+        {
+            onLobbyDisabled?.Invoke();
         }
     }
     #endregion
