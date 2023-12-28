@@ -219,7 +219,7 @@ namespace FunPlusEssentials.Patches
         [HarmonyLib.HarmonyPostfix]
         static void Postfix()
         {
-            onJoinedRoom?.Invoke();
+            if (onJoinedRoom != null) onJoinedRoom.Invoke();
             if (PhotonNetwork.isOfflineMode) { return; }
             string mapName = PhotonNetwork.room.customProperties["MN002'"].ToString();
             foreach (MapInfo map in MapManager.customMaps)
@@ -244,7 +244,7 @@ namespace FunPlusEssentials.Patches
         [HarmonyLib.HarmonyPrefix]
         static void Prefix(LobbyMenu.DBENNALHBEM __instance)
         {
-            onLobbyRoomStarted?.Invoke(__instance);
+            if (onLobbyRoomStarted != null) onLobbyRoomStarted.Invoke(__instance);
             if (!MapManager.m_loaded)
             {
                 MapManager.m_loaded = true;
@@ -258,6 +258,7 @@ namespace FunPlusEssentials.Patches
 
                     if (map.map.mapName == scene)
                     {
+                        MelonCoroutines.Start(MapManager.SetUpMusic(map));
                         if (map.map.useDayAndNight)
                         {
                             CuteLogger.Meow(Helper.LobbyMenu.NLAEKGFANJA.ToString() + " " +
@@ -278,7 +279,7 @@ namespace FunPlusEssentials.Patches
                         else
                         {
                             BundleManager.LoadSceneBundle("", map.map.mapName, map.bundlePath);
-                        }
+                        }                    
                     }
                 }
             }
