@@ -179,12 +179,14 @@ namespace FunPlusEssentials.Patches
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "SpawnPlayer")]
-    public static class SpawnPlayer
-    {       
-        [HarmonyLib.HarmonyPrefix]
-        static void Prefix(ref string teamName, RoomMultiplayerMenu __instance)
+    public static class RoomSpawnPlayer
+    {
+        public delegate void Event();
+        public static event Event onPlayerSpawned;
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(RoomMultiplayerMenu __instance)
         {
-
+            onPlayerSpawned?.Invoke();
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "OnLeftRoom")]
@@ -616,9 +618,8 @@ namespace FunPlusEssentials.Patches
                 {
                     foreach (MethodInfo method in methods)
                     {
-                        if (method.Name == methodInfo.Name)
+                        if (method.Name == methodInfo.Name && method.GetParameters().Length == methodInfo.GetParameters().Length)
                         {
-                            CuteLogger.Meow(methodInfo.Name);
                             __result.Add(methodInfo);
                         }
                     }

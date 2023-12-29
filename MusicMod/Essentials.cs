@@ -15,6 +15,9 @@ using CodeStage.AntiCheat.Storage;
 using UnhollowerBaseLib;
 using UnityEngine.SceneManagement;
 using FunPlusEssentials.Patches;
+using System.Xml.Linq;
+using UnityEngine.Networking.Match;
+using System.Reflection;
 
 namespace FunPlusEssentials.Essentials
 {
@@ -167,81 +170,80 @@ namespace FunPlusEssentials.Essentials
             }
         }
     }
-
+    
     public static class CommandHandler
     {
         public static bool canRespawn = true;
+        public static class Commands
+        {
+            public static void ME(PhotonPlayer sender, string[] args)
+            {
+                string text = "";
+                for (int i = 1; i < args.Length; i++)
+                {
+                    text += args[i] + " ";
+                }
+                Helper.SendChatMessage("  " + sender.name.Split('|')[0] + "  ", "<i>" + text + "</i>", "", "silver");
+            }
+            public static void RESPAWN(PhotonPlayer sender, string[] args)
+            {
+                if (sender.name == PhotonNetwork.player.name)
+                {
+                    if (canRespawn)
+                    {
+                        if (Helper.IsMonster)
+                        {
+                            Helper.RoomMultiplayerMenu.SpawnPlayer("Team B");
+                            MelonCoroutines.Start(RespawnCooldown(200f));
+                        }
+                        if (Helper.IsPlayer)
+                        {
+                            Helper.PlayerDamage.E100050(1000f, "");
+                            MelonCoroutines.Start(RespawnCooldown(200f));
+                        }
+                    }
+                    else { SystemMsg("Please wait a while before using this command again."); }
+                }
+            }
+            public static void PLAY(PhotonPlayer sender, string[] args)
+            {
+                CuteLogger.Meow(ConsoleColor.Green, "Play");
+                CommandHandler.SystemMsg($"{sender.name.Split('|')[0]} changed the track...");
+                if (PhotonNetwork.isMasterClient)
+                {
+                    if (args.Length > 2)
+                    {
+                        Il2CppReferenceArray<Il2CppSystem.Object> rpcData = new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[]
+                        {
+                                args[1],
+                                new Il2CppSystem.Single() { m_value = Convert.ToSingle(args[2]) }.BoxIl2CppObject(),
+                                new Il2CppSystem.Boolean() { m_value = Convert.ToBoolean(args[3]) }.BoxIl2CppObject(),
+                                new Il2CppSystem.Single() { m_value = 0f }.BoxIl2CppObject()
+                        });
+                        Helper.RoomMultiplayerMenu.photonView.RPC("Play", PhotonTargets.All, rpcData);
+                    }
+                    else
+                    {
+                        Il2CppReferenceArray<Il2CppSystem.Object> rpcData = new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[]
+                        {
+                                args[1]
+                        });
+                        Helper.RoomMultiplayerMenu.photonView.RPC("Play", PhotonTargets.All, rpcData);
+                    }
+                }
+            }
+            public static void STOP(PhotonPlayer sender, string[] args)
+            {
+                CuteLogger.Meow(ConsoleColor.Red, "Stop");
+                CommandHandler.SystemMsg($"{sender.name.Split('|')[0]} stopped the current track...");
+                if (PhotonNetwork.isMasterClient) { Helper.RoomMultiplayerMenu.photonView.RPC("Stop", PhotonTargets.All, null); }
+            }
+        }     
         public static void HandleCommand(PhotonPlayer sender, string[] args)
         {
             string command = args[0].ToUpper();
-            switch (command)
-            {
-                case "PLAY":
-                    CuteLogger.Meow(ConsoleColor.Green, "Play");
-                    CommandHandler.SystemMsg($"{sender.name} changed the track...");
-                    if (args.Length > 2) { MusicPlayer.Instance.Play(args[1], Convert.ToSingle(args[2]), Convert.ToBoolean(args[3])); }
-                    else { MusicPlayer.Instance.Play(args[1]); }
-                    break;
-
-                case "STOP":
-                    CuteLogger.Meow(ConsoleColor.Red, "Stop");
-                    CommandHandler.SystemMsg($"{sender.name} stopped the current track...");
-                    MusicPlayer.Instance.Stop();
-                    break;
-
-                case "CLOSE":
-                    if (sender == PhotonNetwork.masterClient)
-                    {
-                        if (PhotonNetwork.isMasterClient)
-                        {
-                            CuteLogger.Meow(ConsoleColor.Red, "Room closed");
-                            PhotonNetwork.room.open = false;
-                        }
-                        CommandHandler.SystemMsg($"The master closed the room.");
-                    }
-                    break;
-
-                case "OPEN":
-                    if (sender == PhotonNetwork.masterClient)
-                    {
-                        if (PhotonNetwork.isMasterClient)
-                        {
-                            CuteLogger.Meow(ConsoleColor.Green, "Room opened");
-                            PhotonNetwork.room.open = true;
-                        }
-                        CommandHandler.SystemMsg($"The master opened the room.");
-                    }
-                    break;
-
-                case "ME":
-                    string text = "";
-                    for (int i = 1; i < args.Length; i++)
-                    {
-                        text += args[i] + " ";
-                    }
-                    Helper.SendChatMessage("  " + sender.name.Split('|')[0] + "  ", "<i>" + text + "</i>", "", "silver");
-                    break;
-
-                case "RESPAWN":
-                    if (sender.name == PhotonNetwork.player.name)
-                    {
-                        if (canRespawn)
-                        {
-                            if (Helper.IsMonster)
-                            {
-                                Helper.RoomMultiplayerMenu.SpawnPlayer("Team B");
-                                MelonCoroutines.Start(RespawnCooldown(300f));
-                            }
-                            if (Helper.IsPlayer)
-                            {
-                                Helper.PlayerDamage.E100050(1000f, "");
-                                MelonCoroutines.Start(RespawnCooldown(200f));
-                            }
-                        }
-                        else { SystemMsg("Please wait a while before using this command again."); }
-                    }
-                    break;
-            }
+            MethodInfo method = typeof(CommandHandler.Commands).GetMethod(command);
+            method.Invoke(typeof(CommandHandler.Commands), new object[] { sender, args });
         }
         public static IEnumerator RespawnCooldown(float time)
         {

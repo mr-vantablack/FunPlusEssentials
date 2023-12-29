@@ -8,10 +8,12 @@ using static MelonLoader.MelonLogger;
 using UnityEngine.Networking;
 using FunPlusEssentials.Essentials;
 using FunPlusEssentials.Other;
+using FunPlusEssentials.Patches;
+using UnhollowerBaseLib;
 
 namespace FunPlusEssentials.Fun
 {
-    [RegisterTypeInIl2Cpp] //регистрация MonoBehaviour компонента в il2cpp системе
+    [RegisterTypeInIl2Cpp, UsingRPC] //регистрация MonoBehaviour компонента в il2cpp системе
     public class MusicPlayer : MonoBehaviour
     {
         public MusicPlayer(IntPtr ptr) : base(ptr) { }
@@ -22,6 +24,8 @@ namespace FunPlusEssentials.Fun
         private bool synced;
         private long fileSize;
         public string[] djList;
+        public string Link { get; set; }
+        public float Position { get;  set; }
         public static MusicPlayer Instance { get; private set; }
 
         private void LoadDjList(string path) // белый список ДОДЕЛАТЬ
@@ -44,7 +48,7 @@ namespace FunPlusEssentials.Fun
         {
             if (!Config.noFileSizeLimit)
             {
-                
+
                 fileSize = 0;
                 yield return MelonCoroutines.Start(GetFileSize(fileName, (size) => fileSize = size));
                 Debug.Log("File Size: " + fileSize);
@@ -60,7 +64,6 @@ namespace FunPlusEssentials.Fun
                 }
             }
             WWW request = new WWW(fileName);
-            yield return new WaitForSeconds(5f);
             if (!request.isDone)
             {
                 yield return request;
@@ -69,7 +72,7 @@ namespace FunPlusEssentials.Fun
             currentClip.name = fileName;
             source.clip = currentClip;
             source.loop = loop;
-            source.time = GetPosition(); // БАГ !!!!!!!!!!!!! мб пофиксил, проверить надо
+            source.time = time;
             source.volume = volume;
             source.Play();
         }
@@ -94,40 +97,41 @@ namespace FunPlusEssentials.Fun
                 result?.Invoke(Convert.ToInt64(size));
             }
         }
-        private void OnJoinedRoom()
+        private void OnPlayerJoined(PhotonPlayer player)
         {
-            if (PhotonNetwork.offlineMode) return;     
-            if (!PhotonNetwork.isMasterClient)
+            if (!source.isPlaying || Link == null) return;
+            Il2CppReferenceArray<Il2CppSystem.Object> rpcData = new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[]
             {
-                SyncTrack();
-            }
-        }
-        private void OnLeftRoom()
-        {
-            ClearProperties();
+                Link,
+                new Il2CppSystem.Single() { m_value = source.volume }.BoxIl2CppObject(),
+                new Il2CppSystem.Boolean() { m_value = source.loop }.BoxIl2CppObject(),
+                new Il2CppSystem.Single() { m_value = source.time }.BoxIl2CppObject()
+            });
+            Helper.RoomMultiplayerMenu.photonView.RPC("Play", player, rpcData);
         }
 
-        public void Play(string link, float volume = 1f, bool loop = false, float time = 0f)
+        [FunRPC]
+        public void Play(string link)
         {
             Stop();
-            if (PhotonNetwork.isMasterClient)
-            {
-                SetProperty("Track", link);
-                SetProperty("Volume", volume.ToString());
-                SetProperty("Loop", loop.ToString());
-                SetProperty("Position", time.ToString());
-            }
+            Link = link;
             CuteLogger.Meow(link);
-            MelonCoroutines.Start(PlayAudio(link, volume, loop, time));
+            MelonCoroutines.Start(PlayAudio(link, 1f, false, 0));
         }
 
+        [FunRPC]
+        public void Play(string link, float volume, bool loop, float position)
+        {
+            Stop();
+            Link = link;
+            CuteLogger.Meow(link);
+            MelonCoroutines.Start(PlayAudio(link, volume, loop, position));
+        }
+        [FunRPC]
         public void Stop()
         {
+            Link = null;
             source.Stop();
-            if (PhotonNetwork.isMasterClient)
-            {
-                ClearProperties();
-            }
         }
         private float GetPosition()
         {
@@ -138,35 +142,27 @@ namespace FunPlusEssentials.Fun
         private IEnumerator SyncPosition() // синхронизация времени трека каждую 1 сек, нужно для тех кто подключается к комнате с играющим треком
         {
             synced = true;
-            SetProperty("Position", source.time.ToString());
+            Position = source.time;
             yield return new WaitForSeconds(1f);
             synced = false;
         }
-
-        private void SyncTrack() // синхронизация трека после захода в комнату
+        [FunRPC]
+        private void SyncTrack(string link, float volume, bool loop, float position) // синхронизация трека после захода в комнату
         {
-            if (PhotonNetwork.masterClient.customProperties["Track"] != null)
-            {
-                Play(PhotonNetwork.masterClient.customProperties["Track"].ToString(),
-                    float.Parse(PhotonNetwork.masterClient.customProperties["Volume"].ToString(), System.Globalization.CultureInfo.InvariantCulture),
-                    Convert.ToBoolean(PhotonNetwork.masterClient.customProperties["Loop"]));
-            }
+            Play(link, volume, loop, position);
         }
 
         #region Unity Callbacks
-
+        void Start()
+        {
+            if (PhotonNetwork.isMasterClient) OnPhotonPlayerConnected.onPhotonPlayerConnected += OnPlayerJoined;
+        }
         private void OnEnable()
         {
-            Config.SetUpConfig();          
+            Config.SetUpConfig();
             Helper.SetProperty("nicknameColor", Config.nicknameColor);
             Instance = this;
             source = Helper.Room.GetComponent<AudioSource>();
-            OnJoinedRoom();
-        }
-
-        private void OnDisable()
-        {
-            OnLeftRoom();
         }
 
         private void Update()
@@ -257,7 +253,7 @@ namespace FunPlusEssentials.Fun
             button.transform.parent = parent;
             button.AddComponent<ElevatorButton>().floor = floor;
         }
-        
+
         public static void CreateDoor(Vector3 position, float rotation = 0f)
         {
             var go = GameObject.Instantiate(doorPrefab);
@@ -348,11 +344,11 @@ namespace FunPlusEssentials.Fun
         }
     }
 
-        [RegisterTypeInIl2Cpp]
+    [RegisterTypeInIl2Cpp]
     public class ElevatorButton : MonoBehaviour
     {
         public ElevatorButton(IntPtr ptr) : base(ptr) { }
-        
+
         public int floor = 1;
         void Start()
         {
@@ -372,7 +368,7 @@ namespace FunPlusEssentials.Fun
         public Elevator(IntPtr ptr) : base(ptr) { }
         private float speed = 2f;
         public int floor = 1;
-        
+
         private Vector3[] points =
         {
             new Vector3(),
