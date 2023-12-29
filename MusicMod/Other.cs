@@ -237,6 +237,7 @@ namespace FunPlusEssentials.Other
         private static GameObject _roomGo;
         private static GameObject _playerGo;
         private static MultiplayerChat _multiplayerChat;
+        private static PhotonView _rpcView;
         private static WhoKilledWho _whoKilledWho;
         private static RoomMultiplayerMenu _roomMultiplayerMenu;
         private static SurvivalMechanics _survivalMechanics;
@@ -252,6 +253,17 @@ namespace FunPlusEssentials.Other
         #endregion
 
         #region PROPERTIES
+        public static PhotonView RPCView
+        {
+            get
+            {
+                if (_rpcView == null)
+                {
+                    _rpcView = RoomMultiplayerMenu.photonView;
+                }
+                return _rpcView;
+            }
+        }
         public static UpdaterV2 UpdaterV2
         {
             get

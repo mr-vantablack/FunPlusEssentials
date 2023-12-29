@@ -57,7 +57,8 @@ namespace FunPlusEssentials
             Config.SetUpConfig();
             Blacklist.CheckPlayer(" ");
             MapManager.SetUp();
-            CuteLogger.ClearLogs();      
+            RPC.Init();
+            CuteLogger.ClearLogs();
         }
 
         public IEnumerator CheckModVersion()

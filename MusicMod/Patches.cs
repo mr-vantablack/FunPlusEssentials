@@ -8,6 +8,11 @@ using FunPlusEssentials.Fun;
 using UnityEngine.SceneManagement;
 using MelonLoader;
 using ExitGames.Client.Photon;
+using System.Reflection;
+using System.Collections.Generic;
+using UnhollowerRuntimeLib;
+using Harmony;
+using System.Linq;
 
 namespace FunPlusEssentials.Patches 
 {
@@ -596,6 +601,30 @@ namespace FunPlusEssentials.Patches
             }
         }
     }
+    [HarmonyLib.HarmonyPatch(typeof(SupportClass), "GetMethods")]
+    public static class RPCPatch
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(ref Il2CppSystem.Collections.Generic.List<Il2CppSystem.Reflection.MethodInfo> __result, ref Il2CppSystem.Type type)
+        {
+            if (RPC.IsUsingRPC(type))
+            {
+                var t = type;
+                var list = type.GetMethods((Il2CppSystem.Reflection.BindingFlags)(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
+                RPC.rpcMethodsCache.TryGetValue(RPC.rpcMethodsCache.Keys.Where(n => n.Name == t.Name).FirstOrDefault(), out var methods);
+                foreach (Il2CppSystem.Reflection.MethodInfo methodInfo in list)
+                {
+                    foreach (MethodInfo method in methods)
+                    {
+                        if (method.Name == methodInfo.Name)
+                        {
+                            CuteLogger.Meow(methodInfo.Name);
+                            __result.Add(methodInfo);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-    
 }

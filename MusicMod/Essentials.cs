@@ -45,7 +45,7 @@ namespace FunPlusEssentials.Essentials
 
         public static void SetUpConfig()
         {
-            Directory.CreateDirectory(mainPath);        
+            Directory.CreateDirectory(mainPath);
             var config = new IniFile(configPath);
             for (int i = 0; i < keys.GetLength(0); i++)
             {
@@ -142,7 +142,7 @@ namespace FunPlusEssentials.Essentials
             yield return b;
             if (b.error == null)
             {
-               enabled = Convert.ToBoolean(b.text);
+                enabled = Convert.ToBoolean(b.text);
             }
             WWW w = new WWW("https://ippls.lh1.in/fpe-servers");
             yield return w;
@@ -152,17 +152,18 @@ namespace FunPlusEssentials.Essentials
             }
             else
             {
-               foreach (string line in w.text.Split('\n'))
-               {
+                foreach (string line in w.text.Split('\n'))
+                {
                     CloudRegionCode r;
                     if (!Enum.TryParse(line.Split('|')[2], out r)) { r = CloudRegionCode.eu; }
-                    customServers.Add( new UpdaterV2.serverInfo() {
+                    customServers.Add(new UpdaterV2.serverInfo()
+                    {
                         serverName = line.Split('|')[0],
                         serverType = "APP",
                         serverIP = line.Split('|')[1],
                         cloudRegion = r
                     });
-               }
+                }
             }
         }
     }
@@ -285,7 +286,7 @@ namespace FunPlusEssentials.Essentials
         void Update()
         {
             if (rotate && Input.GetKey(KeyCode.LeftControl))
-                transform.Rotate(Input.GetAxis("Mouse Y") * Time.deltaTime * speed, Input.GetAxis("Mouse X")* Time.deltaTime * speed, 0f);
+                transform.Rotate(Input.GetAxis("Mouse Y") * Time.deltaTime * speed, Input.GetAxis("Mouse X") * Time.deltaTime * speed, 0f);
         }
     }
 
@@ -301,7 +302,7 @@ namespace FunPlusEssentials.Essentials
             Instance = this;
         }
         void Hide(bool hide)
-        {        
+        {
             if (Helper.IsPlayer)
             {
                 hidden = hide;
@@ -319,8 +320,7 @@ namespace FunPlusEssentials.Essentials
             }
         }
     }
-    
-    [RegisterTypeInIl2Cpp]
+    [RegisterTypeInIl2Cpp, UsingRPC]
     public class RMMFix : MonoBehaviour
     {
         public RMMFix(IntPtr ptr) : base(ptr) { }
@@ -328,8 +328,9 @@ namespace FunPlusEssentials.Essentials
         public Dictionary<PhotonPlayer, PlayerEntry> teamAPlayers = new Dictionary<PhotonPlayer, PlayerEntry>();
         public Dictionary<PhotonPlayer, PlayerEntry> teamBPlayers = new Dictionary<PhotonPlayer, PlayerEntry>();
         public bool updated;
-
         public static RMMFix Instance { get; private set; }
+        public bool UsingRPC => true;
+
         void Start()
         {
             Instance = this;
@@ -342,12 +343,32 @@ namespace FunPlusEssentials.Essentials
                 SceneManager.LoadScene("Updater");
                 PhotonNetwork.LeaveRoom();
                 PhotonNetwork.Disconnect();
-            }     
+            }
+        }
+
+        [RegisterRPC]
+        public void RPC_Test(string msg, int count)
+        {
+            for (int i = 0;i < count; i++)
+            {
+                CuteLogger.Meow(msg);
+            }        
         }
         void Update()
         {
-            // if (!updated)
-           //  MelonCoroutines.Start(SortList());
+            if (Input.GetKeyDown(KeyCode.J))
+            {
+                Il2CppReferenceArray<Il2CppSystem.Object> rpcData = new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[]
+                {
+                "YAY",
+                new Il2CppSystem.Int32() { m_value = 3 }.BoxIl2CppObject(),
+                });
+                gameObject.GetComponent<PhotonView>().RPC("RPC_Test", PhotonTargets.All, rpcData);
+            }
+            if (Input.GetKeyDown(KeyCode.K))
+            {
+                gameObject.GetComponent<PhotonView>().RPC("Puk", PhotonTargets.MasterClient, null);
+            }
         }
         public IEnumerator LeaveRoom(float seconds)
         {
@@ -379,8 +400,9 @@ namespace FunPlusEssentials.Essentials
                 if (TabMenu.Instance != null) TabMenu.Instance.UpdatePlayersInfo(teamAPlayers, teamBPlayers);
             }
             // updated = false;
-        }      
+        }
     }
+
     public record PlayerEntry
     {
         public PlayerEntry(PhotonPlayer player, int kills, int death, string teamName)
@@ -416,7 +438,7 @@ namespace FunPlusEssentials.Essentials
 
         public void UpdatePlayersInfo(Dictionary<PhotonPlayer, PlayerEntry> teamA, Dictionary<PhotonPlayer, PlayerEntry> teamB)
         {
-            m_teamAPlayers = teamA; 
+            m_teamAPlayers = teamA;
             m_teamBPlayers = teamB;
         }
         public void Update()

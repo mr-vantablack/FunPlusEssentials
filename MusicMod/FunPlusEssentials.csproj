@@ -169,6 +169,7 @@
     <Compile Include="FunPlusEssentials.cs" />
     <Compile Include="Other.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RPC.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
