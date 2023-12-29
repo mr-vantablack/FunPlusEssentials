@@ -320,7 +320,7 @@ namespace FunPlusEssentials.Essentials
             }
         }
     }
-    [RegisterTypeInIl2Cpp, UsingRPC]
+    [RegisterTypeInIl2Cpp]
     public class RMMFix : MonoBehaviour
     {
         public RMMFix(IntPtr ptr) : base(ptr) { }
@@ -328,9 +328,8 @@ namespace FunPlusEssentials.Essentials
         public Dictionary<PhotonPlayer, PlayerEntry> teamAPlayers = new Dictionary<PhotonPlayer, PlayerEntry>();
         public Dictionary<PhotonPlayer, PlayerEntry> teamBPlayers = new Dictionary<PhotonPlayer, PlayerEntry>();
         public bool updated;
-        public static RMMFix Instance { get; private set; }
-        public bool UsingRPC => true;
 
+        public static RMMFix Instance { get; private set; }
         void Start()
         {
             Instance = this;
@@ -343,31 +342,6 @@ namespace FunPlusEssentials.Essentials
                 SceneManager.LoadScene("Updater");
                 PhotonNetwork.LeaveRoom();
                 PhotonNetwork.Disconnect();
-            }
-        }
-
-        [RegisterRPC]
-        public void RPC_Test(string msg, int count)
-        {
-            for (int i = 0;i < count; i++)
-            {
-                CuteLogger.Meow(msg);
-            }        
-        }
-        void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.J))
-            {
-                Il2CppReferenceArray<Il2CppSystem.Object> rpcData = new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[]
-                {
-                "YAY",
-                new Il2CppSystem.Int32() { m_value = 3 }.BoxIl2CppObject(),
-                });
-                gameObject.GetComponent<PhotonView>().RPC("RPC_Test", PhotonTargets.All, rpcData);
-            }
-            if (Input.GetKeyDown(KeyCode.K))
-            {
-                gameObject.GetComponent<PhotonView>().RPC("Puk", PhotonTargets.MasterClient, null);
             }
         }
         public IEnumerator LeaveRoom(float seconds)

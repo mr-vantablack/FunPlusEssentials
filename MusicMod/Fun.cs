@@ -11,7 +11,7 @@ using FunPlusEssentials.Other;
 
 namespace FunPlusEssentials.Fun
 {
-    [RegisterTypeInIl2Cpp, UsingRPC] //регистрация MonoBehaviour компонента в il2cpp системе
+    [RegisterTypeInIl2Cpp] //регистрация MonoBehaviour компонента в il2cpp системе
     public class MusicPlayer : MonoBehaviour
     {
         public MusicPlayer(IntPtr ptr) : base(ptr) { }
@@ -72,12 +72,6 @@ namespace FunPlusEssentials.Fun
             source.time = GetPosition(); // БАГ !!!!!!!!!!!!! мб пофиксил, проверить надо
             source.volume = volume;
             source.Play();
-        }
-
-        [RegisterRPC]
-        public void Puk()
-        {
-            CuteLogger.Meow("Puk");
         }
 
         private WWW GetAudio(string fileName)

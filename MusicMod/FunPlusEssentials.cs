@@ -57,7 +57,7 @@ namespace FunPlusEssentials
             Config.SetUpConfig();
             Blacklist.CheckPlayer(" ");
             MapManager.SetUp();
-            RPC.Init();
+            RPCManager.Init();
             CuteLogger.ClearLogs();
         }
 

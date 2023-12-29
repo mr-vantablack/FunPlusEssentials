@@ -607,11 +607,11 @@ namespace FunPlusEssentials.Patches
         [HarmonyLib.HarmonyPostfix]
         static void Postfix(ref Il2CppSystem.Collections.Generic.List<Il2CppSystem.Reflection.MethodInfo> __result, ref Il2CppSystem.Type type)
         {
-            if (RPC.IsUsingRPC(type))
+            if (RPCManager.IsUsingRPC(type))
             {
                 var t = type;
                 var list = type.GetMethods((Il2CppSystem.Reflection.BindingFlags)(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
-                RPC.rpcMethodsCache.TryGetValue(RPC.rpcMethodsCache.Keys.Where(n => n.Name == t.Name).FirstOrDefault(), out var methods);
+                RPCManager.rpcMethodsCache.TryGetValue(RPCManager.rpcMethodsCache.Keys.Where(n => n.Name == t.Name).FirstOrDefault(), out var methods);
                 foreach (Il2CppSystem.Reflection.MethodInfo methodInfo in list)
                 {
                     foreach (MethodInfo method in methods)
