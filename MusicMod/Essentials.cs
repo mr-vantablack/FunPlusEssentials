@@ -335,7 +335,7 @@ namespace FunPlusEssentials.Essentials
         void Start()
         {
             Instance = this;
-            //InvokeRepeating("SortList", 2.0f, 2.0f);
+            Helper.SetProperty("nicknameColor", Config.nicknameColor);
         }
         void OnDisable()
         {

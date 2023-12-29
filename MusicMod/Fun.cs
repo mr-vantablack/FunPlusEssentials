@@ -46,9 +46,9 @@ namespace FunPlusEssentials.Fun
         }
         private IEnumerator PlayAudio(string fileName, float volume, bool loop, float time)
         {
+            if (!Config.musicEnabled) yield break;
             if (!Config.noFileSizeLimit)
             {
-
                 fileSize = 0;
                 yield return MelonCoroutines.Start(GetFileSize(fileName, (size) => fileSize = size));
                 Debug.Log("File Size: " + fileSize);
@@ -159,8 +159,6 @@ namespace FunPlusEssentials.Fun
         }
         private void OnEnable()
         {
-            Config.SetUpConfig();
-            Helper.SetProperty("nicknameColor", Config.nicknameColor);
             Instance = this;
             source = Helper.Room.GetComponent<AudioSource>();
         }
