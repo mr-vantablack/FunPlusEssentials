@@ -226,7 +226,10 @@ namespace FunPlusEssentials.Essentials
                     {
                         Il2CppReferenceArray<Il2CppSystem.Object> rpcData = new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[]
                         {
-                                args[1]
+                                args[1],
+                                new Il2CppSystem.Single() { m_value = 1f }.BoxIl2CppObject(),
+                                new Il2CppSystem.Boolean() { m_value = false }.BoxIl2CppObject(),
+                                new Il2CppSystem.Single() { m_value = 0f }.BoxIl2CppObject()
                         });
                         Helper.RoomMultiplayerMenu.photonView.RPC("Play", PhotonTargets.All, rpcData);
                     }

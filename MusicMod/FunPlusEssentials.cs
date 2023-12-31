@@ -8,7 +8,7 @@ using System.Collections;
 using FunPlusEssentials.Other;
 using UnhollowerRuntimeLib;
 
-[assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "2.9", "Vantablack")]
+[assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "2.95", "Vantablack")]
 [assembly: MelonGame("ZeoWorks", "Slendytubbies 3")]
 
 namespace FunPlusEssentials
@@ -36,6 +36,7 @@ namespace FunPlusEssentials
             {
                 if (ServerManager.enabled) { ServerManager.AddCustomServers(); }
                 MelonCoroutines.Start(MapManager.CheckMainMenuOverride());
+                MelonCoroutines.Start(CheckModVersion());
             }
             if (sceneName == "Research Lab")
             {
@@ -52,7 +53,6 @@ namespace FunPlusEssentials
 
         public override void OnApplicationLateStart()
         {
-            MelonCoroutines.Start(CheckModVersion());
             MelonCoroutines.Start(ServerManager.GetFPEServers());
             Config.SetUpConfig();
             Blacklist.CheckPlayer(" ");

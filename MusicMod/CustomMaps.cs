@@ -122,14 +122,14 @@ namespace FunPlusEssentials.CustomContent
                 {
                     return;
                     //BundleManager.LoadSceneBundle("", mapInfo.map.mapName, bundlePath);
-                }              
+                }
                 if (File.Exists(iniPath))
                 {
                     List<CustomWave> w = null;
                     if (File.Exists(wavesPath))
                     {
                         var json = File.ReadAllText(wavesPath);
-                        w = JSON.Load(json).Make<List<CustomWave>>();                    
+                        w = JSON.Load(json).Make<List<CustomWave>>();
                     }
                     var i = new IniFile(iniPath);
                     var mapInfo = new MapInfo()
@@ -194,7 +194,7 @@ namespace FunPlusEssentials.CustomContent
                 Helper.LobbyMenu.CFJBONPPILK.System_Collections_IList_Add(mapInfo.map);
             }
         }
-  
+
         public static void LoadMap(MapInfo map)
         {
             BundleManager.LoadSceneBundle("", map.map.mapName, map.bundlePath);
@@ -202,7 +202,15 @@ namespace FunPlusEssentials.CustomContent
 
         public static IEnumerator SetUpMusic(MapInfo map)
         {
-            if (Directory.Exists(map.assetsPath + @"\music\"))
+            bool useBundle = File.Exists(map.assetsPath + @"\music");
+            bool useFolder = Directory.Exists(map.assetsPath + @"\music\");
+            if (!useBundle && !useFolder) yield break;
+            if (useBundle && useFolder)
+            {
+                CuteLogger.Bark("You are using two audio load systems at the same time. Delete the \\Music\\ folder or the music bundle.");
+                yield break;
+            }
+            if (useFolder)
             {
                 if (File.Exists(map.assetsPath + @"\music\" + "ambient.mp3"))
                 {
@@ -227,21 +235,17 @@ namespace FunPlusEssentials.CustomContent
                     }
                 }
             }
-            else
+            if (useBundle)
             {
-                string path = map.assetsPath + @"\music";
-                if (File.Exists(path))
+                m_loadedBundle = BundleManager.LoadBundle(map.assetsPath + @"\music");
+                map.ambient = m_loadedBundle.LoadAsset<AudioClip>("ambient");
+                for (int i = 1; i < map.waves.Count; i++)
                 {
-                    m_loadedBundle = BundleManager.LoadBundle(path);
-                    map.ambient = m_loadedBundle.LoadAsset<AudioClip>("ambient");
-                    for (int i = 1; i < map.waves.Count; i++)
-                    {
-                        CuteLogger.Meow(path);
-                        map.waves[i].waveInfo.music = m_loadedBundle.LoadAsset<AudioClip>("wave" + (i + 1).ToString());
-                        map.waves[i].waveInfo.music.name = "0" + i.ToString();
-                    }
-                    m_loadedBundle.Unload(false);
+                    map.waves[i].waveInfo.music = m_loadedBundle.LoadAsset<AudioClip>("wave" + (i + 1).ToString());
+                    map.waves[i].waveInfo.music.name = "0" + i.ToString();
+                    CuteLogger.Meow("Loaded track " + "0" + i.ToString());
                 }
+                m_loadedBundle.Unload(false);
             }
             for (int i = 1; i < map.waves.Count; i++)
             {
@@ -506,7 +510,7 @@ namespace FunPlusEssentials.CustomContent.Triggers
             AmbientController.Instance.fogColor = newFogColor;
             AmbientController.Instance.fogDensity = newFogDensity;
             AmbientController.Instance.fogMode = newFogMode;
-            AmbientController.Instance.ambientColor = newAmbientColor;        
+            AmbientController.Instance.ambientColor = newAmbientColor;
         }
         public override void OnTriggerExit(Collider coll)
         {

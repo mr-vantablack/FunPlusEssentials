@@ -24,8 +24,6 @@ namespace FunPlusEssentials.Fun
         private bool synced;
         private long fileSize;
         public string[] djList;
-        public string Link { get; set; }
-        public float Position { get;  set; }
         public static MusicPlayer Instance { get; private set; }
 
         private void LoadDjList(string path) // белый список ДОДЕЛАТЬ
@@ -46,9 +44,9 @@ namespace FunPlusEssentials.Fun
         }
         private IEnumerator PlayAudio(string fileName, float volume, bool loop, float time)
         {
-            if (!Config.musicEnabled) yield break;
             if (!Config.noFileSizeLimit)
             {
+
                 fileSize = 0;
                 yield return MelonCoroutines.Start(GetFileSize(fileName, (size) => fileSize = size));
                 Debug.Log("File Size: " + fileSize);
@@ -77,6 +75,7 @@ namespace FunPlusEssentials.Fun
             source.Play();
         }
 
+
         private WWW GetAudio(string fileName)
         {
             return new WWW(fileName);
@@ -97,41 +96,41 @@ namespace FunPlusEssentials.Fun
                 result?.Invoke(Convert.ToInt64(size));
             }
         }
-        private void OnPlayerJoined(PhotonPlayer player)
+        private void OnJoinedRoom()
         {
-            if (!source.isPlaying || Link == null) return;
-            Il2CppReferenceArray<Il2CppSystem.Object> rpcData = new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[]
+            if (PhotonNetwork.offlineMode) return;
+            if (!PhotonNetwork.isMasterClient)
             {
-                Link,
-                new Il2CppSystem.Single() { m_value = source.volume }.BoxIl2CppObject(),
-                new Il2CppSystem.Boolean() { m_value = source.loop }.BoxIl2CppObject(),
-                new Il2CppSystem.Single() { m_value = source.time }.BoxIl2CppObject()
-            });
-            Helper.RoomMultiplayerMenu.photonView.RPC("Play", player, rpcData);
+                SyncTrack();
+            }
+        }
+        private void OnLeftRoom()
+        {
+            ClearProperties();
         }
 
         [FunRPC]
-        public void Play(string link)
+        public void Play(string link, float volume = 1f, bool loop = false, float time = 0f)
         {
             Stop();
-            Link = link;
+            if (PhotonNetwork.isMasterClient)
+            {
+                SetProperty("Track", link);
+                SetProperty("Volume", volume.ToString());
+                SetProperty("Loop", loop.ToString());
+                SetProperty("Position", time.ToString());
+            }
             CuteLogger.Meow(link);
-            MelonCoroutines.Start(PlayAudio(link, 1f, false, 0));
+            MelonCoroutines.Start(PlayAudio(link, volume, loop, time));
         }
 
-        [FunRPC]
-        public void Play(string link, float volume, bool loop, float position)
-        {
-            Stop();
-            Link = link;
-            CuteLogger.Meow(link);
-            MelonCoroutines.Start(PlayAudio(link, volume, loop, position));
-        }
-        [FunRPC]
         public void Stop()
         {
-            Link = null;
-            source.Stop();
+            if (source != null) source.Stop();
+            if (PhotonNetwork.isMasterClient)
+            {
+                ClearProperties();
+            }
         }
         private float GetPosition()
         {
@@ -142,25 +141,35 @@ namespace FunPlusEssentials.Fun
         private IEnumerator SyncPosition() // синхронизация времени трека каждую 1 сек, нужно для тех кто подключается к комнате с играющим треком
         {
             synced = true;
-            Position = source.time;
+            SetProperty("Position", source.time.ToString());
             yield return new WaitForSeconds(1f);
             synced = false;
         }
-        [FunRPC]
-        private void SyncTrack(string link, float volume, bool loop, float position) // синхронизация трека после захода в комнату
+
+        private void SyncTrack() // синхронизация трека после захода в комнату
         {
-            Play(link, volume, loop, position);
+            if (PhotonNetwork.masterClient.customProperties["Track"] != null)
+            {
+                Play(PhotonNetwork.masterClient.customProperties["Track"].ToString(),
+                    float.Parse(PhotonNetwork.masterClient.customProperties["Volume"].ToString(), System.Globalization.CultureInfo.InvariantCulture),
+                    Convert.ToBoolean(PhotonNetwork.masterClient.customProperties["Loop"].ToString()), float.Parse(PhotonNetwork.masterClient.customProperties["Position"].ToString(), System.Globalization.CultureInfo.InvariantCulture));
+            }
         }
 
         #region Unity Callbacks
-        void Start()
-        {
-            if (PhotonNetwork.isMasterClient) OnPhotonPlayerConnected.onPhotonPlayerConnected += OnPlayerJoined;
-        }
+
         private void OnEnable()
         {
+            Config.SetUpConfig();
+            Helper.SetProperty("nicknameColor", Config.nicknameColor);
             Instance = this;
             source = Helper.Room.GetComponent<AudioSource>();
+            RoomSpawnPlayer.onPlayerSpawned += OnJoinedRoom;
+        }
+
+        private void OnDisable()
+        {
+            OnLeftRoom();
         }
 
         private void Update()
