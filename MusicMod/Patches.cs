@@ -13,8 +13,10 @@ using System.Collections.Generic;
 using UnhollowerRuntimeLib;
 using Harmony;
 using System.Linq;
+using UnhollowerBaseLib;
+using static MelonLoader.MelonLogger;
 
-namespace FunPlusEssentials.Patches 
+namespace FunPlusEssentials.Patches
 {
 
     #region MultiplayerChat
@@ -42,24 +44,24 @@ namespace FunPlusEssentials.Patches
         }
 
         static void Postfix(ref string NAEFFPHCJKL, ref string NOFLIGCKLDF, ref string PBPBALMOMEM, MultiplayerChat __instance)
-            {
-                MelonLogger.Msg($"{Blacklist.Translit(NAEFFPHCJKL)} {Blacklist.Translit(NOFLIGCKLDF)}");
-                string clearName = Regex.Replace(NAEFFPHCJKL, "<.*?>", string.Empty);
-                string clearMsg = Regex.Replace(NOFLIGCKLDF, "<.*?>", string.Empty);
-                CuteLogger.Log($"[Chat]{clearName} {clearMsg}");
+        {
+            MelonLogger.Msg($"{Blacklist.Translit(NAEFFPHCJKL)} {Blacklist.Translit(NOFLIGCKLDF)}");
+            string clearName = Regex.Replace(NAEFFPHCJKL, "<.*?>", string.Empty);
+            string clearMsg = Regex.Replace(NOFLIGCKLDF, "<.*?>", string.Empty);
+            CuteLogger.Log($"[Chat]{clearName} {clearMsg}");
         }
     }
 
     [HarmonyLib.HarmonyPatch(typeof(MultiplayerChat), "Start")]
     public static class MultiplayerChatStart
-    { 
+    {
         [HarmonyLib.HarmonyPrefix]
         static void Prefix(MultiplayerChat __instance)
-            {
-                __instance.JELNPHBIKHK.richText = true;
-                CommandHandler.SystemMsg($" v{FPE.AppInfo.Version} was loaded.");
-                if (FPE.AppInfo.UpdateAvailable) CommandHandler.SystemMsg($"Your version of the mod is outdated. It's recommended to install the latest version from our Discord ({FPE.AppInfo.DiscordLink})."); ;
-            }
+        {
+            __instance.JELNPHBIKHK.richText = true;
+            CommandHandler.SystemMsg($" v{FPE.AppInfo.Version} was loaded.");
+            if (FPE.AppInfo.UpdateAvailable) CommandHandler.SystemMsg($"Your version of the mod is outdated. It's recommended to install the latest version from our Discord ({FPE.AppInfo.DiscordLink})."); ;
+        }
     }
     #endregion
 
@@ -155,6 +157,7 @@ namespace FunPlusEssentials.Patches
             }
             Helper.Room.AddComponent<MusicPlayer>();
             Helper.Room.AddComponent<HudHider>();
+            Helper.Room.AddComponent<FunRPCHandler>();
             if (Config.scoreboardEnabled)
             {
                 Helper.Room.AddComponent<RMMFix>();
@@ -169,7 +172,7 @@ namespace FunPlusEssentials.Patches
         public static event Event onRoundEnded;
         [HarmonyLib.HarmonyPostfix]
         static void Postfix()
-        {  
+        {
             string gm = Helper.RoomMultiplayerMenu.KCIGKBNBPNN;
             if (gm == "SUR" || gm == "COOP" || gm == "VS")
             {
@@ -212,7 +215,7 @@ namespace FunPlusEssentials.Patches
         {
             onDisconnectedFromPhoton?.Invoke();
             if (MapManager.isCustomMap)
-                    SceneManager.LoadSceneAsync("MainMenu");
+                SceneManager.LoadSceneAsync("MainMenu");
         }
     }
     #endregion
@@ -260,9 +263,9 @@ namespace FunPlusEssentials.Patches
                 scene = scene.Replace(" (Dusk)", "");
                 scene = scene.Replace(" (Night)", "");
                 CuteLogger.Meow(scene);
+                NPCManager.LoadBundles();
                 foreach (MapInfo map in MapManager.customMaps)
                 {
-
                     if (map.map.mapName == scene)
                     {
                         MelonCoroutines.Start(MapManager.SetUpMusic(map));
@@ -286,7 +289,7 @@ namespace FunPlusEssentials.Patches
                         else
                         {
                             BundleManager.LoadSceneBundle("", map.map.mapName, map.bundlePath);
-                        }                    
+                        }
                     }
                 }
             }
@@ -322,7 +325,7 @@ namespace FunPlusEssentials.Patches
         [HarmonyLib.HarmonyPostfix]
         static void Prefix()
         {
-            onLobbyDisabled?.Invoke();
+            //onLobbyDisabled?.Invoke();
         }
     }
     #endregion
@@ -366,6 +369,98 @@ namespace FunPlusEssentials.Patches
         }
     }
     #endregion
+
+    #region PhotonNetwork
+     [HarmonyLib.HarmonyPatch(typeof(PhotonNetwork), "NOOU2")]
+     public static class PhotonNetworkInstantiate
+     {
+         static bool Prefix(ref string prefabName, ref Vector3 position, ref Quaternion rotation)
+         {
+             var name = prefabName.Split('/');
+             if (name.Length < 2) return true;
+             var npc = NPCManager.CheckNPCInfos(name[1]);
+             if (npc != null && name[0] == "SUR")
+             {
+                 var go = PhotonNetwork.NOOU2("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                 return false;
+             }
+             return true;
+         }
+     }
+    /* [HarmonyLib.HarmonyPatch(typeof(NetworkingPeer), "DoInstantiate")]
+     public static class PhotonInstantiate
+     {
+         static void Prefix(ref Hashtable evData, ref PhotonPlayer photonPlayer, ref GameObject resourceGameObject)
+         {
+             var hashtable = evData[new Il2CppSystem.Byte() { m_value = 5 }.BoxIl2CppObject()];
+             if (hashtable != null)
+             {
+                 var data = hashtable.Cast<Il2CppReferenceArray<Il2CppSystem.Object>>();
+                 CuteLogger.Meow("data " + data[0].ToString());
+                 if (data[0].ToString() == "CustomNPC")
+                 {
+                     NPCManager.SpawnCustomNPC(data[1].ToString(), resourceGameObject);
+                 }
+
+             //NPCInfo npc = NPCManager.CheckNPCInfos(prefabName);
+             //if (npc == null) return;
+             // NPCManager.SpawnNPCInfo();
+         }
+     }*/
+    #endregion
+
+    [HarmonyLib.HarmonyPatch(typeof(Volume), "Awake")]
+    public static class VolumeStart
+    {
+        static void Postfix(Volume __instance)
+        {
+            if (PhotonNetwork.isMasterClient)
+            {
+                __instance.POJLLLGLPKL = 100;
+            }
+            else
+            {
+                __instance.POJLLLGLPKL = 50;
+            }
+            MelonCoroutines.Start(NPCManager.AddNPCInfos(__instance));
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(Volume), "SendOption")]
+    public static class VolumeSendOption
+    {
+        static bool Prefix(ref int theCatagory, ref int theOption, Volume __instance)
+        {
+            if (theCatagory == 0 || theCatagory == 1)
+            {
+                CuteLogger.Meow("c " + theCatagory + " o " + theOption);
+                NPCInfo npc = NPCManager.CheckNPCInfos(__instance.PDKPIOHFCCK[theCatagory].options[theOption].optionName);
+                CuteLogger.Meow("1");
+                if (npc != null)
+                {
+                    Transform transform = null;
+                    if (Camera.main != null)
+                    {
+                        transform = Camera.main.transform;
+                    }
+                    if (GameObject.FindWithTag("FlyCam") != null)
+                    {
+                        transform = GameObject.FindWithTag("FlyCam").transform;
+                    }
+                    var go = PhotonNetwork.NOOU("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), transform.position, Quaternion.identity, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                    if (npc.IsBoss) go.GetComponent<BossBot>().BLPBCBFEMNA = __instance.PDKPIOHFCCK[theCatagory].teamID;
+                    else go.GetComponent<Bot>().BLPBCBFEMNA = __instance.PDKPIOHFCCK[theCatagory].teamID;
+                    go.transform.Find("TeamTag").tag = $"team{__instance.PDKPIOHFCCK[theCatagory].teamID + 1}";
+                    return false;
+                }
+            }
+            if (theCatagory == 2 || theCatagory == 3)
+            {
+
+            }
+            return true;
+        }
+    }
+
     [HarmonyLib.HarmonyPatch(typeof(TPSCamera), "OnEnable")]
     public static class RemoveFilters
     {
@@ -416,13 +511,13 @@ namespace FunPlusEssentials.Patches
         {
             if (Config.fov > 65 && Config.fov <= 100)
             {
-            __instance.KKCIIEDNLEO = new Vector3(0f, 0f, ((65 - Config.fov) / 75) * -1);
-            __instance.FFGIIOODMGK = Config.fov;
-            
-            }        
+                __instance.KKCIIEDNLEO = new Vector3(0f, 0f, ((65 - Config.fov) / 75) * -1);
+                __instance.FFGIIOODMGK = Config.fov;
+
+            }
         }
     }
-    
+
     [HarmonyLib.HarmonyPatch(typeof(NetworkingPeer), "DebugReturn")]
     public static class OnConnectFailed
     {
@@ -435,7 +530,7 @@ namespace FunPlusEssentials.Patches
                 if (ServerManager.customServers.Count != 0 && ServerManager.enabled)
                 {
                     ServerManager.AddCustomServers();
-                }              
+                }
             }
         }
     }
@@ -493,7 +588,83 @@ namespace FunPlusEssentials.Patches
             return true;
         }
     }
-
+    [HarmonyLib.HarmonyPatch(typeof(DeadBot), "Start")]
+    public static class DeadBotStart
+    {
+        static void Postfix(DeadBot __instance)
+        {
+            if (__instance.CPBLCBMLFAJ > 10f)
+            {
+                __instance.gameObject.transform.position += Vector3.up;
+            }
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(Bot), "Awake")]
+    public static class BotAwake
+    {
+        static void Postfix(Bot __instance)
+        {
+            var data = __instance.photonView.instantiationData;
+            if (data != null && data[0].ToString() == "CustomNPC")
+            {
+                CuteLogger.Meow("data " + data[0].ToString());
+                NPCManager.SpawnCustomNPC(data[1].ToString(), __instance.gameObject, NPCType.Bot);
+            }
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(BossBot), "Awake")]
+    public static class BossBotAwake
+    {
+        static void Postfix(BossBot __instance)
+        {
+            var data = __instance.photonView.instantiationData;
+            CuteLogger.Meow("data " + data[0].ToString());
+            if (data != null && data[0].ToString() == "CustomNPC")
+            {
+                NPCManager.SpawnCustomNPC(data[1].ToString(), __instance.gameObject, NPCType.BossBot);
+            }
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(PlayerMonster), "Start")]
+    public static class PlayerMonsterStart
+    {
+        static void Postfix(PlayerMonster __instance)
+        {
+            if (MapManager.isCustomMap && MapManager.currentMap.usingCustomNPCs)
+            {
+                var data = __instance.photonView.instantiationData;
+                if (data == null)
+                {
+                    PhotonNetwork.Destroy(__instance.gameObject);
+                    var cm = Helper.Room.GetComponent<ClassicMechanics>();
+                    int num = UnityEngine.Random.Range(0, cm.MDAPCMPEOOF.Length);
+                    PhotonNetwork.NOOU2("VS/PlayerImposter", cm.MDAPCMPEOOF[num].transform.position, Quaternion.identity, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", MapManager.currentMap.monsters[0] })).tag = "monster";
+                }
+                else if (data[0].ToString() == "CustomNPC")
+                {
+                    CuteLogger.Meow("data " + data[0].ToString());
+                    NPCManager.SpawnCustomNPC(data[1].ToString(), __instance.gameObject, NPCType.PlayerMonster);
+                }
+            }
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(CustardBot), "Awake")]
+    public static class CustardBotAwake
+    {
+        static void Postfix(CustardBot __instance)
+        {
+            var data = __instance.photonView.instantiationData;
+            CuteLogger.Meow("data " + data[0].ToString());
+            if (data[0].ToString() == "CustomNPC")
+            {
+                NPCManager.SpawnCustomNPC(data[1].ToString(), __instance.gameObject, NPCType.CustardBot);
+            }
+            else if (MapManager.isCustomMap && MapManager.currentMap.usingCustomNPCs)
+            {
+                PhotonNetwork.Destroy(__instance.gameObject);
+            }
+        }
+    }
     [HarmonyLib.HarmonyPatch(typeof(BossBot), "OnGUI")]
     public static class BossBotGUI
     {
@@ -517,26 +688,10 @@ namespace FunPlusEssentials.Patches
         [HarmonyLib.HarmonyPrefix]
         static void Prefix(WeaponPickUp __instance)
         {
-            
+
         }
     }
-    [HarmonyLib.HarmonyPatch(typeof(Volume), "Start")]
-    public static class VolumeStart
-    {
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix(Volume __instance)
-        {
-            if (PhotonNetwork.isMasterClient)
-            {
-                __instance.POJLLLGLPKL = 100;
-            }
-            else
-            {
-                __instance.POJLLLGLPKL = 50;
-            }
-        }
-    }
-    
+
     [HarmonyLib.HarmonyPatch(typeof(FPScontroller), "Update")]
     public static class FPScontrollerUpdate
     {
@@ -555,6 +710,22 @@ namespace FunPlusEssentials.Patches
         }
     }
 
+    [HarmonyLib.HarmonyPatch(typeof(ClassicMechanics), "EHPFKPFLPEO")]
+    public static class ClassicMechanicsRestart
+    {
+        static void Postfix()
+        {
+            if (MapManager.isCustomMap)
+            {
+                if (MapManager.currentMap.usingCustomNPCs && Helper.RoomMultiplayerMenu.KCIGKBNBPNN == "COOP")
+                {
+                    var cm = Helper.Room.GetComponent<ClassicMechanics>();
+                    int num = UnityEngine.Random.Range(0, cm.MDAPCMPEOOF.Length);
+                    PhotonNetwork.NOOU2("COOP/Imposter", cm.MDAPCMPEOOF[num].transform.position, Quaternion.identity, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", MapManager.currentMap.monsters[0] })).tag = "monster";
+                }
+            }
+        }
+    }
     [HarmonyLib.HarmonyPatch(typeof(ClassicMechanics), "Start")]
     public static class ClassicMechanicsAwake
     {
@@ -563,9 +734,14 @@ namespace FunPlusEssentials.Patches
         {
             if (MapManager.isCustomMap)
             {
+                if (NPCManager.CheckNPCInfos(MapManager.currentMap.monsters[0]) != null)
+                {
+                    __instance.BCCHIGOBOFJ[0].name = "Imposter";
+                    __instance.FKEIPFJBJHP = "PlayerImposter";
+                }
                 __instance.BCCHIGOBOFJ[0].name = MapManager.currentMap.monsters[0];
                 __instance.FKEIPFJBJHP = MapManager.currentMap.monsters[1];
-            }           
+            }
         }
     }
 

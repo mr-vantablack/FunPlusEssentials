@@ -11,9 +11,36 @@ using IniFile = FunPlusEssentials.Other.IniFile;
 using MelonLoader.TinyJSON;
 using UnhollowerBaseLib;
 using UnityEngine.UI;
+using UnhollowerRuntimeLib;
 
 namespace FunPlusEssentials.CustomContent
 {
+    public static class Notifier
+    {
+        public static GameObject Canvas => GameObject.FindObjectOfType<LGNSystem>().LHAHEJENBJJ.gameObject;
+        public static Text Text => Canvas.transform.FindChild("Image/Text").GetComponent<Text>();
+        public static Text ButtonText => Canvas.transform.FindChild("Image/ContinueButton/Button").GetComponent<Text>();
+        internal static string defaultText;
+        internal static string defaultButtonText;
+        public static void Show(string text, string buttonText = "Continue")
+        {
+            if (Canvas == null) return;
+            if (Canvas.active) Canvas.SetActive(false);
+            defaultText ??= Text.text;
+            defaultButtonText ??= ButtonText.text;
+            Text.text = text;
+            ButtonText.text = buttonText;
+            Canvas.SetActive(true);
+            ButtonText.gameObject.GetComponent<Button>().onClick.AddListener(DelegateSupport.ConvertDelegate<UnityEngine.Events.UnityAction>(new Action(ApplyDefault)));
+
+        }
+        private static void ApplyDefault()
+        {
+            Text.text = defaultText;
+            ButtonText.text = defaultButtonText;
+        }
+    }
+
     public class MapInfo
     {
         public LobbyMenu.AllMaps map;
@@ -23,6 +50,7 @@ namespace FunPlusEssentials.CustomContent
         public string version;
         public string bundlePath;
         public string assetsPath;
+        public bool usingCustomNPCs => NPCManager.CheckNPCInfos(monsters[0]) != null;
         public AudioClip ambient;
     }
     public class CustomWave
@@ -64,15 +92,7 @@ namespace FunPlusEssentials.CustomContent
         internal static List<LobbyMenu.AllModes> m_allModes = new List<LobbyMenu.AllModes>();
         internal static Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes> m_lastModes = new Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes>();
         internal static Il2CppAssetBundle m_loadedBundle;
-
-        static List<FileSystemInfo> GetAllDirectories(string dir)
-        {
-            DirectoryInfo dirInfo = new DirectoryInfo(dir);
-            List<FileSystemInfo> allDirectories = new List<FileSystemInfo>();
-            allDirectories.AddRange(dirInfo.GetDirectories("*", SearchOption.AllDirectories));
-
-            return allDirectories;
-        }
+    
         public static IEnumerator CheckMainMenuOverride()
         {
             Text text = GameObject.Find("Canvas/MainMenu/VersionText").GetComponent<Text>();
@@ -111,7 +131,7 @@ namespace FunPlusEssentials.CustomContent
         public static void CheckMapsFolder()
         {
             Directory.CreateDirectory(customMapsDirectory);
-            mapsFiles = GetAllDirectories(customMapsDirectory);
+            mapsFiles = Helper.GetAllDirectories(customMapsDirectory);
             foreach (FileSystemInfo dir in mapsFiles)
             {
                 string iniPath = dir.FullName + @"\map.ini";

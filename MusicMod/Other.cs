@@ -207,7 +207,7 @@ namespace FunPlusEssentials.Other
         }
         public static Il2CppAssetBundle LoadBundle(string path)
         {
-            CuteLogger.Meow("loading audio bundle");
+            CuteLogger.Meow("loading bundle " + path);
             var bundle = Il2CppAssetBundleManager.LoadFromFile(path);
             if (bundle == null)
             {
@@ -425,7 +425,14 @@ namespace FunPlusEssentials.Other
 
 
         #endregion
+        public static List<FileSystemInfo> GetAllDirectories(string dir)
+        {
+            DirectoryInfo dirInfo = new DirectoryInfo(dir);
+            List<FileSystemInfo> allDirectories = new List<FileSystemInfo>();
+            allDirectories.AddRange(dirInfo.GetDirectories("*", SearchOption.AllDirectories));
 
+            return allDirectories;
+        }
         public static void SendChatMessage(string senderName, string text, string nameColor = "", string textColor = "")
         {
            // RoomMultiplayerMenu.PGIHKEOJBCH = color;

@@ -24,12 +24,18 @@ namespace FunPlusEssentials
     public class FPE : MelonMod
     {
         public static AppInfo AppInfo;
-
-        public override void OnSceneWasLoaded(int buildIndex, string sceneName)
+        public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
-            MapManager.CheckForCustomMap(sceneName);
             if (sceneName != "Updater" && sceneName != "MainMenu")
             {
+            }
+        }
+        public override void OnSceneWasLoaded(int buildIndex, string sceneName)
+        {
+            if (sceneName != "Updater" && sceneName != "MainMenu")
+            {
+                MapManager.CheckForCustomMap(sceneName);
+                MelonCoroutines.Start(NPCManager.LoadNPCIcons());
                 PhotonNetwork.isMessageQueueRunning = true;
             }
             if (sceneName == "MainMenu")
@@ -57,6 +63,7 @@ namespace FunPlusEssentials
             Config.SetUpConfig();
             Blacklist.CheckPlayer(" ");
             MapManager.SetUp();
+            NPCManager.Init();
             RPCManager.Init();
             CuteLogger.ClearLogs();
         }

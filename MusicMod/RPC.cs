@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using FunPlusEssentials.CustomContent;
 using FunPlusEssentials.Other;
 using MelonLoader;
 using UnhollowerBaseLib;
@@ -38,6 +39,28 @@ namespace FunPlusEssentials
                 if (t.Name == type.Name) return true;
             }
             return false;
+        }
+    }
+
+    [RegisterTypeInIl2Cpp, UsingRPC]
+    public class FunRPCHandler : MonoBehaviour
+    {
+        public FunRPCHandler(IntPtr ptr) : base(ptr) { }
+
+        public void OnEnable()
+        {
+            if (PhotonNetwork.isMasterClient)
+            {
+
+            }
+        }
+
+        [FunRPC]
+        public void SyncCustomNPC(string npcName)
+        {
+            CuteLogger.Meow("3");
+            //NPCManager.SpawnCustomNPC(npcName);
+            
         }
     }
 }
