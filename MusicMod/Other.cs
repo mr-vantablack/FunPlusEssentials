@@ -10,6 +10,7 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 using System.Collections.Generic;
 using UnhollowerBaseLib;
 using UnhollowerRuntimeLib;
+using FunPlusEssentials.CustomContent;
 
 namespace FunPlusEssentials.Other
 {
@@ -121,11 +122,11 @@ namespace FunPlusEssentials.Other
         }
 
     }
+
     class IniFile   // revision 11
     {
         string Path;
         string EXE = Assembly.GetExecutingAssembly().GetName().Name;
-
         [DllImport("kernel32", CharSet = CharSet.Unicode)]
         static extern long WritePrivateProfileString(string Section, string Key, string Value, string FilePath);
 
@@ -164,7 +165,7 @@ namespace FunPlusEssentials.Other
             return Read(Key, Section).Length > 0;
         }
     }
-    
+
 
     public static class BundleManager
     {
@@ -228,9 +229,43 @@ namespace FunPlusEssentials.Other
             //GameObject prefab = bundle.LoadAsset<GameObject>(prefabName);
             //return Instantiate(prefab);
         }
-        
-    }
 
+    }
+    [RegisterTypeInIl2Cpp]
+    public class LobbyHelper : MonoBehaviour
+    {
+        public LobbyHelper(IntPtr ptr) : base(ptr) { }
+        public LobbyMenu lobby;
+        public int depth = 0;
+        private void Start()
+        {
+        }
+        private void OnGUI()
+        {
+            if (lobby.FANLKBJODCL && !lobby.EJLDOIOJGPC)
+            {
+                GUI.depth = depth;
+                GUI.skin = lobby.BIPMFIBNFBC;
+                int num = Screen.height / 17;
+                int num2 = Screen.width / 17;
+                string text = "<color=grey>☐</color>";
+                if (MapManager.useCustomNPCs)
+                {
+                    text = "<color=green>☑</color>";
+                }
+                MapManager.useCustomNPCs = GUI.Toggle(new Rect(Screen.width - num * 13, Screen.height - num * 4, num * 6, num), MapManager.useCustomNPCs, string.Concat(new string[]
+                {
+                    "<size=",
+                    ((float)num / 1.75f).ToString(),
+                    ">",
+                    text,
+                    " ",
+                    "<color=white>Custom NPCs</color>",
+                    "</size>"
+                }));
+            }
+        }
+    }
     public static class Helper //все дерьмо из этого класса нужно в отедльную библиотеку чтобы не засорять мод
     {
         #region FIELDS
@@ -395,7 +430,7 @@ namespace FunPlusEssentials.Other
                 if (_roomGo == null)
                 {
                     _roomGo = GameObject.FindObjectOfType<RoomMultiplayerMenu>().gameObject;
-                    
+
                 }
                 return _roomGo;
             }
@@ -418,7 +453,7 @@ namespace FunPlusEssentials.Other
                 if (_lobbyMenu == null)
                 {
                     _lobbyMenu = GameObject.FindObjectOfType<LobbyMenu>();
-                }            
+                }
                 return _lobbyMenu;
             }
         }
@@ -435,7 +470,7 @@ namespace FunPlusEssentials.Other
         }
         public static void SendChatMessage(string senderName, string text, string nameColor = "", string textColor = "")
         {
-           // RoomMultiplayerMenu.PGIHKEOJBCH = color;
+            // RoomMultiplayerMenu.PGIHKEOJBCH = color;
             MultiplayerChat.HLIDELGJEON(Paint(senderName, nameColor), Paint(text, textColor), "Team A");
             // RoomMultiplayerMenu.PGIHKEOJBCH = new Color(1, 0, 0, 1);
         }

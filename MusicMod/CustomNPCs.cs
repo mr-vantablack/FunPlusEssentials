@@ -15,6 +15,7 @@ using System.Collections;
 using System.CodeDom;
 using static MelonLoader.MelonLogger;
 using UnityEngine.AI;
+using UnhollowerBaseLib;
 
 namespace FunPlusEssentials.CustomContent
 {
@@ -53,11 +54,19 @@ namespace FunPlusEssentials.CustomContent
         {
             public bool useRagdoll;
             public string dummyNPC;
+            public float attackRange;
+            public float attackSpeed;
+            public bool useRage;
+            public int rageRequiredHp;
+            public float rageAttackTime;
+            public float rageRunSpeed;
         }
         public class BossBot : NPC
         {
             public float runSpeed;
             public string dummyNPC;
+            public float attackRange;
+            public float attackSpeed;
         }
         public class CustardBot : NPC
         {
@@ -74,11 +83,11 @@ namespace FunPlusEssentials.CustomContent
         public CustomNPC(IntPtr ptr) : base(ptr) { }
         public void OnEnable()
         {
-          //  NPCManager.npcPool.Add(gameObject);
+            //  NPCManager.npcPool.Add(gameObject);
         }
         public void OnDisable()
         {
-           // NPCManager.npcPool.Remove(gameObject);
+            // NPCManager.npcPool.Remove(gameObject);
         }
     }
     public enum NPCType
@@ -94,7 +103,7 @@ namespace FunPlusEssentials.CustomContent
         public static string NPCInfoDirectory = Config.mainPath + @"\CustomNPCs";
         public static List<NPCInfo> NPCInfos = new List<NPCInfo>();
         //public static List<GameObject> npcPool = new List<GameObject>();
-        public static Dictionary<string, Il2CppAssetBundle> loadedBundles = new Dictionary<string, Il2CppAssetBundle>();
+        public static Dictionary<string, GameObject[]> loadedBundles = new Dictionary<string, GameObject[]>();
 
         public static void SpawnCustomNPC(string npcName, GameObject dummy, NPCType type)
         {
@@ -102,7 +111,7 @@ namespace FunPlusEssentials.CustomContent
             if (npcInfo == null) return;
             //GameObject go = GameObject.Instantiate(Resources.Load("SUR/BossShadow").Cast<GameObject>());
             dummy.transform.Find("Model").gameObject.SetActive(false);
-            GameObject newModel = GameObject.Instantiate(loadedBundles[npcInfo.name].LoadAsset<GameObject>(npcInfo.name));
+            GameObject newModel = GameObject.Instantiate(loadedBundles[npcInfo.name][0]);
             newModel.transform.SetParent(dummy.transform);
             dummy.transform.localScale = newModel.transform.localScale;
             newModel.transform.localScale = new Vector3(1f, 1f, 1f);
@@ -121,7 +130,7 @@ namespace FunPlusEssentials.CustomContent
                 {
                     if (collider.isTrigger && collider.name.Contains("Hitbox"))
                     {
-                        if (customHitboxes && !customHitboxes)
+                        if (!customHitboxes)
                         {
                             foreach (HitboxBoss hitbox in dummy.GetComponentsInChildren<HitboxBoss>())
                             {
@@ -139,10 +148,14 @@ namespace FunPlusEssentials.CustomContent
                 b.DHHNMAIFIFB = npc.speed;
                 b.CJKBHAHOLMJ = npc.damage;
                 b.GKFPAHIPDOM = npc.runSpeed;
+                b.IPOFBAGEDJK = npc.attackRange;
+                b.LIBBFHCIHID = npc.attackSpeed;
                 b.ELPJDJFCCNJ = mc;
-            }           
+            }
             if (type == NPCType.Bot)
             {
+                //Bot.IPOFBAGEDJK range
+                //Bot.LIBBFHCIHID attack time
                 NPCInfo.Bot npc = npcInfo.bot;
                 var b = dummy.GetComponent<Bot>();
                 GameObject deadPrefab = null;
@@ -151,7 +164,7 @@ namespace FunPlusEssentials.CustomContent
                 {
                     if (collider.isTrigger && collider.name.Contains("Hitbox"))
                     {
-                        if (customHitboxes && !customHitboxes)
+                        if (!customHitboxes)
                         {
                             foreach (HitBoxBot hitbox in dummy.GetComponentsInChildren<HitBoxBot>())
                             {
@@ -164,22 +177,46 @@ namespace FunPlusEssentials.CustomContent
                         h.DHGDMKPLBJH = 30 * mlp;
                         h.KOKDGLGNJEN = b;
                     }
-                }                
+                }
                 if (!npc.useRagdoll)
                 {
-                    deadPrefab = loadedBundles[npcInfo.name].LoadAsset<GameObject>(npcInfo.name + "(Dead)");
+                    deadPrefab = loadedBundles[npcInfo.name][1];
                     b.OGJJNCKKILE = deadPrefab.transform;
                     if (b.OGJJNCKKILE.gameObject.GetComponent<DeadBot>() == null) b.OGJJNCKKILE.gameObject.AddComponent<DeadBot>().CPBLCBMLFAJ = 15f;
                 }
                 else
                 {
-                    deadPrefab = loadedBundles[npcInfo.name].LoadAsset<GameObject>(npcInfo.name + "(Ragdoll)");
+                    deadPrefab = loadedBundles[npcInfo.name][1];
                     b.OGJJNCKKILE = deadPrefab.transform;
                     if (b.OGJJNCKKILE.gameObject.GetComponent<WaitForDestroy>() == null) b.OGJJNCKKILE.gameObject.AddComponent<WaitForDestroy>().PHADIEJAKDA = 15f;
+                }
+                if (npc.useRage)
+                {
+                    var bm = dummy.GetComponent<BotMorpher>();
+                    if (bm != null)
+                    {
+                        bm.DHHNMAIFIFB = npc.rageRunSpeed;
+                        bm.HBPNKDOBIFO = npc.rageRequiredHp;
+                        bm.LIBBFHCIHID = npc.rageAttackTime;
+                        bm.AMEBGBAKKAL = "RageRun";
+                        bm.HNJEODLDKHF = "RageAttack";
+                    }
+                    else
+                    {
+                        bm = dummy.AddComponent<BotMorpher>();
+                        bm.DHHNMAIFIFB = npc.rageRunSpeed;
+                        bm.AMEBGBAKKAL = "RageRun";
+                        bm.HNJEODLDKHF = "RageAttack";
+                        bm.INHFFFAKNNG = b;
+                        bm.HBPNKDOBIFO = npc.rageRequiredHp;
+                        bm.LIBBFHCIHID = npc.rageAttackTime;
+                    }
                 }
                 b.CJKBHAHOLMJ = npc.damage;
                 b.DHHNMAIFIFB = npc.speed;
                 b.NNIBHOMNJHM = npc.hp;
+                b.IPOFBAGEDJK = npc.attackRange;
+                b.LIBBFHCIHID = npc.attackSpeed;
                 b.ELPJDJFCCNJ = mc;
             }
             if (type == NPCType.CustardBot)
@@ -203,34 +240,123 @@ namespace FunPlusEssentials.CustomContent
                 pm.GFHPOIPBLGE.GKJOHCHABPI.AALHECCKHFD.baseHeight = npc.jumpSpeed;
                 pm.ELPJDJFCCNJ = mc;
             }
-            foreach (AnimationClip clip in newModel.GetComponent<Animator>().runtimeAnimatorController.animationClips)
+            var a = newModel.GetComponent<Animator>();
+            var a2 = newModel.GetComponent<Animation>();
+            if (a != null)
             {
-                if (clip.name == "Idle") mc.AMMLJEHHILA(clip, clip.name, 1f, clip.isLooping ? WrapMode.Loop : WrapMode.Clamp);
+                foreach (AnimationClip clip in newModel.GetComponent<Animator>().runtimeAnimatorController.animationClips)
+                {
+                    if (clip.name == "Idle") mc.AMMLJEHHILA(clip, clip.name, 1f, clip.isLooping ? WrapMode.Loop : WrapMode.Clamp);
+                }
+                foreach (AnimationClip clip in newModel.GetComponent<Animator>().runtimeAnimatorController.animationClips)
+                {
+                    if (clip.name != "Idle") mc.AMMLJEHHILA(clip, clip.name, 1f, clip.isLooping ? WrapMode.Loop : WrapMode.Clamp);
+                }
             }
-            foreach (AnimationClip clip in newModel.GetComponent<Animator>().runtimeAnimatorController.animationClips)
+            else if (a2 != null)
             {
-                if (clip.name != "Idle") mc.AMMLJEHHILA(clip, clip.name, 1f, clip.isLooping ? WrapMode.Loop : WrapMode.Clamp);
-            }
+                foreach (AnimationState state in a2)
+                {
+                    CuteLogger.Meow(state.clip.name);
+                    if (state.clip.name == "Idle") mc.AMMLJEHHILA(state.clip, state.clip.name, 1f, state.clip.isLooping ? WrapMode.Loop : WrapMode.Clamp);
+                }
+                foreach (AnimationState state in a2)
+                {
+                    if (state.clip.name != "Idle") mc.AMMLJEHHILA(state.clip, state.clip.name, 1f, state.clip.isLooping ? WrapMode.Loop : WrapMode.Clamp);
+                }
+            };
 
             dummy.AddComponent<CustomNPC>();
             dummy.name = npcInfo.name;
         }
-        public static void LoadBundles()
+        public static IEnumerator LoadAllBundles()
         {
             foreach (NPCInfo npcInfo in NPCInfos)
             {
                 if (!loadedBundles.ContainsKey(npcInfo.name))
                 {
-                    loadedBundles.Add(npcInfo.name, BundleManager.LoadBundle(npcInfo.path + @"\bundle"));
+                    var assetBundleCreateRequest = Il2CppAssetBundleManager.LoadFromFileAsync(npcInfo.path + @"\bundle");
+                    yield return assetBundleCreateRequest;
+                    if (npcInfo.bot != null)
+                    {
+                        if (npcInfo.bot.useRagdoll)
+                        {
+                            loadedBundles.Add(npcInfo.name, new GameObject[]
+                            {
+                                assetBundleCreateRequest.assetBundle.Load<GameObject>(npcInfo.name),
+                                assetBundleCreateRequest.assetBundle.Load<GameObject>(npcInfo.name + "(Ragdoll)"),
+                            });
+                        }
+                        else
+                        {
+                            loadedBundles.Add(npcInfo.name, new GameObject[]
+                            {
+                                assetBundleCreateRequest.assetBundle.Load<GameObject>(npcInfo.name),
+                                assetBundleCreateRequest.assetBundle.Load<GameObject>(npcInfo.name + "(Dead)"),
+                            });
+                        }
+                    }
+                    if (npcInfo.bossBot != null)
+                    {
+                        loadedBundles.Add(npcInfo.name, new GameObject[]
+                        {
+                                assetBundleCreateRequest.assetBundle.Load<GameObject>(npcInfo.name),
+                                assetBundleCreateRequest.assetBundle.Load<GameObject>(npcInfo.name + "(Dead)"),
+                        });
+                    }
+                    assetBundleCreateRequest.assetBundle.Unload(false);
                 }
                 else if (loadedBundles.TryGetValue(npcInfo.name, out var bundle))
                 {
                     if (bundle == null)
                     {
                         loadedBundles.Remove(npcInfo.name);
-                        loadedBundles.Add(npcInfo.name, BundleManager.LoadBundle(npcInfo.path + @"\bundle"));
+                        var assetBundleCreateRequest = Il2CppAssetBundleManager.LoadFromFileAsync(npcInfo.path + @"\bundle");
+                        yield return assetBundleCreateRequest;
+                        if (npcInfo.bot != null)
+                        {
+                            if (npcInfo.bot.useRagdoll)
+                            {
+                                loadedBundles.Add(npcInfo.name, new GameObject[]
+                                {
+                                assetBundleCreateRequest.assetBundle.Load<GameObject>(npcInfo.name),
+                                assetBundleCreateRequest.assetBundle.Load<GameObject>(npcInfo.name + "(Ragdoll)"),
+                                });
+                            }
+                            else
+                            {
+                                loadedBundles.Add(npcInfo.name, new GameObject[]
+                                {
+                                assetBundleCreateRequest.assetBundle.Load<GameObject>(npcInfo.name),
+                                assetBundleCreateRequest.assetBundle.Load<GameObject>(npcInfo.name + "(Dead)"),
+                                });
+                            }
+                        }
+                        if (npcInfo.bossBot != null)
+                        {
+                            loadedBundles.Add(npcInfo.name, new GameObject[]
+                            {
+                                assetBundleCreateRequest.assetBundle.Load<GameObject>(npcInfo.name),
+                                assetBundleCreateRequest.assetBundle.Load<GameObject>(npcInfo.name + "(Dead)"),
+                            });
+                        }
+                        assetBundleCreateRequest.assetBundle.Unload(false);
                     }
                 }
+            }
+            foreach (Il2CppAssetBundle b in Il2CppAssetBundleManager.GetAllLoadedAssetBundles())
+            {
+                foreach (string s in b.GetAllAssetNames())
+                {
+                    CuteLogger.Meow(s);
+                }
+            }
+        }
+        public static void LoadBundles()
+        {
+            if (NPCManager.loadedBundles.Count == 0)
+            {
+                MelonCoroutines.Start(LoadAllBundles());
             }
         }
         public static IEnumerator AddNPCInfos(Volume sandboxConsole)

@@ -226,24 +226,46 @@ namespace FunPlusEssentials.Patches
     {
         public delegate void Event();
         public static event Event onJoinedRoom;
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix()
+        static bool Prefix()
         {
             if (onJoinedRoom != null) onJoinedRoom.Invoke();
-            if (PhotonNetwork.isOfflineMode) { return; }
+            if (PhotonNetwork.isOfflineMode) { return true; }
             string mapName = PhotonNetwork.room.customProperties["MN002'"].ToString();
+            string customNPCs = PhotonNetwork.room.customProperties["customNPCs"] != null? PhotonNetwork.room.customProperties["customNPCs"].ToString() : "";
             foreach (MapInfo map in MapManager.customMaps)
             {
                 if (mapName == map.map.mapName)
                 {
-                    if (PhotonNetwork.room.customProperties["mapVersion"].ToString() != map.version)
+                    string ver = PhotonNetwork.room.customProperties["mapVersion"].ToString();
+                    if (ver != map.version)
                     {
                         CuteLogger.Meow(ConsoleColor.Red, "Disconnected. Map version mismatch.");
-                        PhotonNetwork.LeaveRoom();
                         PhotonNetwork.Disconnect();
+                        Notifier.Show($"<color=red>Map version mismatch!</color>\nYour program version is {map.version}, while the host map version is {ver}.\nPlease download the required map version.");
+                        return false;
                     }
                 }
             }
+            string missingNPCs = "";
+            if (customNPCs != null && customNPCs != "")
+            {
+                foreach (string npcName in customNPCs.Split('|'))
+                {
+                    if (npcName != null && npcName != "")
+                    {
+                        var npc = NPCManager.CheckNPCInfos(npcName);
+                        if (npc == null) { missingNPCs += npcName + ", "; }
+                    }
+                }
+            }
+            if (missingNPCs != "")
+            {
+                CuteLogger.Meow(ConsoleColor.Red, "Disconnected. Missing custom content.");
+                PhotonNetwork.Disconnect();
+                Notifier.Show("<color=red>Missing custom content!</color>\nThis room uses custom content. Please download the missing files:\n" + missingNPCs);
+                return false;
+            }
+            return true;
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(LobbyMenu.DBENNALHBEM), "MoveNext")]
@@ -263,7 +285,7 @@ namespace FunPlusEssentials.Patches
                 scene = scene.Replace(" (Dusk)", "");
                 scene = scene.Replace(" (Night)", "");
                 CuteLogger.Meow(scene);
-                NPCManager.LoadBundles();
+                //NPCManager.LoadBundles();
                 foreach (MapInfo map in MapManager.customMaps)
                 {
                     if (map.map.mapName == scene)
@@ -302,6 +324,7 @@ namespace FunPlusEssentials.Patches
         static void Postfix(LobbyMenu __instance)
         {
             MapManager.AddCustomMaps();
+            __instance.gameObject.AddComponent<LobbyHelper>().lobby = __instance;
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(LobbyMenu), "OnEnable")]
@@ -371,22 +394,22 @@ namespace FunPlusEssentials.Patches
     #endregion
 
     #region PhotonNetwork
-     [HarmonyLib.HarmonyPatch(typeof(PhotonNetwork), "NOOU2")]
-     public static class PhotonNetworkInstantiate
-     {
-         static bool Prefix(ref string prefabName, ref Vector3 position, ref Quaternion rotation)
-         {
-             var name = prefabName.Split('/');
-             if (name.Length < 2) return true;
-             var npc = NPCManager.CheckNPCInfos(name[1]);
-             if (npc != null && name[0] == "SUR")
-             {
-                 var go = PhotonNetwork.NOOU2("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
-                 return false;
-             }
-             return true;
-         }
-     }
+    [HarmonyLib.HarmonyPatch(typeof(PhotonNetwork), "NOOU2")]
+    public static class PhotonNetworkInstantiate
+    {
+        static bool Prefix(ref string prefabName, ref Vector3 position, ref Quaternion rotation)
+        {
+            var name = prefabName.Split('/');
+            if (name.Length < 2) return true;
+            var npc = NPCManager.CheckNPCInfos(name[1]);
+            if (npc != null && name[0] == "SUR")
+            {
+                var go = PhotonNetwork.NOOU2("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                return false;
+            }
+            return true;
+        }
+    }
     /* [HarmonyLib.HarmonyPatch(typeof(NetworkingPeer), "DoInstantiate")]
      public static class PhotonInstantiate
      {

@@ -12,6 +12,12 @@ using MelonLoader.TinyJSON;
 using UnhollowerBaseLib;
 using UnityEngine.UI;
 using UnhollowerRuntimeLib;
+using Il2CppSystem.Runtime.Remoting.Messaging;
+using static FunPlusEssentials.CustomContent.NPCInfo;
+using InControl.mod;
+using System.Text.RegularExpressions;
+using System.Linq;
+using UnityEngine.SceneManagement;
 
 namespace FunPlusEssentials.CustomContent
 {
@@ -50,7 +56,17 @@ namespace FunPlusEssentials.CustomContent
         public string version;
         public string bundlePath;
         public string assetsPath;
-        public bool usingCustomNPCs => NPCManager.CheckNPCInfos(monsters[0]) != null;
+        public bool usingCustomNPCs
+        {
+            get
+            {
+                for (int i = 0; i < monsters.Length; i++)
+                {
+                    if (NPCManager.CheckNPCInfos(monsters[i]) != null) return true;
+                }
+                return false;
+            }
+        }
         public AudioClip ambient;
     }
     public class CustomWave
@@ -88,6 +104,7 @@ namespace FunPlusEssentials.CustomContent
         public static List<MapInfo> customMaps = new List<MapInfo>();
         public static AudioClip menuMusic;
         public static Sprite menuBackground;
+        public static bool useCustomNPCs;
         internal static bool m_loaded;
         internal static List<LobbyMenu.AllModes> m_allModes = new List<LobbyMenu.AllModes>();
         internal static Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes> m_lastModes = new Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes>();
@@ -194,6 +211,7 @@ namespace FunPlusEssentials.CustomContent
                     MelonCoroutines.Start(SpawnRoom());
                 }
             }
+            CheckForCustomContent();
         }
 
         public static void SetUp()
@@ -330,6 +348,47 @@ namespace FunPlusEssentials.CustomContent
                 }
             }
 
+        }
+        public static void CheckForCustomContent()
+        {
+            string customNPCs = "";
+            if (isCustomMap)
+            {
+                if (currentMap.usingCustomNPCs)
+                {
+                    for (int i = 0; i < currentMap.monsters.Length; i++)
+                    {
+                        var npc = NPCManager.CheckNPCInfos(currentMap.monsters[i]);
+                        if (npc != null) customNPCs += npc.name + "|";
+                    }
+                }
+                if (currentMap.waves != null)
+                {
+                    foreach (CustomWave customWave in currentMap.waves)
+                    {
+                        var n = NPCManager.CheckNPCInfos(customWave.waveInfo.defaultNPC);
+                        if (n != null) customNPCs += n.name + "|";
+                        foreach (CustomWave.specialNPC npc in customWave.waveInfo.npc)
+                        {
+                            var n2 = NPCManager.CheckNPCInfos(npc.npcName);
+                            if (n2 != null) customNPCs += n2.name + "|";
+                        }
+                    }
+                }
+            }
+            if (useCustomNPCs)
+            {
+                for (int i = 0; i < NPCManager.NPCInfos.Count; i++)
+                {
+                    var npc = NPCManager.CheckNPCInfos(NPCManager.NPCInfos[i].name);
+                    if (npc != null) customNPCs += npc.name + "|";
+                }
+            }
+            string[] words = customNPCs.Split('|');
+            string[] distinctWords = words.Distinct().ToArray();
+            string output = string.Join("|", distinctWords);
+            Helper.SetRoomProperty("customNPCs", output);
+            CuteLogger.Meow(PhotonNetwork.room.customProperties["customNPCs"].ToString());
         }
         public static IEnumerator SpawnRoom()
         {
