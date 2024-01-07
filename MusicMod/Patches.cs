@@ -98,9 +98,9 @@ namespace FunPlusEssentials.Patches
         static void Prefix(ref PhotonPlayer otherPlayer, WhoKilledWho __instance)
         {
             onPhotonPlayerConnected?.Invoke(otherPlayer);
+            string clearName = otherPlayer.name.Split('|')[0];
             if (Config.blacklistEnabled)
             {
-                string clearName = otherPlayer.name.Split('|')[0];
                 CuteLogger.Meow(ConsoleColor.Green, $"{clearName} connected.");
                 if (Blacklist.CheckPlayer(clearName) && PhotonNetwork.isMasterClient)
                 {
@@ -108,6 +108,15 @@ namespace FunPlusEssentials.Patches
                     Il2CppSystem.Object content = new Il2CppSystem.Int32() { m_value = otherPlayer.actorID }.BoxIl2CppObject();
                     RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.MasterClient };
                     PhotonNetwork.RaiseEvent(1, content, true, raiseEventOptions);
+                    CuteLogger.Meow(ConsoleColor.Red, $"{clearName} was kicked.");
+                }
+            }
+            if (MapManager.useCustomNPCs && PhotonNetwork.isMasterClient)
+            {
+                var fpe = otherPlayer.customProperties["FPE"] != null ? otherPlayer.customProperties["FPE"].ToString() : "";
+                if (fpe == "")
+                {
+                    PhotonNetwork.CloseConnection(otherPlayer);
                     CuteLogger.Meow(ConsoleColor.Red, $"{clearName} was kicked.");
                 }
             }

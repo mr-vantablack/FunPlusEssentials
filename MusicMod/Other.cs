@@ -480,7 +480,14 @@ namespace FunPlusEssentials.Other
             newsettings[property] = parameter;
             PhotonNetwork.room.SetCustomProperties(newsettings);
         }
-
+        public static void SetPropertyV2(string property, string parameter)
+        {
+            Hashtable hashtable = new Hashtable
+            {
+                [property] = parameter
+            };
+            PhotonNetwork.player.SetCustomProperties(hashtable);
+        }
         public static void SetProperty(string property, string parameter)
         {
             Hashtable hashtable = new Hashtable

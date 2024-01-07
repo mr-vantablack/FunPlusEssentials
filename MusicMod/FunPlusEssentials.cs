@@ -37,11 +37,11 @@ namespace FunPlusEssentials
             {
                 if (MapManager.useCustomNPCs) NPCManager.LoadBundles();
                 MapManager.CheckForCustomMap(sceneName);
-                MelonCoroutines.Start(NPCManager.LoadNPCIcons());
                 PhotonNetwork.isMessageQueueRunning = true;
             }
             if (sceneName == "MainMenu")
             {
+                Helper.SetPropertyV2("FPE", FPE.AppInfo.Version.ToString());
                 MapManager.useCustomNPCs = false;
                 NPCManager.loadedBundles.Clear();
                 if (ServerManager.enabled) { ServerManager.AddCustomServers(); }

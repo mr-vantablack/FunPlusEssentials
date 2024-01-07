@@ -129,7 +129,12 @@ namespace FunPlusEssentials.CustomContent
                 NPCInfo.BossBot npc = npcInfo.bossBot;
                 var b = dummy.GetComponent<BossBot>();
                 var na = newModel.GetComponent<NavMeshAgent>();
-                if (na != null) dummy.GetComponent<NavMeshAgent>().baseOffset = na.baseOffset;
+                if (na != null)
+                {
+                    dummy.GetComponent<NavMeshAgent>().radius = 0.1f;
+                    dummy.GetComponent<NavMeshAgent>().baseOffset = na.baseOffset;
+                    na.enabled = false;
+                }
                 bool customHitboxes = false;
                 foreach (Collider collider in newModel.transform.GetComponentsInChildren<Collider>())
                 {
@@ -164,7 +169,12 @@ namespace FunPlusEssentials.CustomContent
                 NPCInfo.Bot npc = npcInfo.bot;
                 var b = dummy.GetComponent<Bot>();
                 var na = newModel.GetComponent<NavMeshAgent>();
-                if (na != null) dummy.GetComponent<NavMeshAgent>().baseOffset = na.baseOffset;
+                if (na != null)
+                {
+                    dummy.GetComponent<NavMeshAgent>().radius = 0.1f;
+                    dummy.GetComponent<NavMeshAgent>().baseOffset = na.baseOffset;
+                    na.enabled = false;
+                }
                 GameObject deadPrefab = null;
                 bool customHitboxes = false;
                 foreach (Collider collider in newModel.transform.GetComponentsInChildren<Collider>())
@@ -231,7 +241,12 @@ namespace FunPlusEssentials.CustomContent
                 NPCInfo.CustardBot npc = npcInfo.custardBot;
                 var cb = dummy.GetComponent<CustardBot>();
                 var na = newModel.GetComponent<NavMeshAgent>();
-                if (na != null) dummy.GetComponent<NavMeshAgent>().baseOffset = na.baseOffset;
+                if (na != null)
+                {
+                    dummy.GetComponent<NavMeshAgent>().radius = 0.1f;
+                    dummy.GetComponent<NavMeshAgent>().baseOffset = na.baseOffset;
+                    na.enabled = false;
+                }
                 cb.CJKBHAHOLMJ = npc.damage;
                 cb.DHHNMAIFIFB = npc.speed;
                 cb.GKFPAHIPDOM = npc.runSpeed;
@@ -355,7 +370,8 @@ namespace FunPlusEssentials.CustomContent
             MelonCoroutines.Start(LoadAllBundles());
         }
         public static IEnumerator AddNPCInfos(Volume sandboxConsole)
-        {
+        {            
+            yield return MelonCoroutines.Start(LoadNPCIcons());
             string customNPCs = PhotonNetwork.room.customProperties["customNPCs"] != null ? PhotonNetwork.room.customProperties["customNPCs"].ToString() : "";
             if (customNPCs != null && customNPCs != "")
             {
@@ -363,7 +379,7 @@ namespace FunPlusEssentials.CustomContent
                 {
                     if (npcName != null && npcName != "")
                     {
-                        var npc = NPCManager.CheckNPCInfos(npcName);
+                        var npc = CheckNPCInfos(npcName);
                         if (npc != null)
                         {
                             sandboxConsole.PDKPIOHFCCK[0].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC });
