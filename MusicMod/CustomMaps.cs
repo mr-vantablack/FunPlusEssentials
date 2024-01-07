@@ -18,6 +18,7 @@ using InControl.mod;
 using System.Text.RegularExpressions;
 using System.Linq;
 using UnityEngine.SceneManagement;
+using Harmony;
 
 namespace FunPlusEssentials.CustomContent
 {
@@ -52,22 +53,13 @@ namespace FunPlusEssentials.CustomContent
         public LobbyMenu.AllMaps map;
         public List<CustomWave> waves;
         public string[] monsters;
+        public List<string> dependencies;
         public bool isOutside;
         public string version;
         public string bundlePath;
         public string assetsPath;
-        public bool usingCustomNPCs
-        {
-            get
-            {
-                for (int i = 0; i < monsters.Length; i++)
-                {
-                    if (NPCManager.CheckNPCInfos(monsters[i]) != null) return true;
-                }
-                return false;
-            }
-        }
         public AudioClip ambient;
+        public bool usingCustomNPCs => dependencies != null;
     }
     public class CustomWave
     {
@@ -190,6 +182,18 @@ namespace FunPlusEssentials.CustomContent
                         assetsPath = assets,
                         waves = w
                     };
+                    var dep = i.Read("dependencies", "CustomMap").Split('|');
+                    if (dep != null)
+                    {
+                        mapInfo.dependencies = new List<string>();
+                        foreach (string npcName in dep)
+                        {
+                            if (npcName != null && npcName != "")
+                            {
+                                mapInfo.dependencies.Add(npcName);
+                            }
+                        }
+                    }
                     customMaps.Add(mapInfo);
                 }
             }
@@ -211,7 +215,7 @@ namespace FunPlusEssentials.CustomContent
                     MelonCoroutines.Start(SpawnRoom());
                 }
             }
-            CheckForCustomContent();
+            //CheckForCustomContent();
         }
 
         public static void SetUp()
@@ -356,9 +360,9 @@ namespace FunPlusEssentials.CustomContent
             {
                 if (currentMap.usingCustomNPCs)
                 {
-                    for (int i = 0; i < currentMap.monsters.Length; i++)
+                    for (int i = 0; i < currentMap.dependencies.Count; i++)
                     {
-                        var npc = NPCManager.CheckNPCInfos(currentMap.monsters[i]);
+                        var npc = NPCManager.CheckNPCInfos(currentMap.dependencies[i]);
                         if (npc != null) customNPCs += npc.name + "|";
                     }
                 }

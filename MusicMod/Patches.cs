@@ -15,6 +15,7 @@ using Harmony;
 using System.Linq;
 using UnhollowerBaseLib;
 using static MelonLoader.MelonLogger;
+using UnityEngine.UI;
 
 namespace FunPlusEssentials.Patches
 {
@@ -146,7 +147,9 @@ namespace FunPlusEssentials.Patches
         public delegate void Event(RoomMultiplayerMenu instance);
         public static event Event onRoomSpawned;
 
-        [HarmonyLib.HarmonyPostfix]
+        static void Prefix()
+        {
+        }
         static void Postfix(RoomMultiplayerMenu __instance)
         {
             onRoomSpawned?.Invoke(__instance);
@@ -226,22 +229,46 @@ namespace FunPlusEssentials.Patches
     {
         public delegate void Event();
         public static event Event onJoinedRoom;
-        static bool Prefix()
+        static bool Prefix(LobbyMenu __instance)
         {
+            __instance.EJLDOIOJGPC = true;
             if (onJoinedRoom != null) onJoinedRoom.Invoke();
-            if (PhotonNetwork.isOfflineMode) { return true; }
-            string mapName = PhotonNetwork.room.customProperties["MN002'"].ToString();
-            string customNPCs = PhotonNetwork.room.customProperties["customNPCs"] != null? PhotonNetwork.room.customProperties["customNPCs"].ToString() : "";
+            string mapName = PhotonNetwork.room.customProperties["MN002'"] != null ? PhotonNetwork.room.customProperties["MN002'"].ToString() : "";
+            var scene = mapName;
+            scene = scene.Replace(" (Day)", "");
+            scene = scene.Replace(" (Dusk)", "");
+            scene = scene.Replace(" (Night)", "");
+            string customNPCs = PhotonNetwork.room.customProperties["customNPCs"] != null ? PhotonNetwork.room.customProperties["customNPCs"].ToString() : "";
+            CuteLogger.Meow(scene);
             foreach (MapInfo map in MapManager.customMaps)
             {
-                if (mapName == map.map.mapName)
+                if (scene == map.map.mapName)
                 {
-                    string ver = PhotonNetwork.room.customProperties["mapVersion"].ToString();
-                    if (ver != map.version)
+                    string ver = PhotonNetwork.room.customProperties["mapVersion"] != null ? PhotonNetwork.room.customProperties["mapVersion"].ToString() : "";
+                    if (ver != "" && ver != map.version)
                     {
                         CuteLogger.Meow(ConsoleColor.Red, "Disconnected. Map version mismatch.");
-                        PhotonNetwork.Disconnect();
+                        if (!PhotonNetwork.isOfflineMode) { PhotonNetwork.Disconnect(); }
                         Notifier.Show($"<color=red>Map version mismatch!</color>\nYour program version is {map.version}, while the host map version is {ver}.\nPlease download the required map version.");
+                        return false;
+                    }
+                    string dependencies = "";
+                    if (map.usingCustomNPCs)
+                    {
+                        MapManager.useCustomNPCs = true;
+                        for (int i = 0; i < map.dependencies.Count; i++)
+                        {
+                            CuteLogger.Meow("checking");
+                            var npc = NPCManager.CheckNPCInfos(map.dependencies[i]);
+                            if (npc == null) dependencies += map.dependencies[i] + ", ";
+                        }
+                    }
+                    if (dependencies != "")
+                    {
+                        CuteLogger.Meow(ConsoleColor.Red, "Disconnected. Missing custom content.");
+                        if (!PhotonNetwork.isOfflineMode) { PhotonNetwork.Disconnect(); }
+                        else { __instance.CPFFBHEDEPF.ReturnToMenu(); }
+                        Notifier.Show("<color=red>Missing custom content!</color>\nThis map uses custom content. Please download the missing files:\n" + dependencies);
                         return false;
                     }
                 }
@@ -249,6 +276,7 @@ namespace FunPlusEssentials.Patches
             string missingNPCs = "";
             if (customNPCs != null && customNPCs != "")
             {
+                MapManager.useCustomNPCs = true;
                 foreach (string npcName in customNPCs.Split('|'))
                 {
                     if (npcName != null && npcName != "")
@@ -259,12 +287,13 @@ namespace FunPlusEssentials.Patches
                 }
             }
             if (missingNPCs != "")
-            {
+            {              
                 CuteLogger.Meow(ConsoleColor.Red, "Disconnected. Missing custom content.");
-                PhotonNetwork.Disconnect();
+                if (!PhotonNetwork.isOfflineMode) { PhotonNetwork.Disconnect(); }
                 Notifier.Show("<color=red>Missing custom content!</color>\nThis room uses custom content. Please download the missing files:\n" + missingNPCs);
                 return false;
             }
+            if (PhotonNetwork.isMasterClient) MapManager.CheckForCustomContent();
             return true;
         }
     }
@@ -395,16 +424,38 @@ namespace FunPlusEssentials.Patches
 
     #region PhotonNetwork
     [HarmonyLib.HarmonyPatch(typeof(PhotonNetwork), "NOOU2")]
+    public static class PhotonNetworkInstantiateRoomPrefab
+    {
+        static bool Prefix(ref string prefabName, ref Vector3 position, ref Quaternion rotation)
+        {
+            CuteLogger.Meow("noou2" + prefabName);
+            var name = prefabName.Split('/');
+            if (name.Length < 2) return true;
+            var npc = NPCManager.CheckNPCInfos(name[1]);
+            if (npc != null)
+            {
+                if (name[0] == "SUR") PhotonNetwork.NOOU2(name[0] + "/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                else if (name[0] == "VS") PhotonNetwork.NOOU2("VS/PlayerImposter", position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                else if (name[0] == "COOP") PhotonNetwork.NOOU2("COOP/Imposter", position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                return false;
+            }
+            return true;
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(PhotonNetwork), "NOOU", new Type[] { typeof(string), typeof(Vector3), typeof(Quaternion), typeof(byte) })]
     public static class PhotonNetworkInstantiate
     {
         static bool Prefix(ref string prefabName, ref Vector3 position, ref Quaternion rotation)
         {
+            CuteLogger.Meow("noou" + prefabName);
             var name = prefabName.Split('/');
             if (name.Length < 2) return true;
             var npc = NPCManager.CheckNPCInfos(name[1]);
-            if (npc != null && name[0] == "SUR")
+            if (npc != null)
             {
-                var go = PhotonNetwork.NOOU2("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                if (name[0] == "SUR") PhotonNetwork.NOOU(name[0] + "/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                else if (name[0] == "VS") PhotonNetwork.NOOU2("VS/PlayerImposter", position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                else if (name[0] == "COOP") PhotonNetwork.NOOU2("COOP/Imposter", position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
                 return false;
             }
             return true;
@@ -445,7 +496,11 @@ namespace FunPlusEssentials.Patches
             {
                 __instance.POJLLLGLPKL = 50;
             }
-            MelonCoroutines.Start(NPCManager.AddNPCInfos(__instance));
+            if (MapManager.useCustomNPCs)
+            {
+                __instance.transform.GetComponentInChildren<CanvasScaler>().screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
+                MelonCoroutines.Start(NPCManager.AddNPCInfos(__instance));
+            }
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(Volume), "SendOption")]
@@ -453,7 +508,7 @@ namespace FunPlusEssentials.Patches
     {
         static bool Prefix(ref int theCatagory, ref int theOption, Volume __instance)
         {
-            if (theCatagory == 0 || theCatagory == 1)
+            if (theCatagory < 2)
             {
                 CuteLogger.Meow("c " + theCatagory + " o " + theOption);
                 NPCInfo npc = NPCManager.CheckNPCInfos(__instance.PDKPIOHFCCK[theCatagory].options[theOption].optionName);
@@ -469,7 +524,7 @@ namespace FunPlusEssentials.Patches
                     {
                         transform = GameObject.FindWithTag("FlyCam").transform;
                     }
-                    var go = PhotonNetwork.NOOU("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), transform.position, Quaternion.identity, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                    var go = PhotonNetwork.NOOU("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), transform.position + Vector3.forward, Quaternion.identity, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
                     if (npc.IsBoss) go.GetComponent<BossBot>().BLPBCBFEMNA = __instance.PDKPIOHFCCK[theCatagory].teamID;
                     else go.GetComponent<Bot>().BLPBCBFEMNA = __instance.PDKPIOHFCCK[theCatagory].teamID;
                     go.transform.Find("TeamTag").tag = $"team{__instance.PDKPIOHFCCK[theCatagory].teamID + 1}";
@@ -641,9 +696,9 @@ namespace FunPlusEssentials.Patches
         static void Postfix(BossBot __instance)
         {
             var data = __instance.photonView.instantiationData;
-            CuteLogger.Meow("data " + data[0].ToString());
             if (data != null && data[0].ToString() == "CustomNPC")
             {
+                CuteLogger.Meow("data " + data[0].ToString());
                 NPCManager.SpawnCustomNPC(data[1].ToString(), __instance.gameObject, NPCType.BossBot);
             }
         }
@@ -653,21 +708,11 @@ namespace FunPlusEssentials.Patches
     {
         static void Postfix(PlayerMonster __instance)
         {
-            if (MapManager.isCustomMap && MapManager.currentMap.usingCustomNPCs)
+            var data = __instance.photonView.instantiationData;
+            if (data != null && data[0].ToString() == "CustomNPC")
             {
-                var data = __instance.photonView.instantiationData;
-                if (data == null)
-                {
-                    PhotonNetwork.Destroy(__instance.gameObject);
-                    var cm = Helper.Room.GetComponent<ClassicMechanics>();
-                    int num = UnityEngine.Random.Range(0, cm.MDAPCMPEOOF.Length);
-                    PhotonNetwork.NOOU2("VS/PlayerImposter", cm.MDAPCMPEOOF[num].transform.position, Quaternion.identity, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", MapManager.currentMap.monsters[0] })).tag = "monster";
-                }
-                else if (data[0].ToString() == "CustomNPC")
-                {
-                    CuteLogger.Meow("data " + data[0].ToString());
-                    NPCManager.SpawnCustomNPC(data[1].ToString(), __instance.gameObject, NPCType.PlayerMonster);
-                }
+                CuteLogger.Meow("data " + data[0].ToString());
+                NPCManager.SpawnCustomNPC(data[1].ToString(), __instance.gameObject, NPCType.PlayerMonster);
             }
         }
     }
@@ -738,7 +783,7 @@ namespace FunPlusEssentials.Patches
     {
         static void Postfix()
         {
-            if (MapManager.isCustomMap)
+            /*if (MapManager.isCustomMap)
             {
                 if (MapManager.currentMap.usingCustomNPCs && Helper.RoomMultiplayerMenu.KCIGKBNBPNN == "COOP")
                 {
@@ -746,7 +791,7 @@ namespace FunPlusEssentials.Patches
                     int num = UnityEngine.Random.Range(0, cm.MDAPCMPEOOF.Length);
                     PhotonNetwork.NOOU2("COOP/Imposter", cm.MDAPCMPEOOF[num].transform.position, Quaternion.identity, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", MapManager.currentMap.monsters[0] })).tag = "monster";
                 }
-            }
+            }*/
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(ClassicMechanics), "Start")]
@@ -755,13 +800,9 @@ namespace FunPlusEssentials.Patches
         [HarmonyLib.HarmonyPrefix]
         static void Prefix(ClassicMechanics __instance)
         {
+
             if (MapManager.isCustomMap)
             {
-                if (NPCManager.CheckNPCInfos(MapManager.currentMap.monsters[0]) != null)
-                {
-                    __instance.BCCHIGOBOFJ[0].name = "Imposter";
-                    __instance.FKEIPFJBJHP = "PlayerImposter";
-                }
                 __instance.BCCHIGOBOFJ[0].name = MapManager.currentMap.monsters[0];
                 __instance.FKEIPFJBJHP = MapManager.currentMap.monsters[1];
             }
