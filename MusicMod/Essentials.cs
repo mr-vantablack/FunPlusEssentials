@@ -208,38 +208,15 @@ namespace FunPlusEssentials.Essentials
             public static void PLAY(PhotonPlayer sender, string[] args)
             {
                 CuteLogger.Meow(ConsoleColor.Green, "Play");
-                CommandHandler.SystemMsg($"{sender.name.Split('|')[0]} changed the track...");
-                if (PhotonNetwork.isMasterClient)
-                {
-                    if (args.Length > 2)
-                    {
-                        Il2CppReferenceArray<Il2CppSystem.Object> rpcData = new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[]
-                        {
-                                args[1],
-                                new Il2CppSystem.Single() { m_value = Convert.ToSingle(args[2]) }.BoxIl2CppObject(),
-                                new Il2CppSystem.Boolean() { m_value = Convert.ToBoolean(args[3]) }.BoxIl2CppObject(),
-                                new Il2CppSystem.Single() { m_value = 0f }.BoxIl2CppObject()
-                        });
-                        Helper.RoomMultiplayerMenu.photonView.RPC("Play", PhotonTargets.All, rpcData);
-                    }
-                    else
-                    {
-                        Il2CppReferenceArray<Il2CppSystem.Object> rpcData = new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[]
-                        {
-                                args[1],
-                                new Il2CppSystem.Single() { m_value = 1f }.BoxIl2CppObject(),
-                                new Il2CppSystem.Boolean() { m_value = false }.BoxIl2CppObject(),
-                                new Il2CppSystem.Single() { m_value = 0f }.BoxIl2CppObject()
-                        });
-                        Helper.RoomMultiplayerMenu.photonView.RPC("Play", PhotonTargets.All, rpcData);
-                    }
-                }
+                CommandHandler.SystemMsg($"{sender.name} changed the track...");
+                if (args.Length > 2) { MusicPlayer.Instance.Play(args[1], Convert.ToSingle(args[2]), Convert.ToBoolean(args[3])); }
+                else { MusicPlayer.Instance.Play(args[1]); }
             }
             public static void STOP(PhotonPlayer sender, string[] args)
             {
                 CuteLogger.Meow(ConsoleColor.Red, "Stop");
-                CommandHandler.SystemMsg($"{sender.name.Split('|')[0]} stopped the current track...");
-                if (PhotonNetwork.isMasterClient) { Helper.RoomMultiplayerMenu.photonView.RPC("Stop", PhotonTargets.All, null); }
+                CommandHandler.SystemMsg($"{sender.name} stopped the current track...");
+                MusicPlayer.Instance.Stop();
             }
         }     
         public static void HandleCommand(PhotonPlayer sender, string[] args)

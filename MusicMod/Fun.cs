@@ -13,7 +13,7 @@ using UnhollowerBaseLib;
 
 namespace FunPlusEssentials.Fun
 {
-    [RegisterTypeInIl2Cpp, UsingRPC] //регистрация MonoBehaviour компонента в il2cpp системе
+    [RegisterTypeInIl2Cpp] //регистрация MonoBehaviour компонента в il2cpp системе
     public class MusicPlayer : MonoBehaviour
     {
         public MusicPlayer(IntPtr ptr) : base(ptr) { }
@@ -62,6 +62,7 @@ namespace FunPlusEssentials.Fun
                 }
             }
             WWW request = new WWW(fileName);
+            yield return new WaitForSeconds(5f);
             if (!request.isDone)
             {
                 yield return request;
@@ -70,7 +71,7 @@ namespace FunPlusEssentials.Fun
             currentClip.name = fileName;
             source.clip = currentClip;
             source.loop = loop;
-            source.time = time;
+            source.time = GetPosition(); // БАГ !!!!!!!!!!!!! мб пофиксил, проверить надо
             source.volume = volume;
             source.Play();
         }
@@ -109,7 +110,6 @@ namespace FunPlusEssentials.Fun
             ClearProperties();
         }
 
-        [FunRPC]
         public void Play(string link, float volume = 1f, bool loop = false, float time = 0f)
         {
             Stop();
@@ -126,7 +126,7 @@ namespace FunPlusEssentials.Fun
 
         public void Stop()
         {
-            if (source != null) source.Stop();
+            source.Stop();
             if (PhotonNetwork.isMasterClient)
             {
                 ClearProperties();
@@ -152,7 +152,7 @@ namespace FunPlusEssentials.Fun
             {
                 Play(PhotonNetwork.masterClient.customProperties["Track"].ToString(),
                     float.Parse(PhotonNetwork.masterClient.customProperties["Volume"].ToString(), System.Globalization.CultureInfo.InvariantCulture),
-                    Convert.ToBoolean(PhotonNetwork.masterClient.customProperties["Loop"].ToString()), float.Parse(PhotonNetwork.masterClient.customProperties["Position"].ToString(), System.Globalization.CultureInfo.InvariantCulture));
+                    Convert.ToBoolean(PhotonNetwork.masterClient.customProperties["Loop"]));
             }
         }
 
@@ -164,7 +164,7 @@ namespace FunPlusEssentials.Fun
             Helper.SetProperty("nicknameColor", Config.nicknameColor);
             Instance = this;
             source = Helper.Room.GetComponent<AudioSource>();
-            RoomSpawnPlayer.onPlayerSpawned += OnJoinedRoom;
+            OnJoinedRoom();
         }
 
         private void OnDisable()
