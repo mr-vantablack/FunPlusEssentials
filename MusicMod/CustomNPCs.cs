@@ -193,6 +193,7 @@ namespace FunPlusEssentials.CustomContent
                         var h = collider.gameObject.AddComponent<HitBoxBot>();
                         h.DHGDMKPLBJH = 30 * mlp;
                         h.KOKDGLGNJEN = b;
+                        h.gameObject.transform.SetParent(dummy.transform, true);
                     }
                 }
                 if (!npc.useRagdoll)
@@ -279,6 +280,7 @@ namespace FunPlusEssentials.CustomContent
                 }
             }
             CuteLogger.Meow("7");
+            if (dummy.TryGetComponent<NavMeshAgent>(out var comp)) { comp.enabled = comp.gameObject.GetComponent<PhotonView>().isMine; }
             dummy.AddComponent<CustomNPC>();
             dummy.name = npcInfo.name;
         }
