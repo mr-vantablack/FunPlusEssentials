@@ -16,6 +16,8 @@ using System.Linq;
 using UnhollowerBaseLib;
 using static MelonLoader.MelonLogger;
 using UnityEngine.UI;
+using BeautifyEffect;
+using UnityEngine.PostProcessing;
 
 namespace FunPlusEssentials.Patches
 {
@@ -877,4 +879,17 @@ namespace FunPlusEssentials.Patches
         }
     }
 
+    [HarmonyLib.HarmonyPatch(typeof(BeautifyEffect.Beautify), "OnEnable")]
+    public static class PostProcessingPatch
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(Beautify __instance)
+        {
+            if (!Config.postProcessingEnabled)
+            {
+                GameObject.Destroy(__instance.gameObject.GetComponent<PostProcessingBehaviour>());
+                GameObject.Destroy(__instance);
+            }
+        }
+    }
 }

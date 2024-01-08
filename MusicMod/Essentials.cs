@@ -39,9 +39,10 @@ namespace FunPlusEssentials.Essentials
             { "HideHUDKeyCode", "H" },
             { "ProneKeyCode", "C" },
             { "FOV", "65" },
-            { "EnableInfectedFilters", "true" }
+            { "EnableInfectedFilters", "true" },
+            { "EnablePostProcessing", "true" },
         };
-        public static bool logsEnabled, blacklistEnabled, musicEnabled, securityEnabled, noFileSizeLimit, noRichText, scoreboardEnabled, filtersEnabled;
+        public static bool logsEnabled, blacklistEnabled, musicEnabled, securityEnabled, noFileSizeLimit, noRichText, scoreboardEnabled, filtersEnabled, postProcessingEnabled;
         public static KeyCode scoreboardKey, hideHudKey, proneKey;
         public static float fov;
         public static string nicknameColor = "";
@@ -64,6 +65,7 @@ namespace FunPlusEssentials.Essentials
             scoreboardEnabled = Convert.ToBoolean(config.Read("EnableScoreboard"));
             fov = Convert.ToSingle(config.Read("FOV"));
             filtersEnabled = Convert.ToBoolean(config.Read("EnableInfectedFilters"));
+            postProcessingEnabled = Convert.ToBoolean(config.Read("EnablePostProcessing"));
             if (!Enum.TryParse(config.Read("ScoreboardKeyCode"), out scoreboardKey)) { scoreboardKey = KeyCode.F1; }
             if (!Enum.TryParse(config.Read("HideHUDKeyCode"), out hideHudKey)) { hideHudKey = KeyCode.H; }
             if (!Enum.TryParse(config.Read("ProneKeyCode"), out proneKey)) { proneKey = KeyCode.C; }
