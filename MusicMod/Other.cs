@@ -242,7 +242,7 @@ namespace FunPlusEssentials.Other
         }
         private void OnGUI()
         {
-            if (lobby.FANLKBJODCL && !lobby.EJLDOIOJGPC)
+            if (lobby.FANLKBJODCL && !lobby.EJLDOIOJGPC && lobby.NNKFEAPBLCK == 4)
             {
                 GUI.depth = depth;
                 GUI.skin = lobby.BIPMFIBNFBC;
