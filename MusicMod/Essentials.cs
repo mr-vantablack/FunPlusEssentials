@@ -412,10 +412,6 @@ namespace FunPlusEssentials.Essentials
             {
                 Destroy(m_cursorLock);
             }
-            if (Input.GetKeyDown(KeyCode.J))
-            {
-                PhotonNetwork.NOOU("SUR/BossShadow", Helper.Player.transform.position, transform.rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", "ScytheTubby" }));
-            }
         }
         public bool BanPlayer(string playerName)
         {
