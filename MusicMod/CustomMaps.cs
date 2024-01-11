@@ -59,7 +59,7 @@ namespace FunPlusEssentials.CustomContent
         public string bundlePath;
         public string assetsPath;
         public AudioClip ambient;
-        public bool usingCustomNPCs => dependencies != null;
+        public bool usingCustomNPCs => dependencies != null && dependencies.Count > 0;
     }
     public class CustomWave
     {
