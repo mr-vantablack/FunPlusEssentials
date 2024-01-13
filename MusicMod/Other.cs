@@ -283,11 +283,23 @@ namespace FunPlusEssentials.Other
         private static FPScontroller _fpsController;
         private static AmmoDisplay _ammoDisplay;
         private static UpdaterV2 _updaterV2;
+        private static Volume _console;
 
 
         #endregion
 
         #region PROPERTIES
+        public static Volume Console
+        {
+            get
+            {
+                if (_console == null)
+                {
+                    _console = GameObject.FindObjectOfType<Volume>();
+                }
+                return _console;
+            }
+        }
         public static PhotonView RPCView
         {
             get

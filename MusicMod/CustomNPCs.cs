@@ -280,9 +280,11 @@ namespace FunPlusEssentials.CustomContent
                 }
             }
             CuteLogger.Meow("7");
-            if (dummy.TryGetComponent<NavMeshAgent>(out var comp)) { comp.enabled = comp.gameObject.GetComponent<PhotonView>().isMine; }
+            var comp = dummy.GetComponent<NavMeshAgent>();
+            if (comp != null) { comp.enabled = comp.gameObject.GetComponent<PhotonView>().isMine; }
             dummy.AddComponent<CustomNPC>();
             dummy.name = npcInfo.name;
+            CuteLogger.Meow("8");
         }
         public static IEnumerator LoadAllBundles()
         {
@@ -384,8 +386,10 @@ namespace FunPlusEssentials.CustomContent
                         var npc = CheckNPCInfos(npcName);
                         if (npc != null)
                         {
-                            sandboxConsole.PDKPIOHFCCK[0].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC });
-                            sandboxConsole.PDKPIOHFCCK[1].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC });
+                            sandboxConsole.PDKPIOHFCCK[0].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = "NPCTeamA/" + npc.name });
+                            sandboxConsole.PDKPIOHFCCK[1].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = "NPCTeamB/" + npc.name });
+                            sandboxConsole.PDKPIOHFCCK[2].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = "PlayerTeamA/" + npc.name });
+                            sandboxConsole.PDKPIOHFCCK[3].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = "PlayerTeamB/" + npc.name });
                         }
                     }
                 }
@@ -394,8 +398,10 @@ namespace FunPlusEssentials.CustomContent
             {
                 foreach (NPCInfo npc in NPCInfos)
                 {
-                    sandboxConsole.PDKPIOHFCCK[0].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC });
-                    sandboxConsole.PDKPIOHFCCK[1].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC });
+                    sandboxConsole.PDKPIOHFCCK[0].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = "NPCTeamA/" + npc.name });
+                    sandboxConsole.PDKPIOHFCCK[1].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = "NPCTeamB/" + npc.name });
+                    sandboxConsole.PDKPIOHFCCK[2].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = "PlayerTeamA/" + npc.name });
+                    sandboxConsole.PDKPIOHFCCK[3].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = "PlayerTeamB/" + npc.name });
                 }
             }
             sandboxConsole.ResetOptions();
