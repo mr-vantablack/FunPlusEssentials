@@ -933,27 +933,25 @@ namespace FunPlusEssentials.Patches
         }
     }
 
-    [HarmonyLib.HarmonyPatch(typeof(FlyCamController), "Update")]
-    public static class FlyCamUpdate
+    [HarmonyLib.HarmonyPatch(typeof(FlyCamController), "Start")]
+    public static class FlyCamStart
     {
         [HarmonyLib.HarmonyPrefix]
         static void Prefix(FlyCamController __instance)
         {
-            if (__instance.photonView.isMine)
+            if (__instance.photonView.isMine && !GameObject.FindObjectOfType<TheatreMechanics>().enabled)
             {
-                float scroll = Input.GetAxis("Mouse ScrollWheel");
-                if (scroll < 0f)
-                {
-                    if (__instance.GetComponent<FPSMouseLook>().KOGHEFBJNCJ > 0)
-                    {
-                        __instance.GetComponent<FPSMouseLook>().KOGHEFBJNCJ -= 1;
-                    }
-                }
-                if (scroll > 0f)
-                {
-                    __instance.GetComponent<FPSMouseLook>().KOGHEFBJNCJ += 1;
-                }
+                __instance.gameObject.AddComponent<FlyCamControllerAddon>();
             }
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(TrueCameraController), "Awake")]
+    public static class TrueCameraControllerAwake
+    {
+        [HarmonyLib.HarmonyPrefix]
+        static void Prefix(TrueCameraController __instance)
+        {
+            GameObject.Destroy(__instance.gameObject);
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(SupportClass), "GetMethods")]

@@ -104,7 +104,14 @@ namespace FunPlusEssentials.CustomContent
         public static List<NPCInfo> NPCInfos = new List<NPCInfo>();
         //public static List<GameObject> npcPool = new List<GameObject>();
         public static Dictionary<string, GameObject[]> loadedBundles = new Dictionary<string, GameObject[]>();
-
+        static void SetLayerAllChildren(Transform root, int layer)
+        {
+            var children = root.GetComponentsInChildren<Transform>(includeInactive: true);
+            foreach (var child in children)
+            {
+                child.gameObject.layer = layer;
+            }
+        }
         public static void SpawnCustomNPC(string npcName, GameObject dummy, NPCType type)
         {
             CuteLogger.Meow("Loading custom NPC: " + npcName);
@@ -120,6 +127,7 @@ namespace FunPlusEssentials.CustomContent
             newModel.transform.localScale = new Vector3(1f, 1f, 1f);
             newModel.transform.localPosition = new Vector3(0f, 0f, 0f);
             newModel.transform.localEulerAngles = Vector3.zero;
+            SetLayerAllChildren(newModel.transform, 8);
             CuteLogger.Meow("3");
             var mc = newModel.AddComponent<MecanimControl>();
             CuteLogger.Meow("4");

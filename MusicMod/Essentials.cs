@@ -18,6 +18,7 @@ using FunPlusEssentials.Patches;
 using System.Xml.Linq;
 using UnityEngine.Networking.Match;
 using System.Reflection;
+using static MelonLoader.MelonLogger;
 
 namespace FunPlusEssentials.Essentials
 {
@@ -172,7 +173,7 @@ namespace FunPlusEssentials.Essentials
             }
         }
     }
-    
+
     public static class CommandHandler
     {
         public static bool canRespawn = true;
@@ -220,7 +221,7 @@ namespace FunPlusEssentials.Essentials
                 CommandHandler.SystemMsg($"{sender.name} stopped the current track...");
                 MusicPlayer.Instance.Stop();
             }
-        }     
+        }
         public static void HandleCommand(PhotonPlayer sender, string[] args)
         {
             string command = args[0].ToUpper();
@@ -304,6 +305,71 @@ namespace FunPlusEssentials.Essentials
             }
         }
     }
+    [RegisterTypeInIl2Cpp]
+    public class FlyCamControllerAddon : MonoBehaviour
+    {
+        public FlyCamControllerAddon(IntPtr ptr) : base(ptr) { }
+        List<GameObject> filters = new List<GameObject>();
+        FPSMouseLook mouseLook;
+        KeyCode[] keys = new KeyCode[]
+        {
+            KeyCode.Alpha1,
+            KeyCode.Alpha2,
+            KeyCode.Alpha3,
+            KeyCode.Alpha4,
+            KeyCode.Alpha5,
+            KeyCode.Alpha6,
+            KeyCode.Alpha7,
+            KeyCode.Alpha8,
+            KeyCode.Alpha9
+        };
+        void Start()
+        {
+            var camRoot = GameObject.Find("__Room/TheaterMode/TheatreMechanics/CameraFilters");
+            for (int i = 0; i < camRoot.transform.childCount; i++)
+            {
+                filters.Add(camRoot.transform.GetChild(i).gameObject);
+            }
+            mouseLook = GetComponent<FPSMouseLook>();
+        }
+        void Update()
+        {
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (scroll < 0f)
+            {
+                if (mouseLook.KOGHEFBJNCJ > 0)
+                {
+                    mouseLook.KOGHEFBJNCJ -= 1;
+                }
+            }
+            if (scroll > 0f)
+            {
+                mouseLook.KOGHEFBJNCJ += 1;
+            }
+            for (int i = 0; i < filters.Count; i++)
+            {
+                if (Input.GetKeyDown(keys[i]))
+                {
+                    ChangeFilter(i);
+                }
+            }
+        }
+        void ChangeFilter(int id)
+        {
+            for (int i = 0; i < filters.Count; i++)
+            {
+                if (i != id)
+                {
+                    filters[i].SetActive(false);
+                }
+                else
+                {
+                    filters[i].SetActive(!filters[i].gameObject.activeSelf);
+                }
+            }
+        }
+    }
+
     [RegisterTypeInIl2Cpp]
     public class RMMFix : MonoBehaviour
     {
