@@ -494,7 +494,7 @@ namespace FunPlusEssentials.Patches
                     var go = PhotonNetwork.NOOU("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
                     if (npc.IsBoss) go.GetComponent<BossBot>().BLPBCBFEMNA = 1;
                     else go.GetComponent<Bot>().BLPBCBFEMNA = 1;
-                    go.transform.Find("TeamTag").tag = $"team2";
+                    go.transform.Find("TeamTag").gameObject.tag = $"team2";
                     return false;
                 }
                 else if (name[0] == "NPCTeamB")
@@ -502,13 +502,13 @@ namespace FunPlusEssentials.Patches
                     var go = PhotonNetwork.NOOU("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
                     if (npc.IsBoss) go.GetComponent<BossBot>().BLPBCBFEMNA = 0;
                     else go.GetComponent<Bot>().BLPBCBFEMNA = 0;
-                    go.transform.Find("TeamTag").tag = $"team1";
+                    go.transform.Find("TeamTag").gameObject.tag = $"team1";
                     return false;
                 }
                 else if (name[0] == "PlayerTeamA")
                 {
                     var go = PhotonNetwork.NOOU("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
-                    go.transform.Find("TeamTag").tag = $"team2";
+                    go.transform.Find("TeamTag").gameObject.tag = $"team2";
                     if (npc.IsBoss)
                     {
                         var b = go.GetComponent<BossBot>();
@@ -517,6 +517,7 @@ namespace FunPlusEssentials.Patches
                         cam.GetComponent<TPSCamera>().HELMMHBLCLH = b.transform.Find("TeamTag");
                         cam.GetComponent<BossCam>().OMIOOOFAJNP = b;
                         b.KHKDJLKGHDM = true;
+                        b.BLPBCBFEMNA = 1;
                         b.IDLHJOOAMIA.enabled = false;
                     }
                     else
@@ -527,6 +528,7 @@ namespace FunPlusEssentials.Patches
                         cam.GetComponent<TPSCamera>().HELMMHBLCLH = b.transform.Find("TeamTag");
                         cam.GetComponent<BossCam>().INHFFFAKNNG = b;
                         b.KHKDJLKGHDM = true;
+                        b.BLPBCBFEMNA = 1;
                         b.IDLHJOOAMIA.enabled = false;
                     }
                     Helper.RoomMultiplayerMenu.CNLHJAICIBH = go;
@@ -535,7 +537,7 @@ namespace FunPlusEssentials.Patches
                 else if (name[0] == "PlayerTeamB")
                 {
                     var go = PhotonNetwork.NOOU("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
-                    go.transform.Find("TeamTag").tag = $"team1";
+                    go.transform.Find("TeamTag").gameObject.tag = $"team1";
                     if (npc.IsBoss)
                     {
                         var b = go.GetComponent<BossBot>();
@@ -544,6 +546,7 @@ namespace FunPlusEssentials.Patches
                         cam.GetComponent<TPSCamera>().HELMMHBLCLH = b.transform.Find("TeamTag");
                         cam.GetComponent<BossCam>().OMIOOOFAJNP = b;
                         b.KHKDJLKGHDM = true;
+                        b.BLPBCBFEMNA = 0;
                         b.IDLHJOOAMIA.enabled = false;
                     }
                     else
@@ -554,6 +557,7 @@ namespace FunPlusEssentials.Patches
                         cam.GetComponent<TPSCamera>().HELMMHBLCLH = b.transform.Find("TeamTag");
                         cam.GetComponent<BossCam>().INHFFFAKNNG = b;
                         b.KHKDJLKGHDM = true;
+                        b.BLPBCBFEMNA = 0;
                         b.IDLHJOOAMIA.enabled = false;
                     }
                     Helper.RoomMultiplayerMenu.CNLHJAICIBH = go;
