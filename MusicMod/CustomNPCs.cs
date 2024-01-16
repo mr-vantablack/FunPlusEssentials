@@ -112,25 +112,21 @@ namespace FunPlusEssentials.CustomContent
                 child.gameObject.layer = layer;
             }
         }
-        public static void SpawnCustomNPC(string npcName, GameObject dummy, NPCType type)
+        public static void SetUpCustomNPC(string npcName, GameObject dummy, NPCType type)
         {
             CuteLogger.Meow("Loading custom NPC: " + npcName);
             NPCInfo npcInfo = CheckNPCInfos(npcName);
             if (npcInfo == null) return;
             //GameObject go = GameObject.Instantiate(Resources.Load("SUR/BossShadow").Cast<GameObject>());
             dummy.transform.Find("Model").gameObject.SetActive(false);
-            CuteLogger.Meow("1");
             GameObject newModel = GameObject.Instantiate(loadedBundles[npcInfo.name][0]);
             newModel.transform.SetParent(dummy.transform);
-            CuteLogger.Meow("2");
             dummy.transform.localScale = newModel.transform.localScale;
             newModel.transform.localScale = new Vector3(1f, 1f, 1f);
             newModel.transform.localPosition = new Vector3(0f, 0f, 0f);
             newModel.transform.localEulerAngles = Vector3.zero;
             SetLayerAllChildren(newModel.transform, 8);
-            CuteLogger.Meow("3");
             var mc = newModel.AddComponent<MecanimControl>();
-            CuteLogger.Meow("4");
 
             if (type == NPCType.BossBot)
             {
@@ -265,7 +261,6 @@ namespace FunPlusEssentials.CustomContent
             }
             if (type == NPCType.PlayerMonster)
             {
-                CuteLogger.Meow("5");
                 NPCInfo.PlayerMonster npc = npcInfo.playerMonster;
                 var pm = dummy.GetComponent<PlayerMonster>();
                 pm.OMFJFIPPGPE = Convert.ToInt32(npc.damage);
@@ -273,7 +268,6 @@ namespace FunPlusEssentials.CustomContent
                 pm.GFHPOIPBLGE.GKJOHCHABPI.HKCDMBALAAK.RunSpeed = npc.runSpeed;
                 pm.GFHPOIPBLGE.GKJOHCHABPI.AALHECCKHFD.baseHeight = npc.jumpSpeed;
                 pm.ELPJDJFCCNJ = mc;
-                CuteLogger.Meow("6");
             }
             var a = newModel.GetComponent<Animator>();
             if (a != null)
@@ -292,7 +286,7 @@ namespace FunPlusEssentials.CustomContent
             if (comp != null) { comp.enabled = comp.gameObject.GetComponent<PhotonView>().isMine; }
             dummy.AddComponent<CustomNPC>();
             dummy.name = npcInfo.name;
-            CuteLogger.Meow("8");
+            CuteLogger.Meow("Loaded.");
         }
         public static IEnumerator LoadAllBundles()
         {

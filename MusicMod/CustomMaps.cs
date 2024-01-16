@@ -98,8 +98,6 @@ namespace FunPlusEssentials.CustomContent
         public static Sprite menuBackground;
         public static bool useCustomNPCs;
         internal static bool m_loaded;
-        internal static List<LobbyMenu.AllModes> m_allModes = new List<LobbyMenu.AllModes>();
-        internal static Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes> m_lastModes = new Il2CppSystem.Collections.Generic.List<LobbyMenu.AllModes>();
         internal static Il2CppAssetBundle m_loadedBundle;
     
         public static IEnumerator CheckMainMenuOverride()

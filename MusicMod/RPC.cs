@@ -59,7 +59,7 @@ namespace FunPlusEssentials
         public void SyncCustomNPC(string npcName)
         {
             CuteLogger.Meow("3");
-            //NPCManager.SpawnCustomNPC(npcName);
+            //NPCManager.SetUpCustomNPC(npcName);
             
         }
     }
