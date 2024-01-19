@@ -44,7 +44,7 @@ namespace FunPlusEssentials
                 Helper.SetPropertyV2("FPE", FPE.AppInfo.Version.ToString());
                 MapManager.useCustomNPCs = false;
                 NPCManager.loadedBundles.Clear();
-                if (ServerManager.enabled) { ServerManager.AddCustomServers(); }
+                if (Config.customServersEnabled) { ServerManager.AddCustomServers(); }
                 MelonCoroutines.Start(MapManager.CheckMainMenuOverride());
                 MelonCoroutines.Start(CheckModVersion());
             }
@@ -63,8 +63,8 @@ namespace FunPlusEssentials
 
         public override void OnApplicationLateStart()
         {
-            MelonCoroutines.Start(ServerManager.GetFPEServers());
             Config.SetUpConfig();
+            MelonCoroutines.Start(ServerManager.GetFPEServers());
             Blacklist.CheckPlayer(" ");
             MapManager.SetUp();
             NPCManager.Init();

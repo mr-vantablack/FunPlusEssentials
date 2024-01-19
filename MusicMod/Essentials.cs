@@ -42,8 +42,12 @@ namespace FunPlusEssentials.Essentials
             { "FOV", "65" },
             { "EnableInfectedFilters", "true" },
             { "EnablePostProcessing", "true" },
+            { "EnableCustomServers", "false" },
         };
-        public static bool logsEnabled, blacklistEnabled, musicEnabled, securityEnabled, noFileSizeLimit, noRichText, scoreboardEnabled, filtersEnabled, postProcessingEnabled;
+        public static bool logsEnabled, blacklistEnabled, 
+        musicEnabled, securityEnabled, noFileSizeLimit, 
+        noRichText, scoreboardEnabled, filtersEnabled, 
+        postProcessingEnabled, customServersEnabled;
         public static KeyCode scoreboardKey, hideHudKey, proneKey;
         public static float fov;
         public static string nicknameColor = "";
@@ -67,6 +71,7 @@ namespace FunPlusEssentials.Essentials
             fov = Convert.ToSingle(config.Read("FOV"));
             filtersEnabled = Convert.ToBoolean(config.Read("EnableInfectedFilters"));
             postProcessingEnabled = Convert.ToBoolean(config.Read("EnablePostProcessing"));
+            customServersEnabled = Convert.ToBoolean(config.Read("EnableCustomServers"));
             if (!Enum.TryParse(config.Read("ScoreboardKeyCode"), out scoreboardKey)) { scoreboardKey = KeyCode.F1; }
             if (!Enum.TryParse(config.Read("HideHUDKeyCode"), out hideHudKey)) { hideHudKey = KeyCode.H; }
             if (!Enum.TryParse(config.Read("ProneKeyCode"), out proneKey)) { proneKey = KeyCode.C; }
@@ -118,7 +123,6 @@ namespace FunPlusEssentials.Essentials
 
     public static class ServerManager
     {
-        public static bool enabled;
         public static Il2CppSystem.Collections.Generic.List<UpdaterV2.serverInfo> customServers = new Il2CppSystem.Collections.Generic.List<UpdaterV2.serverInfo>();
         public static Il2CppSystem.Collections.Generic.List<UpdaterV2.serverInfo> serverList
         {
@@ -128,7 +132,7 @@ namespace FunPlusEssentials.Essentials
         public static void AddCustomServers()
         {
             PhotonNetwork.PhotonServerSettings.HostType = ServerSettings.HostingOption.PhotonCloud;
-            PhotonNetwork.player.name = ObscuredPrefs.GetString("ZWName0001") + "|2";
+            PhotonNetwork.player.name = ObscuredPrefs.GetString("ZWName0001", "Player " + UnityEngine.Random.Range(1, 999)) + "|2";
             serverList.Clear();
             foreach (UpdaterV2.serverInfo server in customServers)
             {
@@ -144,12 +148,7 @@ namespace FunPlusEssentials.Essentials
         }
         public static IEnumerator GetFPEServers()
         {
-            WWW b = new WWW("https://ippls.lh1.in/fpe-use-custom");
-            yield return b;
-            if (b.error == null)
-            {
-                enabled = Convert.ToBoolean(b.text);
-            }
+            if (!Config.customServersEnabled) { yield break; }
             WWW w = new WWW("https://ippls.lh1.in/fpe-servers");
             yield return w;
             if (w.error != null)

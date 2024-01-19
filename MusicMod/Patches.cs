@@ -586,7 +586,7 @@ namespace FunPlusEssentials.Patches
             if (level == DebugLevel.ERROR && message.Contains("Receive issue. State:"))
             {
                 CuteLogger.Bark("Failed to establish connection with ST3 servers.");
-                if (ServerManager.customServers.Count != 0 && ServerManager.enabled)
+                if (ServerManager.customServers.Count != 0 && Config.customServersEnabled)
                 {
                     ServerManager.AddCustomServers();
                 }

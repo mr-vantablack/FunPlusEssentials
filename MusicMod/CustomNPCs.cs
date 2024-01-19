@@ -21,63 +21,19 @@ using System.Reflection;
 
 namespace FunPlusEssentials.CustomContent
 {
-    public static class ListExtensions
-    {
-        public static void MoveItemAtIndexToFront(UnhollowerBaseLib.Il2CppReferenceArray<Il2CppSystem.Object> list, int index)
-        {
-            var item = list[index];
-            for (int i = index; i > 0; i--)
-                list[i] = list[i - 1];
-            list[0] = item;
-        }
-    }
-
     public class FunNPCInfo
     {
         public string name;
         public string version;
         public Sprite iconSprite;
         public string path;
-        public Bot bot;
-        public BossBot bossBot;
-        public CustardBot custardBot;
-        public PlayerMonster playerMonster;
+        public FunBot bot;
+        public FunBossBot bossBot;
+        public FunCustardBot custardBot;
+        public FunPlayerMonster playerMonster;
         public bool IsBoss => bossBot != null && bot == null;
-
-
-        public class NPC
-        {
-            public string dummyNPC;
-            public float hp;
-            public float damage;
-            public float speed;
-        }
-
-        public class Bot : NPC
-        {
-            public bool useRagdoll;
-            public float attackRange;
-            public float attackSpeed;
-            public bool useRage;
-            public int rageRequiredHp;
-            public float rageAttackTime;
-            public float rageRunSpeed;
-        }
-        public class BossBot : NPC
-        {
-            public float runSpeed;
-            public float attackRange;
-            public float attackSpeed;
-        }
-        public class CustardBot : NPC
-        {
-            public float runSpeed;
-            public float jumpSpeed;
-        }
-        public class PlayerMonster : CustardBot
-        {
-        }
     }
+
     [RegisterTypeInIl2Cpp]
     public class CustomNPC : MonoBehaviour
     {
@@ -97,10 +53,6 @@ namespace FunPlusEssentials.CustomContent
         Bot,
         CustardBot,
         PlayerMonster
-    }
-    public abstract class FunNPC
-    {
-        protected FunNPCInfo
     }
 
     public static class NPCManager
@@ -124,6 +76,7 @@ namespace FunPlusEssentials.CustomContent
             var npc = NPCManager.CheckNPCInfos(name[1]);
             if (npc != null)
             {
+                double temp = (double)typeof(FunNPCInfo).GetField("FieldName").GetValue(npc);
                 CuteLogger.Meow("Instantiating custom NPC: " + prefabName);
                 if (name[0] == "SUR")
                 {
@@ -227,7 +180,7 @@ namespace FunPlusEssentials.CustomContent
 
             if (type == NPCType.BossBot)
             {
-                FunNPCInfo.BossBot npc = npcInfo.bossBot;
+                FunBossBot npc = npcInfo.bossBot;
                 var b = dummy.GetComponent<BossBot>();
                 var na = newModel.GetComponent<NavMeshAgent>();
                 if (na != null)
@@ -267,7 +220,7 @@ namespace FunPlusEssentials.CustomContent
             {
                 //Bot.IPOFBAGEDJK range
                 //Bot.LIBBFHCIHID attack time
-                FunNPCInfo.Bot npc = npcInfo.bot;
+                FunBot npc = npcInfo.bot;
                 var b = dummy.GetComponent<Bot>();
                 var na = newModel.GetComponent<NavMeshAgent>();
                 if (na != null)
@@ -340,7 +293,7 @@ namespace FunPlusEssentials.CustomContent
             }
             if (type == NPCType.CustardBot)
             {
-                FunNPCInfo.CustardBot npc = npcInfo.custardBot;
+                FunCustardBot npc = npcInfo.custardBot;
                 var cb = dummy.GetComponent<CustardBot>();
                 var na = newModel.GetComponent<NavMeshAgent>();
                 if (na != null)
@@ -358,7 +311,7 @@ namespace FunPlusEssentials.CustomContent
             }
             if (type == NPCType.PlayerMonster)
             {
-                FunNPCInfo.PlayerMonster npc = npcInfo.playerMonster;
+                FunPlayerMonster npc = npcInfo.playerMonster;
                 var pm = dummy.GetComponent<PlayerMonster>();
                 pm.OMFJFIPPGPE = Convert.ToInt32(npc.damage);
                 pm.GFHPOIPBLGE.GKJOHCHABPI.HKCDMBALAAK.WalkSpeed = npc.speed;
