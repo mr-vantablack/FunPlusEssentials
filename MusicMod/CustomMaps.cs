@@ -13,7 +13,7 @@ using UnhollowerBaseLib;
 using UnityEngine.UI;
 using UnhollowerRuntimeLib;
 using Il2CppSystem.Runtime.Remoting.Messaging;
-using static FunPlusEssentials.CustomContent.NPCInfo;
+using static FunPlusEssentials.CustomContent.FunNPCInfo;
 using InControl.mod;
 using System.Text.RegularExpressions;
 using System.Linq;

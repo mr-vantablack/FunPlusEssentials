@@ -465,7 +465,7 @@ namespace FunPlusEssentials.Patches
                      NPCManager.SetUpCustomNPC(data[1].ToString(), resourceGameObject);
                  }
 
-             //NPCInfo npc = NPCManager.CheckNPCInfos(prefabName);
+             //FunNPCInfo npc = NPCManager.CheckNPCInfos(prefabName);
              //if (npc == null) return;
              // NPCManager.SpawnNPCInfo();
          }

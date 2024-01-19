@@ -16,7 +16,8 @@ using System.CodeDom;
 using static MelonLoader.MelonLogger;
 using UnityEngine.AI;
 using UnhollowerBaseLib;
-using static FunPlusEssentials.CustomContent.NPCInfo;
+using static FunPlusEssentials.CustomContent.FunNPCInfo;
+using System.Reflection;
 
 namespace FunPlusEssentials.CustomContent
 {
@@ -31,7 +32,7 @@ namespace FunPlusEssentials.CustomContent
         }
     }
 
-    public class NPCInfo
+    public class FunNPCInfo
     {
         public string name;
         public string version;
@@ -97,11 +98,15 @@ namespace FunPlusEssentials.CustomContent
         CustardBot,
         PlayerMonster
     }
+    public abstract class FunNPC
+    {
+        protected FunNPCInfo
+    }
 
     public static class NPCManager
     {
         public static string NPCInfoDirectory = Config.mainPath + @"\CustomNPCs";
-        public static List<NPCInfo> NPCInfos = new List<NPCInfo>();
+        public static List<FunNPCInfo> NPCInfos = new List<FunNPCInfo>();
         //public static List<GameObject> npcPool = new List<GameObject>();
         public static Dictionary<string, GameObject[]> loadedBundles = new Dictionary<string, GameObject[]>();
         static void SetLayerAllChildren(Transform root, int layer)
@@ -112,10 +117,102 @@ namespace FunPlusEssentials.CustomContent
                 child.gameObject.layer = layer;
             }
         }
+        public static bool Instantiate(string prefabName, Vector3 position, Quaternion rotation)
+        {
+            var name = prefabName.Split('/');
+            if (name.Length < 2) return false;
+            var npc = NPCManager.CheckNPCInfos(name[1]);
+            if (npc != null)
+            {
+                CuteLogger.Meow("Instantiating custom NPC: " + prefabName);
+                if (name[0] == "SUR")
+                {
+                    PhotonNetwork.NOOU("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                    return true;
+                }
+                else if (name[0] == "NPCTeamA")
+                {
+                    var go = PhotonNetwork.NOOU("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                    if (npc.IsBoss) go.GetComponent<BossBot>().BLPBCBFEMNA = 1;
+                    else go.GetComponent<Bot>().BLPBCBFEMNA = 1;
+                    go.transform.Find("TeamTag").gameObject.tag = $"team2";
+                    return true;
+                }
+                else if (name[0] == "NPCTeamB")
+                {
+                    var go = PhotonNetwork.NOOU("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                    if (npc.IsBoss) go.GetComponent<BossBot>().BLPBCBFEMNA = 0;
+                    else go.GetComponent<Bot>().BLPBCBFEMNA = 0;
+                    go.transform.Find("TeamTag").gameObject.tag = $"team1";
+                    return true;
+                }
+                else if (name[0] == "PlayerTeamA")
+                {
+                    var go = PhotonNetwork.NOOU("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                    go.transform.Find("TeamTag").gameObject.tag = $"team2";
+                    if (npc.IsBoss)
+                    {
+                        var b = go.GetComponent<BossBot>();
+                        Transform cam = UnityEngine.Object.Instantiate(Helper.Console.BKBGMHGJODL, position, rotation);
+                        cam.GetComponent<TPSCamera>().PFDKNPELPNC = b.transform;
+                        cam.GetComponent<TPSCamera>().HELMMHBLCLH = b.transform.Find("TeamTag");
+                        cam.GetComponent<BossCam>().OMIOOOFAJNP = b;
+                        b.KHKDJLKGHDM = true;
+                        b.BLPBCBFEMNA = 1;
+                        b.IDLHJOOAMIA.enabled = false;
+                    }
+                    else
+                    {
+                        var b = go.GetComponent<Bot>();
+                        Transform cam = UnityEngine.Object.Instantiate(Helper.Console.BKBGMHGJODL, position, rotation);
+                        cam.GetComponent<TPSCamera>().PFDKNPELPNC = b.transform;
+                        cam.GetComponent<TPSCamera>().HELMMHBLCLH = b.transform.Find("TeamTag");
+                        cam.GetComponent<BossCam>().INHFFFAKNNG = b;
+                        b.KHKDJLKGHDM = true;
+                        b.BLPBCBFEMNA = 1;
+                        b.IDLHJOOAMIA.enabled = false;
+                    }
+                    Helper.RoomMultiplayerMenu.CNLHJAICIBH = go;
+                    return true;
+                }
+                else if (name[0] == "PlayerTeamB")
+                {
+                    var go = PhotonNetwork.NOOU("SUR/" + (npc.IsBoss ? npc.bossBot.dummyNPC : npc.bot.dummyNPC), position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                    go.transform.Find("TeamTag").gameObject.tag = $"team1";
+                    if (npc.IsBoss)
+                    {
+                        var b = go.GetComponent<BossBot>();
+                        Transform cam = UnityEngine.Object.Instantiate(Helper.Console.BKBGMHGJODL, position, rotation);
+                        cam.GetComponent<TPSCamera>().PFDKNPELPNC = b.transform;
+                        cam.GetComponent<TPSCamera>().HELMMHBLCLH = b.transform.Find("TeamTag");
+                        cam.GetComponent<BossCam>().OMIOOOFAJNP = b;
+                        b.KHKDJLKGHDM = true;
+                        b.BLPBCBFEMNA = 0;
+                        b.IDLHJOOAMIA.enabled = false;
+                    }
+                    else
+                    {
+                        var b = go.GetComponent<Bot>();
+                        Transform cam = UnityEngine.Object.Instantiate(Helper.Console.BKBGMHGJODL, position, rotation);
+                        cam.GetComponent<TPSCamera>().PFDKNPELPNC = b.transform;
+                        cam.GetComponent<TPSCamera>().HELMMHBLCLH = b.transform.Find("TeamTag");
+                        cam.GetComponent<BossCam>().INHFFFAKNNG = b;
+                        b.KHKDJLKGHDM = true;
+                        b.BLPBCBFEMNA = 0;
+                        b.IDLHJOOAMIA.enabled = false;
+                    }
+                    Helper.RoomMultiplayerMenu.CNLHJAICIBH = go;
+                    return true;
+                }
+                else if (name[0] == "VS") PhotonNetwork.NOOU2("VS/PlayerImposter", position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+                else if (name[0] == "COOP") PhotonNetwork.NOOU2("COOP/Imposter", position, rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "CustomNPC", npc.name }));
+            }
+            return false;
+        }
         public static void SetUpCustomNPC(string npcName, GameObject dummy, NPCType type)
         {
             CuteLogger.Meow("Loading custom NPC: " + npcName);
-            NPCInfo npcInfo = CheckNPCInfos(npcName);
+            FunNPCInfo npcInfo = CheckNPCInfos(npcName);
             if (npcInfo == null) return;
             //GameObject go = GameObject.Instantiate(Resources.Load("SUR/BossShadow").Cast<GameObject>());
             dummy.transform.Find("Model").gameObject.SetActive(false);
@@ -130,7 +227,7 @@ namespace FunPlusEssentials.CustomContent
 
             if (type == NPCType.BossBot)
             {
-                NPCInfo.BossBot npc = npcInfo.bossBot;
+                FunNPCInfo.BossBot npc = npcInfo.bossBot;
                 var b = dummy.GetComponent<BossBot>();
                 var na = newModel.GetComponent<NavMeshAgent>();
                 if (na != null)
@@ -170,7 +267,7 @@ namespace FunPlusEssentials.CustomContent
             {
                 //Bot.IPOFBAGEDJK range
                 //Bot.LIBBFHCIHID attack time
-                NPCInfo.Bot npc = npcInfo.bot;
+                FunNPCInfo.Bot npc = npcInfo.bot;
                 var b = dummy.GetComponent<Bot>();
                 var na = newModel.GetComponent<NavMeshAgent>();
                 if (na != null)
@@ -243,7 +340,7 @@ namespace FunPlusEssentials.CustomContent
             }
             if (type == NPCType.CustardBot)
             {
-                NPCInfo.CustardBot npc = npcInfo.custardBot;
+                FunNPCInfo.CustardBot npc = npcInfo.custardBot;
                 var cb = dummy.GetComponent<CustardBot>();
                 var na = newModel.GetComponent<NavMeshAgent>();
                 if (na != null)
@@ -261,7 +358,7 @@ namespace FunPlusEssentials.CustomContent
             }
             if (type == NPCType.PlayerMonster)
             {
-                NPCInfo.PlayerMonster npc = npcInfo.playerMonster;
+                FunNPCInfo.PlayerMonster npc = npcInfo.playerMonster;
                 var pm = dummy.GetComponent<PlayerMonster>();
                 pm.OMFJFIPPGPE = Convert.ToInt32(npc.damage);
                 pm.GFHPOIPBLGE.GKJOHCHABPI.HKCDMBALAAK.WalkSpeed = npc.speed;
@@ -290,7 +387,7 @@ namespace FunPlusEssentials.CustomContent
         }
         public static IEnumerator LoadAllBundles()
         {
-            foreach (NPCInfo npcInfo in NPCInfos)
+            foreach (FunNPCInfo npcInfo in NPCInfos)
             {
                 if (!loadedBundles.ContainsKey(npcInfo.name))
                 {
@@ -398,7 +495,7 @@ namespace FunPlusEssentials.CustomContent
             }
             if (customNPCs == "")
             {
-                foreach (NPCInfo npc in NPCInfos)
+                foreach (FunNPCInfo npc in NPCInfos)
                 {
                     sandboxConsole.PDKPIOHFCCK[0].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = "NPCTeamA/" + npc.name });
                     sandboxConsole.PDKPIOHFCCK[1].options.Add(new Volume.option() { image = npc.iconSprite, optionName = npc.name, resourcePath = "NPCTeamB/" + npc.name });
@@ -409,9 +506,9 @@ namespace FunPlusEssentials.CustomContent
             sandboxConsole.ResetOptions();
             yield return null;
         }
-        public static NPCInfo CheckNPCInfos(string npcName)
+        public static FunNPCInfo CheckNPCInfos(string npcName)
         {
-            foreach (NPCInfo npc in NPCInfos)
+            foreach (FunNPCInfo npc in NPCInfos)
             {
                 if (npc.name == npcName) { return npc; }
             }
@@ -419,7 +516,7 @@ namespace FunPlusEssentials.CustomContent
         }
         public static IEnumerator LoadNPCIcons()
         {
-            foreach (NPCInfo npc in NPCInfos)
+            foreach (FunNPCInfo npc in NPCInfos)
             {
                 string iconPath = npc.path + @"\icon.png";
                 if (File.Exists(iconPath))
@@ -442,7 +539,7 @@ namespace FunPlusEssentials.CustomContent
                     return;
                 }
                 var json = File.ReadAllText(npcFiles[i].FullName + @"\npc.json");
-                var npc = JSON.Load(json).Make<NPCInfo>();
+                var npc = JSON.Load(json).Make<FunNPCInfo>();
                 npc.path = npcFiles[i].FullName;
                 NPCInfos.Add(npc);
             }
