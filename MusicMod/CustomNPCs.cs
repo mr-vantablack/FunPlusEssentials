@@ -76,7 +76,6 @@ namespace FunPlusEssentials.CustomContent
             var npc = NPCManager.CheckNPCInfos(name[1]);
             if (npc != null)
             {
-                double temp = (double)typeof(FunNPCInfo).GetField("FieldName").GetValue(npc);
                 CuteLogger.Meow("Instantiating custom NPC: " + prefabName);
                 if (name[0] == "SUR")
                 {
