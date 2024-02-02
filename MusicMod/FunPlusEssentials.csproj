@@ -35,7 +35,7 @@
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\0Harmony.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="ACTk.Examples.Genuine.Runtime">
       <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\ACTk.Examples.Genuine.Runtime.dll</HintPath>
@@ -44,28 +44,28 @@
       <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\ACTk.Examples.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="ACTk.Runtime">
-      <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\ACTk.Runtime.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\ACTk.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="Il2Cppmscorlib">
-      <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\Il2Cppmscorlib.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\Il2Cppmscorlib.dll</HintPath>
     </Reference>
     <Reference Include="Il2CppSystem">
-      <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\Il2CppSystem.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\Il2CppSystem.dll</HintPath>
     </Reference>
     <Reference Include="MelonLoader">
-      <HintPath>..\..\..\..\Desktop\PRE-BETA\MelonLoader\MelonLoader.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\MelonLoader.dll</HintPath>
     </Reference>
     <Reference Include="Photon3Unity3D, Version=4.1.6.24, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\Photon3Unity3D.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\Photon3Unity3D.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -76,51 +76,58 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="UnhollowerBaseLib">
-      <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\UnhollowerBaseLib.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnhollowerBaseLib.dll</HintPath>
     </Reference>
     <Reference Include="UnhollowerRuntimeLib">
       <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\UnhollowerRuntimeLib.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\UnityEngine.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AIModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.AIModule.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.AIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.AnimationModule.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.AnimationModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
       <HintPath>..\..\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AudioModule">
-      <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\UnityEngine.AudioModule.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.AudioModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.Il2CppAssetBundleManager">
-      <HintPath>..\..\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\UnityEngine.Il2CppAssetBundleManager.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.Il2CppAssetBundleManager.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
       <HintPath>D:\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputModule">
-      <HintPath>..\..\..\..\Desktop\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\UnityEngine.InputModule.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.InputModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\Slendytubbies 3 v2_48 (Multiplayer) x86\MelonLoader\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
       <HintPath>..\..\..\..\Desktop\PRE-BETA\MelonLoader\Managed\UnityEngine.UIModule.dll</HintPath>
@@ -138,16 +145,16 @@
       <HintPath>..\..\..\..\Desktop\PRE-BETA\MelonLoader\Managed\UnityEngine.UnityTestProtocolModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestAudioModule">
-      <HintPath>..\..\..\..\Desktop\PRE-BETA\MelonLoader\Managed\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestModule">
-      <HintPath>..\..\..\..\Desktop\PRE-BETA\MelonLoader\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestTextureModule">
-      <HintPath>..\..\..\..\Desktop\PRE-BETA\MelonLoader\Managed\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestWWWModule">
-      <HintPath>..\..\..\..\Desktop\PRE-BETA\MelonLoader\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+      <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.VehiclesModule">
       <HintPath>..\..\..\..\Desktop\PRE-BETA\MelonLoader\Managed\UnityEngine.VehiclesModule.dll</HintPath>
