@@ -472,6 +472,17 @@ namespace FunPlusEssentials.Other
 
 
         #endregion
+
+        static T CopyComponent<T>(T original, GameObject destination) where T : Component
+        {
+            Il2CppSystem.Type type = original.GetIl2CppType();
+            Component copy = destination.AddComponent(type);
+            var fields = type.GetFields(Il2CppSystem.Reflection.BindingFlags.Default);
+            foreach (Il2CppSystem.Reflection.FieldInfo field in fields)
+                field.SetValue(copy, field.GetValue(original));
+            return copy as T;
+        }
+
         public static List<FileSystemInfo> GetAllDirectories(string dir)
         {
             DirectoryInfo dirInfo = new DirectoryInfo(dir);

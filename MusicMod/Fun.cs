@@ -20,13 +20,13 @@ namespace FunPlusEssentials.Fun
 
         private AudioSource source;
         private AudioClip currentClip;
-        private readonly long maxFileSize = 15728640; //15 МБ
+        private readonly long maxFileSize = 26214400; //25 МБ
         private bool synced;
         private long fileSize;
         public string[] djList;
         public static MusicPlayer Instance { get; private set; }
 
-        private void LoadDjList(string path) // белый список ДОДЕЛАТЬ
+        private void LoadDjList(string path) // белый список ДОДЕЛАТЬ upd впадлу бля 
         {
             using (System.IO.StreamReader reader = new System.IO.StreamReader(path))
             {
