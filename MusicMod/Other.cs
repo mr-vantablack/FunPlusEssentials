@@ -409,7 +409,10 @@ namespace FunPlusEssentials.Other
         {
             get
             {
-                _weaponManager ??= GameObject.FindObjectOfType<WeaponManager>();
+                if (_weaponManager == null)
+                {
+                    _weaponManager = GameObject.FindObjectOfType<WeaponManager>();
+                }
                 return _weaponManager;
             }
         }

@@ -472,6 +472,22 @@ namespace FunPlusEssentials.Patches
      }*/
     #endregion
 
+    [HarmonyLib.HarmonyPatch(typeof(PlayerDamage), "Awake")]
+    public static class OnPlayerSpawned
+    {
+        public delegate void Event(PlayerDamage player);
+        public static event Event onPlayerSpawned;
+        static void Postfix(PlayerDamage __instance)
+        {
+            onPlayerSpawned?.Invoke(__instance);
+
+            if (__instance.gameObject.GetComponent<PhotonView>().isMine)
+            {
+                MelonCoroutines.Start(CustomWeapons.InstantiatePrefabs());
+            }
+        }
+    }
+
     [HarmonyLib.HarmonyPatch(typeof(Volume), "Awake")]
     public static class VolumeStart
     {
@@ -490,6 +506,7 @@ namespace FunPlusEssentials.Patches
                 __instance.transform.GetComponentInChildren<CanvasScaler>().screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
                 MelonCoroutines.Start(NPCManager.AddNPCInfos(__instance));
             }
+            CustomWeapons.AddWeaponsToCatagory();
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(Volume), "SendOption")]

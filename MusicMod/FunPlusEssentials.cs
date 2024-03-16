@@ -28,7 +28,11 @@ namespace FunPlusEssentials
         {
             if (sceneName != "Updater" && sceneName != "MainMenu")
             {
-                if (MapManager.useCustomNPCs) NPCManager.LoadBundles();
+                if (MapManager.useCustomNPCs) 
+                {
+                    NPCManager.LoadBundles();                   
+                }
+
             }
         }
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
@@ -68,6 +72,7 @@ namespace FunPlusEssentials
             Blacklist.CheckPlayer(" ");
             MapManager.SetUp();
             NPCManager.Init();
+            CustomWeapons.Init();
             RPCManager.Init();
             CuteLogger.ClearLogs();
         }
