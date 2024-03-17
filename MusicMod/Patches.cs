@@ -480,10 +480,9 @@ namespace FunPlusEssentials.Patches
         static void Postfix(PlayerDamage __instance)
         {
             onPlayerSpawned?.Invoke(__instance);
-
-            if (__instance.gameObject.GetComponent<PhotonView>().isMine)
+            if (!CustomWeapons.CheckForWeapons(__instance.gameObject))
             {
-                MelonCoroutines.Start(CustomWeapons.InstantiatePrefabs());
+                MelonCoroutines.Start(CustomWeapons.InstantiateFPSWeapons(__instance.gameObject));
             }
         }
     }

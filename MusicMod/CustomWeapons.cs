@@ -32,18 +32,25 @@ namespace FunPlusEssentials.CustomContent
         public static GameObject weaponRoot;
         public static GameObject[] weaponsDummies;
 
-        public static IEnumerator InstantiatePrefabs()
+        public static bool CheckForWeapons(GameObject root)
+        {
+            if (root.transform.FindChild("LookObject/Main Camera/Weapon Camera/WeaponManager").childCount > 24) return true;
+            return false;
+        }
+
+        public static IEnumerator InstantiateFPSWeapons(GameObject source)
         {
             yield return new WaitForSeconds(0.05f);
             yield return MelonCoroutines.Start(LoadWeaponsIcons());
 
             // customWeapons.Add(new WeaponInfo() { name = "M4A1", clips = 105, fireRate = 0.05f, type = WeaponScript.DOEEBEFKIJI.MACHINE_GUN });
-            weaponRoot = Helper.WeaponManager.gameObject;
+            weaponRoot = source.transform.FindChild("LookObject/Main Camera/Weapon Camera/WeaponManager").gameObject;
             weaponsDummies = new GameObject[]
             {
                 weaponRoot.transform.FindChild("AKM").gameObject
             };
             CuteLogger.Meow("1");
+
             foreach (WeaponInfo weapon in customWeapons)
             {
                 if (!loadedBundles.ContainsKey(weapon.name))
@@ -53,6 +60,7 @@ namespace FunPlusEssentials.CustomContent
                     loadedBundles.Add(weapon.name, new GameObject[]
                     {
                                 assetBundleCreateRequest.Load<GameObject>(weapon.name),
+                                assetBundleCreateRequest.Load<GameObject>(weapon.name + " (TPS)"),
                     });
                     weapon.shotSound = assetBundleCreateRequest.Load<AudioClip>("fire");
                     weapon.reloadSound = assetBundleCreateRequest.Load<AudioClip>("reload");
@@ -69,6 +77,7 @@ namespace FunPlusEssentials.CustomContent
                         loadedBundles.Add(weapon.name, new GameObject[]
                         {
                                 assetBundleCreateRequest.Load<GameObject>(weapon.name),
+                                assetBundleCreateRequest.Load<GameObject>(weapon.name + " (TPS)"),
                         });
                         weapon.shotSound = assetBundleCreateRequest.Load<AudioClip>("fire");
                         weapon.reloadSound = assetBundleCreateRequest.Load<AudioClip>("reload");
@@ -93,7 +102,11 @@ namespace FunPlusEssentials.CustomContent
                 wa.HPKHKABOFOO = "put-away";
                 wa.IBHAFEOOCFC = "fire";
                 wa.LFKDOIFADHK = "idle";
+
+                var wsc = dummyWeapon.AddComponent<WeaponSync_Catcher>();
+
                 var ws = dummyWeapon.GetComponent<WeaponScript>();
+                ws.JIFANOLAADI = weapon.name;
 
                 ws.FLIAJIAOBHA.aimPosition = weapon.aimPosition;
                 ws.FMPLNFBLHKJ.bulletsPerClip = weapon.bulletsPerClip;
@@ -111,10 +124,48 @@ namespace FunPlusEssentials.CustomContent
                 ws.MGFCKCEIEKM = weapon.icon;
                 ws.HIHFCMAJBJK = weapon.crosshair;
 
+                var ca = source.transform.FindChild("MainAnimData").gameObject.GetComponent<CharacterAnimation>();              
+                if (ca != null) ca.DOODHOGLOJO.Add(ws); //two handled weapon
+
+                foreach (var t in dummyWeapon.GetComponentsInChildren<Renderer>())
+                {
+                    if (t.material.name.ToUpper() == "FUR (INSTANCE)")
+                    {
+                       var a = t.gameObject.AddComponent<AntennaColor>();
+                       a.DCMJNPMPBIK = source.transform.FindChild("PLAYER_MODEL/model/leftarmmesh").gameObject.GetComponent<SkinnedMeshRenderer>();
+                    }
+                }
+
                 GameObject.Destroy(bundleWeapon);
                 CuteLogger.Meow("6");
                 //ws.HANLPABBHKN = 
                 MelonCoroutines.Start(zaebalo(wa, ws));
+                MelonCoroutines.Start(CustomWeapons.InstantiateTPSWeapons(source.GetComponent<PlayerNetworkController>()));
+            }
+        }
+
+        public static IEnumerator InstantiateTPSWeapons(PlayerNetworkController source)
+        {
+            yield return new WaitForSeconds(0.05f);
+
+            Transform p = source.HDCJMMEMDEJ;
+
+            foreach (WeaponInfo weapon in customWeapons)
+            {
+                GameObject bundleWeapon = GameObject.Instantiate(loadedBundles[weapon.name][1]);
+                bundleWeapon.transform.SetParent(p, false);
+                bundleWeapon.name = weapon.name;
+                var s = weaponRoot.transform.FindChild(weapon.name).gameObject.GetComponent<WeaponScript>();
+
+                var ws = bundleWeapon.AddComponent<WeaponSync>();
+                ws.LIFHNEDIKHM = s;
+                ws.JDDPMKHOGEN = source.transform.FindChild("PLAYER_MODEL/Bip001/Bip001 Pelvis/Bip001 Spine/Bip001 Spine1/Bip001 Spine2/Bip001 Spine3/Bip001 Neck/Bip001 Head/FirePoint(ThirdPerson)");
+                var muzzle = bundleWeapon.transform.FindChild("MuzzleFlash");
+                if (muzzle != null)
+                {
+                    ws.NDGIAAEEGFO = muzzle.GetComponent<MeshRenderer>();
+                }
+
             }
         }
 

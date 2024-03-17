@@ -260,7 +260,7 @@ namespace FunPlusEssentials.Other
                     ">",
                     text,
                     " ",
-                    "<color=white>Custom NPCs</color>",
+                    "<color=white>Custom Content</color>",
                     "</size>"
                 }));
             }
