@@ -38,25 +38,15 @@ namespace FunPlusEssentials.CustomContent
             return false;
         }
 
-        public static IEnumerator InstantiateFPSWeapons(GameObject source)
+        public static IEnumerator LoadBundles()
         {
-            yield return new WaitForSeconds(0.05f);
-            yield return MelonCoroutines.Start(LoadWeaponsIcons());
-
-            // customWeapons.Add(new WeaponInfo() { name = "M4A1", clips = 105, fireRate = 0.05f, type = WeaponScript.DOEEBEFKIJI.MACHINE_GUN });
-            weaponRoot = source.transform.FindChild("LookObject/Main Camera/Weapon Camera/WeaponManager").gameObject;
-            weaponsDummies = new GameObject[]
-            {
-                weaponRoot.transform.FindChild("AKM").gameObject
-            };
-            CuteLogger.Meow("1");
-
+            loadedBundles.Clear();
             foreach (WeaponInfo weapon in customWeapons)
             {
                 if (!loadedBundles.ContainsKey(weapon.name))
                 {
-                    CuteLogger.Meow("11");
                     var assetBundleCreateRequest = Il2CppAssetBundleManager.LoadFromFile(weapon.path + @"\bundle");
+                    yield return assetBundleCreateRequest;
                     loadedBundles.Add(weapon.name, new GameObject[]
                     {
                                 assetBundleCreateRequest.Load<GameObject>(weapon.name),
@@ -68,8 +58,7 @@ namespace FunPlusEssentials.CustomContent
                 }
                 else if (loadedBundles.TryGetValue(weapon.name, out var bundle))
                 {
-                    CuteLogger.Meow("22");
-                    if (bundle[0] == null)
+                    if (bundle == null)
                     {
                         loadedBundles.Remove(weapon.name);
                         var assetBundleCreateRequest = Il2CppAssetBundleManager.LoadFromFile(weapon.path + @"\bundle");
@@ -84,8 +73,29 @@ namespace FunPlusEssentials.CustomContent
                         assetBundleCreateRequest.Unload(false);
                     }
                 }
+            }
+        }
+
+        public static IEnumerator InstantiateFPSWeapons(GameObject source)
+        {
+            yield return new WaitForSeconds(0.05f);
+            yield return MelonCoroutines.Start(LoadWeaponsIcons());
+
+            // customWeapons.Add(new WeaponInfo() { name = "M4A1", clips = 105, fireRate = 0.05f, type = WeaponScript.DOEEBEFKIJI.MACHINE_GUN });
+            weaponRoot = source.transform.FindChild("LookObject/Main Camera/Weapon Camera/WeaponManager").gameObject;
+            weaponsDummies = new GameObject[]
+            {
+                weaponRoot.transform.FindChild("AKM").gameObject,
+                weaponRoot.transform.FindChild("RPG").gameObject,
+                weaponRoot.transform.FindChild("MCS870").gameObject
+            };
+            CuteLogger.Meow("1");
+
+            foreach (WeaponInfo weapon in customWeapons)
+            {            
+
                 CuteLogger.Meow("2");
-                GameObject dummyWeapon = GameObject.Instantiate(weaponsDummies[0]);
+                GameObject dummyWeapon = GameObject.Instantiate(weaponsDummies[(int)weapon.type]);
                 CuteLogger.Meow("3");
                 dummyWeapon.transform.SetParent(weaponRoot.transform);
                 dummyWeapon.name = weapon.name;
@@ -103,36 +113,58 @@ namespace FunPlusEssentials.CustomContent
                 wa.IBHAFEOOCFC = "fire";
                 wa.LFKDOIFADHK = "idle";
 
-                var wsc = dummyWeapon.AddComponent<WeaponSync_Catcher>();
-
+                if (dummyWeapon.GetComponent<WeaponSync_Catcher>() == null)
+                {
+                    dummyWeapon.AddComponent<WeaponSync_Catcher>();
+                }
                 var ws = dummyWeapon.GetComponent<WeaponScript>();
                 ws.JIFANOLAADI = weapon.name;
-
                 ws.FLIAJIAOBHA.aimPosition = weapon.aimPosition;
-                ws.FMPLNFBLHKJ.bulletsPerClip = weapon.bulletsPerClip;
-                ws.FMPLNFBLHKJ.clips = weapon.clips;
-                ws.FMPLNFBLHKJ.fireRate = weapon.fireRate;
-                ws.FMPLNFBLHKJ.AimErrorAngle = weapon.aimRecoil;
-                ws.FMPLNFBLHKJ.NoAimErrorAngle = weapon.recoil;
+
+                if (weapon.type == WeaponScript.DOEEBEFKIJI.MACHINE_GUN)
+                {
+                    ws.FMPLNFBLHKJ.bulletsPerClip = weapon.bulletsPerClip;
+                    ws.FMPLNFBLHKJ.clips = weapon.clips;
+                    ws.FMPLNFBLHKJ.fireRate = weapon.fireRate;
+                    ws.FMPLNFBLHKJ.AimErrorAngle = weapon.aimRecoil;
+                    ws.FMPLNFBLHKJ.NoAimErrorAngle = weapon.recoil;
+                    ws.FMPLNFBLHKJ.reloadSound = weapon.reloadSound;
+                    ws.FMPLNFBLHKJ.fireSound = weapon.shotSound;
+                }
+                else if (weapon.type == WeaponScript.DOEEBEFKIJI.SHOTGUN)
+                {
+                    ws.MMIKHOPCECE.bulletsPerClip = weapon.bulletsPerClip;
+                    ws.MMIKHOPCECE.clips = weapon.clips;
+                    ws.MMIKHOPCECE.fireRate = weapon.fireRate;
+                    ws.MMIKHOPCECE.errorAngle = weapon.aimRecoil;
+                    ws.MMIKHOPCECE.reloadSound = weapon.reloadSound;
+                    ws.MMIKHOPCECE.fireSound = weapon.shotSound;
+                }
+                else if (weapon.type == WeaponScript.DOEEBEFKIJI.GRENADE_LAUNCHER)
+                {
+                    // ДОДЕЛАТЬ НАДА ПАТОМ
+                }
 
                 ws.APFMIOFJJNC.recoilPower = weapon.recoilPower;
                 ws.APFMIOFJJNC.shakeAmount = weapon.shakePower;
 
-                ws.FMPLNFBLHKJ.reloadSound = weapon.reloadSound;
-                ws.FMPLNFBLHKJ.fireSound = weapon.shotSound;
-
+                //  Transform fp = bundleWeapon.transform.FindChild("FirePoint");
+                // if (fp != null)
+                //  {
+                //  ws.JDDPMKHOGEN = fp;
+                // }
                 ws.MGFCKCEIEKM = weapon.icon;
                 ws.HIHFCMAJBJK = weapon.crosshair;
 
-                var ca = source.transform.FindChild("MainAnimData").gameObject.GetComponent<CharacterAnimation>();              
+                var ca = source.transform.FindChild("MainAnimData").gameObject.GetComponent<CharacterAnimation>();
                 if (ca != null) ca.DOODHOGLOJO.Add(ws); //two handled weapon
 
                 foreach (var t in dummyWeapon.GetComponentsInChildren<Renderer>())
                 {
                     if (t.material.name.ToUpper() == "FUR (INSTANCE)")
                     {
-                       var a = t.gameObject.AddComponent<AntennaColor>();
-                       a.DCMJNPMPBIK = source.transform.FindChild("PLAYER_MODEL/model/leftarmmesh").gameObject.GetComponent<SkinnedMeshRenderer>();
+                        var a = t.gameObject.AddComponent<AntennaColor>();
+                        a.DCMJNPMPBIK = source.transform.FindChild("PLAYER_MODEL/model/leftarmmesh").gameObject.GetComponent<SkinnedMeshRenderer>();
                     }
                 }
 
@@ -165,7 +197,7 @@ namespace FunPlusEssentials.CustomContent
                 {
                     ws.NDGIAAEEGFO = muzzle.GetComponent<MeshRenderer>();
                 }
-
+                bundleWeapon.SetActive(false);
             }
         }
 
@@ -182,6 +214,37 @@ namespace FunPlusEssentials.CustomContent
             customWeapons = new List<WeaponInfo>();
             CuteLogger.Meow("1");
             var weapons = Helper.GetAllDirectories(directory);
+            var weapon = new WeaponInfo()
+            {
+                name = "M4A1",
+                clips = 275,
+                bulletsPerClip = 35,
+                fireRate = 0.08f,
+                reloadTime = 2.5f,
+                type = WeaponScript.DOEEBEFKIJI.MACHINE_GUN,
+                aimPosition = new Vector3(-0.147f, 0.036f, -0.6f),
+                recoilPower = 0.35f,
+                shakePower = 0.5f,
+                recoil = 1f,
+                aimRecoil = 0.2f
+            };
+            var weapon2 = new WeaponInfo()
+            {
+                name = "M87T",
+                fractions = 10,
+                clips = 48,
+                bulletsPerClip = 6,
+                fireRate = 0.8f,
+                reloadTime = 4.4f,
+                type = WeaponScript.DOEEBEFKIJI.SHOTGUN,
+                aimPosition = new Vector3(-0.2f, 0.05f, 0),
+                recoilPower = 0.35f,
+                shakePower = 0.5f,
+                recoil = 1f,
+                aimRecoil = 6f
+            };
+            customWeapons.Add(weapon);
+            customWeapons.Add(weapon2);
             CuteLogger.Meow("2");
             for (int i = 0; i < weapons.Count; i++)
             {
@@ -194,23 +257,10 @@ namespace FunPlusEssentials.CustomContent
                 CuteLogger.Meow("4");
                 //var json = File.ReadAllText(weapons[i].FullName + @"\npc.json");
                 //var weapon = JSON.Load(json).Make<WeaponInfo>();
-                var weapon = new WeaponInfo() 
-                { 
-                    name = "M4A1", 
-                    clips = 275,
-                    bulletsPerClip = 35,
-                    fireRate = 0.08f,
-                    reloadTime = 2.5f,
-                    type = WeaponScript.DOEEBEFKIJI.MACHINE_GUN,
-                    aimPosition = new Vector3(-0.147f, 0.036f, - 0.6f),
-                    recoilPower = 0.35f,
-                    shakePower = 0.5f,
-                    recoil = 1f,
-                    aimRecoil = 0.2f
-                };
+                
                 CuteLogger.Meow("5");
-                weapon.path = weapons[i].FullName;
-                customWeapons.Add(weapon);
+                customWeapons[i].path = weapons[i].FullName;
+                
             }
         }
         public static void AddWeaponsToCatagory()
@@ -257,6 +307,14 @@ namespace FunPlusEssentials.CustomContent
         public string path;
 
         public WeaponScript.DOEEBEFKIJI type;
+
+        //SHOTGUN
+        public int fractions;
+
+        //GRENADE LAUNCHER
+        public int projectileSpeed;
+        public float waitBeforeReload;
+
         public float fireRate;
         public int bulletsPerClip;
         public int clips;

@@ -30,7 +30,8 @@ namespace FunPlusEssentials
             {
                 if (MapManager.useCustomNPCs) 
                 {
-                    NPCManager.LoadBundles();                   
+                    NPCManager.LoadBundles();
+                    MelonCoroutines.Start(CustomWeapons.LoadBundles());
                 }
 
             }
