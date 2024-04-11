@@ -86,30 +86,26 @@ namespace FunPlusEssentials.CustomContent
             weaponsDummies = new GameObject[]
             {
                 weaponRoot.transform.FindChild("AKM").gameObject,
-                weaponRoot.transform.FindChild("RPG").gameObject,
-                weaponRoot.transform.FindChild("MCS870").gameObject
+                weaponRoot.transform.FindChild("Grenade Launcher").gameObject,
+                weaponRoot.transform.FindChild("MCS870").gameObject,
+                weaponRoot.transform.FindChild("Knife").gameObject
             };
-            CuteLogger.Meow("1");
 
             foreach (WeaponInfo weapon in customWeapons)
             {            
 
-                CuteLogger.Meow("2");
                 GameObject dummyWeapon = GameObject.Instantiate(weaponsDummies[(int)weapon.type]);
-                CuteLogger.Meow("3");
                 dummyWeapon.transform.SetParent(weaponRoot.transform);
                 dummyWeapon.name = weapon.name;
                 GameObject.Destroy(dummyWeapon.transform.GetChild(1).gameObject);
                 GameObject bundleWeapon = GameObject.Instantiate(loadedBundles[weapon.name][0]);
                 GameObject newModel = bundleWeapon.transform.GetChild(0).gameObject;
-                CuteLogger.Meow("4");
                 newModel.transform.SetParent(dummyWeapon.transform);
                 dummyWeapon.transform.localPosition = new Vector3(0, 0, 0);
                 var wa = newModel.AddComponent<WeaponAnimation>();
-                CuteLogger.Meow("5");
                 wa.EBJNIFNOGJA = "reload";
-                wa.FEJAHOOPHPD = "select";
-                wa.HPKHKABOFOO = "put-away";
+                wa.FEJAHOOPHPD = "take-in";
+                wa.HPKHKABOFOO = "take-out";
                 wa.IBHAFEOOCFC = "fire";
                 wa.LFKDOIFADHK = "idle";
 
@@ -119,7 +115,7 @@ namespace FunPlusEssentials.CustomContent
                 }
                 var ws = dummyWeapon.GetComponent<WeaponScript>();
                 ws.JIFANOLAADI = weapon.name;
-                ws.FLIAJIAOBHA.aimPosition = weapon.aimPosition;
+                ws.FLIAJIAOBHA.aimPosition = new Vector3(weapon.aimPosX, weapon.aimPosY, weapon.aimPosZ);
 
                 if (weapon.type == WeaponScript.DOEEBEFKIJI.MACHINE_GUN)
                 {
@@ -142,7 +138,17 @@ namespace FunPlusEssentials.CustomContent
                 }
                 else if (weapon.type == WeaponScript.DOEEBEFKIJI.GRENADE_LAUNCHER)
                 {
-                    // ДОДЕЛАТЬ НАДА ПАТОМ
+                    ws.MJIKHNADGAG.ammoCount = weapon.clips;
+                    ws.MJIKHNADGAG.initialSpeed = weapon.projectileSpeed;
+                    ws.MJIKHNADGAG.reloadTime = weapon.reloadTime;
+                    ws.MJIKHNADGAG.shotDelay = weapon.shotDelay;
+                    ws.MJIKHNADGAG.reloadSound = weapon.reloadSound;
+                    ws.MJIKHNADGAG.fireSound = weapon.shotSound;
+                }
+                else if (weapon.type == WeaponScript.DOEEBEFKIJI.KNIFE)
+                {
+                    ws.EKODJEHEFDE.delayTime = weapon.hitDelay;
+                    ws.EKODJEHEFDE.fireRate = weapon.fireRate;
                 }
 
                 ws.APFMIOFJJNC.recoilPower = weapon.recoilPower;
@@ -157,7 +163,22 @@ namespace FunPlusEssentials.CustomContent
                 ws.HIHFCMAJBJK = weapon.crosshair;
 
                 var ca = source.transform.FindChild("MainAnimData").gameObject.GetComponent<CharacterAnimation>();
-                if (ca != null) ca.DOODHOGLOJO.Add(ws); //two handled weapon
+                if (ca != null)
+                {
+                    if (weapon.animationType == WeaponInfo.AnimationType.TwoHandRifle)
+                    {
+                        ca.DOODHOGLOJO.Add(ws);
+                    }
+                    if (weapon.animationType == WeaponInfo.AnimationType.TwoHandPistol)
+                    {
+                        ca.NKMALFJABNF.Add(ws);
+                    }
+                    if (weapon.animationType == WeaponInfo.AnimationType.OneHand)
+                    {
+                        ca.JAEHDJFGHEB.Add(ws);
+                    }
+                }
+
 
                 foreach (var t in dummyWeapon.GetComponentsInChildren<Renderer>())
                 {
@@ -169,7 +190,6 @@ namespace FunPlusEssentials.CustomContent
                 }
 
                 GameObject.Destroy(bundleWeapon);
-                CuteLogger.Meow("6");
                 //ws.HANLPABBHKN = 
                 MelonCoroutines.Start(zaebalo(wa, ws));
                 MelonCoroutines.Start(CustomWeapons.InstantiateTPSWeapons(source.GetComponent<PlayerNetworkController>()));
@@ -212,55 +232,32 @@ namespace FunPlusEssentials.CustomContent
         {
             Directory.CreateDirectory(directory);
             customWeapons = new List<WeaponInfo>();
-            CuteLogger.Meow("1");
             var weapons = Helper.GetAllDirectories(directory);
-            var weapon = new WeaponInfo()
+            /*var weapon4 = new WeaponInfo()
             {
-                name = "M4A1",
-                clips = 275,
-                bulletsPerClip = 35,
-                fireRate = 0.08f,
-                reloadTime = 2.5f,
-                type = WeaponScript.DOEEBEFKIJI.MACHINE_GUN,
-                aimPosition = new Vector3(-0.147f, 0.036f, -0.6f),
-                recoilPower = 0.35f,
-                shakePower = 0.5f,
-                recoil = 1f,
-                aimRecoil = 0.2f
-            };
-            var weapon2 = new WeaponInfo()
-            {
-                name = "M87T",
-                fractions = 10,
-                clips = 48,
-                bulletsPerClip = 6,
-                fireRate = 0.8f,
-                reloadTime = 4.4f,
-                type = WeaponScript.DOEEBEFKIJI.SHOTGUN,
-                aimPosition = new Vector3(-0.2f, 0.05f, 0),
-                recoilPower = 0.35f,
-                shakePower = 0.5f,
-                recoil = 1f,
-                aimRecoil = 6f
-            };
-            customWeapons.Add(weapon);
-            customWeapons.Add(weapon2);
-            CuteLogger.Meow("2");
+                name = "M79",
+                clips = 5,
+                reloadTime = 1.5f,
+                type = WeaponScript.DOEEBEFKIJI.GRENADE_LAUNCHER,
+                animationType = WeaponInfo.AnimationType.TwoHandRifle,
+                aimPosition = new Vector3(0, -0.22f, 0.25f),
+                recoilPower = 1.35f,
+                shakePower = 1f,
+                projectileSpeed = 5,
+                waitBeforeReload = 0.5f,
+                shotDelay = 0
+            };*/
             for (int i = 0; i < weapons.Count; i++)
             {
-                CuteLogger.Meow("3");
                 string bundlePath = weapons[i].FullName + @"\bundle";
                 if (!File.Exists(bundlePath))
                 {
                     return;
                 }
-                CuteLogger.Meow("4");
-                //var json = File.ReadAllText(weapons[i].FullName + @"\npc.json");
-                //var weapon = JSON.Load(json).Make<WeaponInfo>();
-                
-                CuteLogger.Meow("5");
-                customWeapons[i].path = weapons[i].FullName;
-                
+                var json = File.ReadAllText(weapons[i].FullName + @"\weapon.json");
+                var weapon = JSON.Load(json).Make<WeaponInfo>();
+                weapon.path = weapons[i].FullName;
+                customWeapons.Add(weapon);
             }
         }
         public static void AddWeaponsToCatagory()
@@ -307,6 +304,7 @@ namespace FunPlusEssentials.CustomContent
         public string path;
 
         public WeaponScript.DOEEBEFKIJI type;
+        public AnimationType animationType;
 
         //SHOTGUN
         public int fractions;
@@ -314,12 +312,16 @@ namespace FunPlusEssentials.CustomContent
         //GRENADE LAUNCHER
         public int projectileSpeed;
         public float waitBeforeReload;
+        public float shotDelay;
+
+        //MELEE
+        public float hitDelay;
 
         public float fireRate;
         public int bulletsPerClip;
         public int clips;
         public float reloadTime;
-        public Vector3 aimPosition;
+        public float aimPosX, aimPosY, aimPosZ;
         public float recoil;
         public float aimRecoil;
 
@@ -332,5 +334,12 @@ namespace FunPlusEssentials.CustomContent
         public Texture2D icon;
         public Texture2D crosshair;
         //blabla
+
+        public enum AnimationType
+        {
+            OneHand,
+            TwoHandRifle,
+            TwoHandPistol
+        }
     }
 }

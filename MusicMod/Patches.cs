@@ -504,8 +504,8 @@ namespace FunPlusEssentials.Patches
             {
                 __instance.transform.GetComponentInChildren<CanvasScaler>().screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
                 MelonCoroutines.Start(NPCManager.AddNPCInfos(__instance));
+                CustomWeapons.AddWeaponsToCatagory();
             }
-            CustomWeapons.AddWeaponsToCatagory();
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(Volume), "SendOption")]
