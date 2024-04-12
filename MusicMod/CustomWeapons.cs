@@ -116,7 +116,7 @@ namespace FunPlusEssentials.CustomContent
                 var ws = dummyWeapon.GetComponent<WeaponScript>();
                 ws.JIFANOLAADI = weapon.name;
                 ws.FLIAJIAOBHA.aimPosition = new Vector3(weapon.aimPosX, weapon.aimPosY, weapon.aimPosZ);
-
+                Bullet bullet = null;
                 if (weapon.type == WeaponScript.DOEEBEFKIJI.MACHINE_GUN)
                 {
                     ws.FMPLNFBLHKJ.bulletsPerClip = weapon.bulletsPerClip;
@@ -126,6 +126,7 @@ namespace FunPlusEssentials.CustomContent
                     ws.FMPLNFBLHKJ.NoAimErrorAngle = weapon.recoil;
                     ws.FMPLNFBLHKJ.reloadSound = weapon.reloadSound;
                     ws.FMPLNFBLHKJ.fireSound = weapon.shotSound;
+                    bullet = ws.FMPLNFBLHKJ.bullet.gameObject.GetComponent<Bullet>();
                 }
                 else if (weapon.type == WeaponScript.DOEEBEFKIJI.SHOTGUN)
                 {
@@ -135,6 +136,7 @@ namespace FunPlusEssentials.CustomContent
                     ws.MMIKHOPCECE.errorAngle = weapon.aimRecoil;
                     ws.MMIKHOPCECE.reloadSound = weapon.reloadSound;
                     ws.MMIKHOPCECE.fireSound = weapon.shotSound;
+                    bullet = ws.MMIKHOPCECE.bullet.gameObject.GetComponent<Bullet>();
                 }
                 else if (weapon.type == WeaponScript.DOEEBEFKIJI.GRENADE_LAUNCHER)
                 {
@@ -149,8 +151,16 @@ namespace FunPlusEssentials.CustomContent
                 {
                     ws.EKODJEHEFDE.delayTime = weapon.hitDelay;
                     ws.EKODJEHEFDE.fireRate = weapon.fireRate;
+                    ws.EKODJEHEFDE.fireSound = weapon.shotSound;
+                    bullet = ws.EKODJEHEFDE.bullet.gameObject.GetComponent<Bullet>();
                 }
-
+                if (bullet != null)
+                {
+                    if (weapon.bulletDamage != 0) bullet.CJKBHAHOLMJ = weapon.bulletDamage;
+                    if (weapon.bulletForce != 0) bullet.HHBHJIDDGIL = weapon.bulletForce;
+                    if (weapon.bulledSpeed != 0) bullet.DHHNMAIFIFB = weapon.bulledSpeed;
+                    if (weapon.bulletLifeTime != 0) bullet.LNEDFJIMHDL = weapon.bulletLifeTime;
+                }
                 ws.APFMIOFJJNC.recoilPower = weapon.recoilPower;
                 ws.APFMIOFJJNC.shakeAmount = weapon.shakePower;
 
@@ -324,6 +334,11 @@ namespace FunPlusEssentials.CustomContent
         public float aimPosX, aimPosY, aimPosZ;
         public float recoil;
         public float aimRecoil;
+
+        public float bulletLifeTime = 0;
+        public int bulletDamage = 0;
+        public int bulledSpeed = 0;
+        public int bulletForce = 0;
 
         public float recoilPower;
         public float shakePower;
