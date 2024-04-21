@@ -21,6 +21,7 @@ using System.Reflection;
 using FunPlusEssentials.CustomContent;
 using Il2CppSystem.Reflection;
 using System.Security.AccessControl;
+using static Il2CppSystem.Collections.Hashtable;
 
 namespace FunPlusEssentials.CustomContent
 {
@@ -51,6 +52,7 @@ namespace FunPlusEssentials.CustomContent
                     {
                                 assetBundleCreateRequest.Load<GameObject>(weapon.name),
                                 assetBundleCreateRequest.Load<GameObject>(weapon.name + " (TPS)"),
+                                assetBundleCreateRequest.Load<GameObject>(weapon.name + " (Projectile)"),
                     });
                     weapon.shotSound = assetBundleCreateRequest.Load<AudioClip>("fire");
                     weapon.reloadSound = assetBundleCreateRequest.Load<AudioClip>("reload");
@@ -67,6 +69,7 @@ namespace FunPlusEssentials.CustomContent
                         {
                                 assetBundleCreateRequest.Load<GameObject>(weapon.name),
                                 assetBundleCreateRequest.Load<GameObject>(weapon.name + " (TPS)"),
+                                assetBundleCreateRequest.Load<GameObject>(weapon.name + " (Projectile)"),
                         });
                         weapon.shotSound = assetBundleCreateRequest.Load<AudioClip>("fire");
                         weapon.reloadSound = assetBundleCreateRequest.Load<AudioClip>("reload");
@@ -92,17 +95,25 @@ namespace FunPlusEssentials.CustomContent
             };
 
             foreach (WeaponInfo weapon in customWeapons)
-            {            
-
+            {
+                CuteLogger.Meow("0");
                 GameObject dummyWeapon = GameObject.Instantiate(weaponsDummies[(int)weapon.type]);
                 dummyWeapon.transform.SetParent(weaponRoot.transform);
                 dummyWeapon.name = weapon.name;
+                CuteLogger.Meow("1");
                 GameObject.Destroy(dummyWeapon.transform.GetChild(1).gameObject);
+                CuteLogger.Meow("2");
                 GameObject bundleWeapon = GameObject.Instantiate(loadedBundles[weapon.name][0]);
                 GameObject newModel = bundleWeapon.transform.GetChild(0).gameObject;
+                CuteLogger.Meow("3");
+                var muzzleFlash = newModel.transform.FindChild("MuzzleFlash");
+                var pointLight = newModel.transform.FindChild("PointLight");
+                CuteLogger.Meow("4");
+
                 newModel.transform.SetParent(dummyWeapon.transform);
                 dummyWeapon.transform.localPosition = new Vector3(0, 0, 0);
                 var wa = newModel.AddComponent<WeaponAnimation>();
+                CuteLogger.Meow("5");
                 wa.EBJNIFNOGJA = "reload";
                 wa.FEJAHOOPHPD = "take-in";
                 wa.HPKHKABOFOO = "take-out";
@@ -114,9 +125,10 @@ namespace FunPlusEssentials.CustomContent
                     dummyWeapon.AddComponent<WeaponSync_Catcher>();
                 }
                 var ws = dummyWeapon.GetComponent<WeaponScript>();
+                CuteLogger.Meow("6");
                 ws.JIFANOLAADI = weapon.name;
                 ws.FLIAJIAOBHA.aimPosition = new Vector3(weapon.aimPosX, weapon.aimPosY, weapon.aimPosZ);
-                Bullet bullet = null;
+                GameObject bullet = null;
                 if (weapon.type == WeaponScript.DOEEBEFKIJI.MACHINE_GUN)
                 {
                     ws.FMPLNFBLHKJ.bulletsPerClip = weapon.bulletsPerClip;
@@ -125,8 +137,19 @@ namespace FunPlusEssentials.CustomContent
                     ws.FMPLNFBLHKJ.AimErrorAngle = weapon.aimRecoil;
                     ws.FMPLNFBLHKJ.NoAimErrorAngle = weapon.recoil;
                     ws.FMPLNFBLHKJ.reloadSound = weapon.reloadSound;
+                    ws.FMPLNFBLHKJ.reloadTime = weapon.reloadTime;
                     ws.FMPLNFBLHKJ.fireSound = weapon.shotSound;
-                    bullet = ws.FMPLNFBLHKJ.bullet.gameObject.GetComponent<Bullet>();
+                    CuteLogger.Meow("61");
+                    if (muzzleFlash != null) 
+                    {
+                        ws.FMPLNFBLHKJ.muzzleFlash = muzzleFlash.GetChild(0).gameObject;
+                        GameObject.Destroy(dummyWeapon.transform.GetChild(0).gameObject);
+                    }
+                    if (pointLight != null) ws.FMPLNFBLHKJ.pointLight = pointLight.GetComponent<Light>();
+                    CuteLogger.Meow("62");
+                    bullet = loadedBundles[weapon.name][2];
+                    if (bullet != null) ws.FMPLNFBLHKJ.bullet = SetUpCustomProjectile(ws.FMPLNFBLHKJ.bullet, bullet.transform, weapon);
+                    CuteLogger.Meow("63");
                 }
                 else if (weapon.type == WeaponScript.DOEEBEFKIJI.SHOTGUN)
                 {
@@ -135,8 +158,16 @@ namespace FunPlusEssentials.CustomContent
                     ws.MMIKHOPCECE.fireRate = weapon.fireRate;
                     ws.MMIKHOPCECE.errorAngle = weapon.aimRecoil;
                     ws.MMIKHOPCECE.reloadSound = weapon.reloadSound;
+                    ws.MMIKHOPCECE.reloadTime = weapon.reloadTime;
                     ws.MMIKHOPCECE.fireSound = weapon.shotSound;
-                    bullet = ws.MMIKHOPCECE.bullet.gameObject.GetComponent<Bullet>();
+                    CuteLogger.Meow("611");
+
+                    if (muzzleFlash != null) ws.FMPLNFBLHKJ.muzzleFlash = muzzleFlash.GetChild(0).gameObject;
+                    if (pointLight != null) ws.FMPLNFBLHKJ.pointLight = pointLight.GetComponent<Light>();
+                    CuteLogger.Meow("622");
+                    bullet = loadedBundles[weapon.name][2];
+                    if (bullet != null) ws.MMIKHOPCECE.bullet = SetUpCustomProjectile(ws.MMIKHOPCECE.bullet, bullet.transform, weapon);
+                    CuteLogger.Meow("633");
                 }
                 else if (weapon.type == WeaponScript.DOEEBEFKIJI.GRENADE_LAUNCHER)
                 {
@@ -152,18 +183,14 @@ namespace FunPlusEssentials.CustomContent
                     ws.EKODJEHEFDE.delayTime = weapon.hitDelay;
                     ws.EKODJEHEFDE.fireRate = weapon.fireRate;
                     ws.EKODJEHEFDE.fireSound = weapon.shotSound;
-                    bullet = ws.EKODJEHEFDE.bullet.gameObject.GetComponent<Bullet>();
-                }
-                if (bullet != null)
-                {
-                    if (weapon.bulletDamage != 0) bullet.CJKBHAHOLMJ = weapon.bulletDamage;
-                    if (weapon.bulletForce != 0) bullet.HHBHJIDDGIL = weapon.bulletForce;
-                    if (weapon.bulledSpeed != 0) bullet.DHHNMAIFIFB = weapon.bulledSpeed;
-                    if (weapon.bulletLifeTime != 0) bullet.LNEDFJIMHDL = weapon.bulletLifeTime;
+                    CuteLogger.Meow("6111");
+                    bullet = loadedBundles[weapon.name][2];
+                    if (bullet != null) ws.EKODJEHEFDE.bullet = SetUpCustomProjectile(ws.EKODJEHEFDE.bullet, bullet.transform, weapon);
+                    CuteLogger.Meow("6222");
                 }
                 ws.APFMIOFJJNC.recoilPower = weapon.recoilPower;
                 ws.APFMIOFJJNC.shakeAmount = weapon.shakePower;
-
+                CuteLogger.Meow("7");
                 //  Transform fp = bundleWeapon.transform.FindChild("FirePoint");
                 // if (fp != null)
                 //  {
@@ -188,7 +215,7 @@ namespace FunPlusEssentials.CustomContent
                         ca.JAEHDJFGHEB.Add(ws);
                     }
                 }
-
+                CuteLogger.Meow("8");
 
                 foreach (var t in dummyWeapon.GetComponentsInChildren<Renderer>())
                 {
@@ -198,14 +225,30 @@ namespace FunPlusEssentials.CustomContent
                         a.DCMJNPMPBIK = source.transform.FindChild("PLAYER_MODEL/model/leftarmmesh").gameObject.GetComponent<SkinnedMeshRenderer>();
                     }
                 }
-
+                CuteLogger.Meow("9");
                 GameObject.Destroy(bundleWeapon);
                 //ws.HANLPABBHKN = 
                 MelonCoroutines.Start(zaebalo(wa, ws));
                 MelonCoroutines.Start(CustomWeapons.InstantiateTPSWeapons(source.GetComponent<PlayerNetworkController>()));
             }
         }
-
+        private static Transform SetUpCustomProjectile(Transform dummy, Transform projectileObj, WeaponInfo weapon)
+        {
+            if (projectileObj != null && weapon != null)
+            {
+                var b = dummy.GetComponent<Bullet>();
+                var bullet = projectileObj.gameObject.AddComponent<Bullet>();
+                foreach (GameObject g in b.FABFPAOEEHE)
+                {
+                    bullet.FABFPAOEEHE.Add(g);
+                }
+                if (weapon.bulletDamage != 0) bullet.CJKBHAHOLMJ = weapon.bulletDamage;
+                if (weapon.bulletForce != 0) bullet.HHBHJIDDGIL = weapon.bulletForce;
+                if (weapon.bulledSpeed != 0) bullet.DHHNMAIFIFB = weapon.bulledSpeed;
+                if (weapon.bulletLifeTime != 0) bullet.LNEDFJIMHDL = weapon.bulletLifeTime;
+            }
+            return projectileObj;
+        }
         public static IEnumerator InstantiateTPSWeapons(PlayerNetworkController source)
         {
             yield return new WaitForSeconds(0.05f);

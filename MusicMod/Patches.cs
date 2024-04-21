@@ -757,6 +757,16 @@ namespace FunPlusEssentials.Patches
 
         }
     }
+    //KHCH - knife, GHLH -shotgun
+    [HarmonyLib.HarmonyPatch(typeof(WeaponScript.OKEJDECKCDJ), "MoveNext")]
+    public static class MachineGunOneShot
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix()
+        {
+
+        }
+    }
 
     [HarmonyLib.HarmonyPatch(typeof(FPScontroller), "Update")]
     public static class FPScontrollerUpdate
