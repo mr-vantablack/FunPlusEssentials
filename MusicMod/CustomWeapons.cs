@@ -121,6 +121,8 @@ namespace FunPlusEssentials.CustomContent
                 var ws = dummyWeapon.GetComponent<WeaponScript>();
                 ws.JIFANOLAADI = weapon.name;
                 ws.FLIAJIAOBHA.aimPosition = new Vector3(weapon.aimPosX, weapon.aimPosY, weapon.aimPosZ);
+                ws.FLIAJIAOBHA.playAnimation = weapon.aimAnimation;
+                ws.HHAMHPCAHNK = weapon.singleFire;
                 if (weapon.aimFov != 0) ws.FLIAJIAOBHA.toFov = weapon.aimFov;
                 GameObject bullet = null;
                 if (weapon.type == WeaponScript.DOEEBEFKIJI.MACHINE_GUN)
@@ -226,8 +228,8 @@ namespace FunPlusEssentials.CustomContent
                 GameObject.Destroy(bundleWeapon);
                 //ws.HANLPABBHKN = 
                 MelonCoroutines.Start(zaebalo(wa, ws));
-                MelonCoroutines.Start(CustomWeapons.InstantiateTPSWeapons(source.GetComponent<PlayerNetworkController>()));
             }
+            MelonCoroutines.Start(CustomWeapons.InstantiateTPSWeapons(source.GetComponent<PlayerNetworkController>()));
         }
         private static Transform SetUpCustomProjectile(Transform dummy, Transform projectileObj, WeaponInfo weapon)
         {
@@ -378,13 +380,17 @@ namespace FunPlusEssentials.CustomContent
         public int bulletsPerClip;
         public int clips;
         public float reloadTime;
+        public bool singleFire;
         public float aimPosX, aimPosY, aimPosZ;
         public float recoil;
         public float aimRecoil;
         public bool useScope;
         public int aimFov;
+        public bool aimAnimation;
+
         public int shopPrice;
         public bool shopAvailable;
+        public string shopInfo;
 
         public float bulletLifeTime = 0;
         public int bulletDamage = 0;

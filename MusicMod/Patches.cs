@@ -431,6 +431,23 @@ namespace FunPlusEssentials.Patches
             MelonCoroutines.Start(MapManager.SetUpWaves(__instance));
         }
     }
+
+    [HarmonyLib.HarmonyPatch(typeof(ShopSystem), "Awake")]
+    public static class ShopSystemAwake
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(ShopSystem __instance)
+        {
+            if (MapManager.useCustomNPCs)
+            {
+                foreach (WeaponInfo weapon in CustomWeapons.customWeapons)
+                {
+                    if (weapon.shopAvailable)
+                    __instance.JDCKBMLGDJD.Add(new ShopSystem.weapon() { name = weapon.name, price = weapon.shopPrice, bulletPrice = weapon.bulletDamage / 2, type = weapon.shopInfo });
+                }
+            }
+        }
+    }
     #endregion
 
     #region PhotonNetwork

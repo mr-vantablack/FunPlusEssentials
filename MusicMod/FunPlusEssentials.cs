@@ -8,7 +8,7 @@ using System.Collections;
 using FunPlusEssentials.Other;
 using UnhollowerRuntimeLib;
 
-[assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "4.0b", "Vantablack")]
+[assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "4.1", "Vantablack")]
 [assembly: MelonGame("ZeoWorks", "Slendytubbies 3")]
 
 namespace FunPlusEssentials
