@@ -422,7 +422,7 @@ namespace FunPlusEssentials.CustomContent
         public static IEnumerator AddNPCInfos(Volume sandboxConsole)
         {            
             yield return MelonCoroutines.Start(LoadNPCIcons());
-            string customNPCs = PhotonNetwork.room.customProperties["customNPCs"] != null ? PhotonNetwork.room.customProperties["customNPCs"].ToString() : "";
+            string customNPCs = PhotonNetwork.room.customProperties["customContent"] != null ? PhotonNetwork.room.customProperties["customContent"].ToString() : "";
             if (customNPCs != null && customNPCs != "")
             {
                 foreach (string npcName in customNPCs.Split('|'))

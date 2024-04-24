@@ -79,7 +79,17 @@ namespace FunPlusEssentials.Patches
             
         }
     }
-
+    [HarmonyLib.HarmonyPatch(typeof(PlayerNetworkController), "Awake")]
+    public static class OnPlayerSpawned4
+    {
+        static void Postfix(PlayerNetworkController __instance)
+        {
+            if (MapManager.useCustomNPCs)
+            {
+               MelonCoroutines.Start(CustomWeapons.InstantiateFPSWeapons(__instance.gameObject));
+            }
+        }
+    }
     [HarmonyLib.HarmonyPatch(typeof(PlayerNetworkController), "BCPFIMDIMJE")]
     public static class AntiCrashPatch
     {
@@ -265,7 +275,7 @@ namespace FunPlusEssentials.Patches
             scene = scene.Replace(" (Day)", "");
             scene = scene.Replace(" (Dusk)", "");
             scene = scene.Replace(" (Night)", "");
-            string customNPCs = PhotonNetwork.room.customProperties["customNPCs"] != null ? PhotonNetwork.room.customProperties["customNPCs"].ToString() : "";
+            string customNPCs = PhotonNetwork.room.customProperties["customContent"] != null ? PhotonNetwork.room.customProperties["customContent"].ToString() : "";
             CuteLogger.Meow(scene);
             foreach (MapInfo map in MapManager.customMaps)
             {
@@ -309,7 +319,11 @@ namespace FunPlusEssentials.Patches
                     if (npcName != null && npcName != "")
                     {
                         var npc = NPCManager.CheckNPCInfos(npcName);
-                        if (npc == null) { missingNPCs += npcName + ", "; }
+                        var weapon = CustomWeapons.CheckWeaponInfos(npcName);
+                        if (npc == null && weapon == null) 
+                        {
+                            missingNPCs += npcName + ", "; 
+                        }
                     }
                 }
             }
@@ -512,8 +526,7 @@ namespace FunPlusEssentials.Patches
         public static event Event onPlayerSpawned;
         static void Postfix(PlayerDamage __instance)
         {
-           // onPlayerSpawned?.Invoke(__instance);
-            
+            onPlayerSpawned?.Invoke(__instance);
         }
     }
 

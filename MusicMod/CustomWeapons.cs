@@ -22,6 +22,7 @@ using FunPlusEssentials.CustomContent;
 using Il2CppSystem.Reflection;
 using System.Security.AccessControl;
 using static Il2CppSystem.Collections.Hashtable;
+using static ShopSystem;
 
 namespace FunPlusEssentials.CustomContent
 {
@@ -36,7 +37,6 @@ namespace FunPlusEssentials.CustomContent
 
         public static bool CheckForWeapons(GameObject root)
         {
-            CuteLogger.Bark("vvvvv");
             if (root.transform.FindChild("LookObject/Main Camera/Weapon Camera/WeaponManager").childCount > 24) return true;
             return false;
         }
@@ -97,21 +97,27 @@ namespace FunPlusEssentials.CustomContent
                         assetBundleCreateRequest.Unload(false);
                     }
                 }
-                
+
             }
-            if (!CustomWeapons.CheckForWeapons(GameObject.FindObjectOfType<LadderPlayer>().gameObject))
-            {
-                MelonCoroutines.Start(CustomWeapons.InstantiateFPSWeapons());
-            }
+            MelonCoroutines.Start(CustomWeapons.InstantiateFPSWeapons(GameObject.FindObjectOfType<LadderPlayer>().gameObject));
         }
         public static void SpawnWeapons()
         {
-            MelonCoroutines.Start(InstantiateFPSWeapons());
+            //MelonCoroutines.Start(InstantiateFPSWeapons());
         }
-        public static IEnumerator InstantiateFPSWeapons()
+        public static WeaponInfo CheckWeaponInfos(string weaponName)
         {
-            var source = GameObject.FindObjectOfType<LadderPlayer>().gameObject;
+            foreach (WeaponInfo weapon in customWeapons)
+            {
+                if (weapon.name == weaponName) { return weapon; }
+            }
+            return null;
+        }
+        public static IEnumerator InstantiateFPSWeapons(GameObject source)
+        {
+
             yield return new WaitForSeconds(0.05f);
+            if (CustomWeapons.CheckForWeapons(source)) { yield break; }
             yield return MelonCoroutines.Start(LoadWeaponsIcons());
             // customWeapons.Add(new WeaponInfo() { name = "M4A1", clips = 105, fireRate = 0.05f, type = WeaponScript.DOEEBEFKIJI.MACHINE_GUN });
             weaponRoot = source.transform.FindChild("LookObject/Main Camera/Weapon Camera/WeaponManager").gameObject;
@@ -255,9 +261,9 @@ namespace FunPlusEssentials.CustomContent
                 }
                 GameObject.Destroy(bundleWeapon);
                 //ws.HANLPABBHKN = 
+                MelonCoroutines.Start(CustomWeapons.InstantiateTPSWeapons(source.GetComponent<PlayerNetworkController>()));
                 MelonCoroutines.Start(zaebalo(wa, ws));
             }
-            MelonCoroutines.Start(CustomWeapons.InstantiateTPSWeapons(source.GetComponent<PlayerNetworkController>()));
         }
         private static Transform SetUpCustomProjectile(Transform dummy, Transform projectileObj, WeaponInfo weapon)
         {
@@ -283,8 +289,9 @@ namespace FunPlusEssentials.CustomContent
         public static IEnumerator InstantiateTPSWeapons(PlayerNetworkController source)
         {
             yield return new WaitForSeconds(0.05f);
-
             Transform p = source.HDCJMMEMDEJ;
+            weaponRoot = source.transform.FindChild("LookObject/Main Camera/Weapon Camera/WeaponManager").gameObject;
+            if (p.childCount > 30) yield break;
 
             foreach (WeaponInfo weapon in customWeapons)
             {

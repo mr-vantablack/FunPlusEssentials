@@ -385,12 +385,17 @@ namespace FunPlusEssentials.CustomContent
                     var npc = NPCManager.CheckNPCInfos(NPCManager.NPCInfos[i].name);
                     if (npc != null) customNPCs += npc.name + "|";
                 }
+                for (int i = 0; i < CustomWeapons.customWeapons.Count; i++)
+                {
+                    var weapon = CustomWeapons.CheckWeaponInfos(CustomWeapons.customWeapons[i].name);
+                    if (weapon != null) customNPCs += weapon.name + "|";
+                }
             }
             string[] words = customNPCs.Split('|');
             string[] distinctWords = words.Distinct().ToArray();
             string output = string.Join("|", distinctWords);
-            Helper.SetRoomProperty("customNPCs", output);
-            CuteLogger.Meow(PhotonNetwork.room.customProperties["customNPCs"].ToString());
+            Helper.SetRoomProperty("customContent", output);
+            CuteLogger.Meow(PhotonNetwork.room.customProperties["customContent"].ToString());
         }
         public static IEnumerator SpawnRoom()
         {
