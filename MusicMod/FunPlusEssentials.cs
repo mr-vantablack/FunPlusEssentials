@@ -28,26 +28,26 @@ namespace FunPlusEssentials
         {
             if (sceneName != "Updater" && sceneName != "MainMenu")
             {
-                if (MapManager.useCustomNPCs) 
+                if (MapManager.useCustomNPCs)
                 {
                     NPCManager.LoadBundles();
-                    MelonCoroutines.Start(CustomWeapons.LoadBundles());
                 }
-
             }
         }
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
             if (sceneName != "Updater" && sceneName != "MainMenu")
             {
-                if (MapManager.useCustomNPCs) NPCManager.LoadBundles();
+                // if (MapManager.useCustomNPCs) NPCManager.LoadBundles();
                 MapManager.CheckForCustomMap(sceneName);
+                
                 PhotonNetwork.isMessageQueueRunning = true;
             }
             if (sceneName == "MainMenu")
             {
                 Helper.SetPropertyV2("FPE", FPE.AppInfo.Version.ToString());
                 MapManager.useCustomNPCs = false;
+                MapManager.isCustomMap = false;
                 NPCManager.loadedBundles.Clear();
                 if (Config.customServersEnabled) { ServerManager.AddCustomServers(); }
                 MelonCoroutines.Start(MapManager.CheckMainMenuOverride());

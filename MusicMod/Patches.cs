@@ -69,6 +69,17 @@ namespace FunPlusEssentials.Patches
     #endregion
 
     #region PlayerNetworkController
+
+    [HarmonyLib.HarmonyPatch(typeof(LadderPlayer), "Start")]
+    public static class OnPlayerSpawned2
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(LadderPlayer __instance)
+        {
+            
+        }
+    }
+
     [HarmonyLib.HarmonyPatch(typeof(PlayerNetworkController), "BCPFIMDIMJE")]
     public static class AntiCrashPatch
     {
@@ -85,6 +96,11 @@ namespace FunPlusEssentials.Patches
                 else return true;
             }
             return true;
+        }
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(ref string JMOEKIHCLBH, ref float FADNANLHJHF, PlayerNetworkController __instance)
+        {
+            
         }
     }
     #endregion
@@ -496,11 +512,8 @@ namespace FunPlusEssentials.Patches
         public static event Event onPlayerSpawned;
         static void Postfix(PlayerDamage __instance)
         {
-            onPlayerSpawned?.Invoke(__instance);
-            if (!CustomWeapons.CheckForWeapons(__instance.gameObject))
-            {
-                MelonCoroutines.Start(CustomWeapons.InstantiateFPSWeapons(__instance.gameObject));
-            }
+           // onPlayerSpawned?.Invoke(__instance);
+            
         }
     }
 
@@ -521,6 +534,7 @@ namespace FunPlusEssentials.Patches
             {
                 __instance.transform.GetComponentInChildren<CanvasScaler>().screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
                 MelonCoroutines.Start(NPCManager.AddNPCInfos(__instance));
+              
                 CustomWeapons.AddWeaponsToCatagory();
             }
         }

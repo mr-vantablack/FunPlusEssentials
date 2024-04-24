@@ -411,18 +411,13 @@ namespace FunPlusEssentials.CustomContent
                     }
                 }
             }
-            foreach (Il2CppAssetBundle b in Il2CppAssetBundleManager.GetAllLoadedAssetBundles())
-            {
-                foreach (string s in b.GetAllAssetNames())
-                {
-                    CuteLogger.Meow(s);
-                }
-            }
         }
         public static void LoadBundles()
         {
             loadedBundles.Clear();
+            CustomWeapons.loadedBundles.Clear();
             MelonCoroutines.Start(LoadAllBundles());
+            MelonCoroutines.Start(CustomWeapons.LoadBundles());
         }
         public static IEnumerator AddNPCInfos(Volume sandboxConsole)
         {            
