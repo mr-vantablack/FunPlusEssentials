@@ -223,6 +223,7 @@ namespace FunPlusEssentials.CustomContent
                     ws.EKODJEHEFDE.delayTime = weapon.hitDelay;
                     ws.EKODJEHEFDE.fireRate = weapon.fireRate;
                     ws.EKODJEHEFDE.fireSound = weapon.shotSound;
+                    ws.HHAMHPCAHNK = true;
                     bullet = loadedProjectiles[weapon.name];
                     if (bullet != null) ws.EKODJEHEFDE.bullet = SetUpCustomProjectile(ws.EKODJEHEFDE.bullet, bullet.transform, weapon);
                 }
