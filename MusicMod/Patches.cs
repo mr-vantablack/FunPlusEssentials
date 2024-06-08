@@ -764,7 +764,7 @@ namespace FunPlusEssentials.Patches
         static void Postfix(CustardBot __instance)
         {
             var data = __instance.photonView.instantiationData;
-            CuteLogger.Meow("data " + data[0].ToString());
+           // CuteLogger.Meow("data " + data[0].ToString());
             if (data[0].ToString() == "CustomNPC")
             {
                 NPCManager.SetUpCustomNPC(data[1].ToString(), __instance.gameObject, NPCType.CustardBot);

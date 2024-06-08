@@ -12,10 +12,10 @@ using UnityEngine;
 
 namespace FunPlusEssentials
 {
-    class FunRPC : Attribute
+    public class FunRPC : Attribute
     {
     }
-    class UsingRPC : Attribute
+    public class UsingRPC : Attribute
     {
     }
     public static class RPCManager
@@ -24,14 +24,18 @@ namespace FunPlusEssentials
 
         public static void Init()
         {
-            foreach (Type type in Assembly.GetExecutingAssembly().GetTypes())
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (type.IsClass && type.GetCustomAttribute<UsingRPC>() != null)
+                foreach (Type type in assembly.GetTypes())
                 {
-                    rpcMethodsCache.Add(type, type.GetMethods().Where(m => m.GetCustomAttribute<FunRPC>() != null).ToList());
+                    if (type.IsClass && type.GetCustomAttribute<UsingRPC>() != null)
+                    {
+                        rpcMethodsCache.Add(type, type.GetMethods().Where(m => m.GetCustomAttribute<FunRPC>() != null).ToList());
+                    }
                 }
             }
         }
+
         public static bool IsUsingRPC(Il2CppSystem.Type type)
         {
             foreach (Type t in rpcMethodsCache.Keys)

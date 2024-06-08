@@ -43,6 +43,7 @@ namespace FunPlusEssentials.Essentials
             { "EnableInfectedFilters", "true" },
             { "EnablePostProcessing", "true" },
             { "EnableCustomServers", "false" },
+            { "CustomServerAppID", "" }
         };
         public static bool logsEnabled, blacklistEnabled, 
         musicEnabled, securityEnabled, noFileSizeLimit, 
@@ -50,7 +51,7 @@ namespace FunPlusEssentials.Essentials
         postProcessingEnabled, customServersEnabled;
         public static KeyCode scoreboardKey, hideHudKey, proneKey;
         public static float fov;
-        public static string nicknameColor = "";
+        public static string nicknameColor = "", customServerAppId = "";
 
         public static void SetUpConfig()
         {
@@ -72,6 +73,7 @@ namespace FunPlusEssentials.Essentials
             filtersEnabled = Convert.ToBoolean(config.Read("EnableInfectedFilters"));
             postProcessingEnabled = Convert.ToBoolean(config.Read("EnablePostProcessing"));
             customServersEnabled = Convert.ToBoolean(config.Read("EnableCustomServers"));
+            customServerAppId = config.Read("CustomServerAppID");
             if (!Enum.TryParse(config.Read("ScoreboardKeyCode"), out scoreboardKey)) { scoreboardKey = KeyCode.F1; }
             if (!Enum.TryParse(config.Read("HideHUDKeyCode"), out hideHudKey)) { hideHudKey = KeyCode.H; }
             if (!Enum.TryParse(config.Read("ProneKeyCode"), out proneKey)) { proneKey = KeyCode.C; }
@@ -131,6 +133,7 @@ namespace FunPlusEssentials.Essentials
 
         public static void AddCustomServers()
         {
+            GameObject.FindObjectOfType<UpdaterV2>().CBGJGAGOEJE = true;
             PhotonNetwork.PhotonServerSettings.HostType = ServerSettings.HostingOption.PhotonCloud;
             PhotonNetwork.player.name = ObscuredPrefs.GetString("ZWName0001", "Player " + UnityEngine.Random.Range(1, 999)) + "|2";
             serverList.Clear();
@@ -169,6 +172,16 @@ namespace FunPlusEssentials.Essentials
                         cloudRegion = r
                     });
                 }
+            }
+            if (Config.customServerAppId != "")
+            {
+                customServers.Add(new UpdaterV2.serverInfo()
+                {
+                    serverName = "CUSTOM",
+                    serverType = "APP",
+                    serverIP = Config.customServerAppId,
+                    cloudRegion = CloudRegionCode.eu
+                });
             }
         }
     }

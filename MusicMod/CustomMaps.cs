@@ -99,6 +99,7 @@ namespace FunPlusEssentials.CustomContent
         public static bool useCustomNPCs;
         internal static bool m_loaded;
         internal static Il2CppAssetBundle m_loadedBundle;
+        internal static List<FunTrigger> m_triggers;
     
         public static IEnumerator CheckMainMenuOverride()
         {
@@ -409,7 +410,8 @@ namespace FunPlusEssentials.CustomContent
                 roomMultiplayerMenu.gameObject.name = "__Room";
                 //FillWeaponsArray(roomMultiplayerMenu);
             }
-            SetUpTriggers();
+            SetUpTriggersOld();
+            SetUpTrigers();
             SetUpAudioSources();
             yield return null;
         }
@@ -434,7 +436,7 @@ namespace FunPlusEssentials.CustomContent
                 }
             }
         }
-        public static void SetUpTriggers()
+        public static void SetUpTriggersOld()
         {
             var kz = GameObject.Find("Killzones");
             if (kz != null)
@@ -475,6 +477,12 @@ namespace FunPlusEssentials.CustomContent
                     comp.coolDown = coolDown;
                 }
             }
+        }
+
+        public static void SetUpTrigers()
+        {
+            var json = File.ReadAllText(currentMap.assetsPath + @"\mapData.json");
+            JSON.MakeInto(JSON.Load(json), out m_triggers);
         }
     }
 }

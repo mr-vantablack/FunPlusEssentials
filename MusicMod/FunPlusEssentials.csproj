@@ -183,6 +183,7 @@
     <Compile Include="CustomMaps.cs" />
     <Compile Include="CustomNPCs.cs" />
     <Compile Include="CustomWeapons.cs" />
+    <Compile Include="FunTriggerTypes.cs" />
     <Compile Include="NPCTypes.cs" />
     <Compile Include="Patches.cs" />
     <Compile Include="Fun.cs" />
