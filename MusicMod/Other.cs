@@ -264,6 +264,28 @@ namespace FunPlusEssentials.Other
                     "</size>"
                 }));
             }
+            if (lobby.FANLKBJODCL && !lobby.EJLDOIOJGPC && (lobby.NNKFEAPBLCK == 3))
+            {
+                GUI.depth = depth;
+                GUI.skin = lobby.BIPMFIBNFBC;
+                int num = Screen.height / 17;
+                int num2 = Screen.width / 17;
+                string text = "<color=grey>☐</color>";
+                if (Plague.Enabled)
+                {
+                    text = "<color=green>☑</color>";
+                }
+                Plague.Enabled = GUI.Toggle(new Rect(Screen.width - num * 13, Screen.height - num * 4, num * 6, num), Plague.Enabled, string.Concat(new string[]
+                {
+                    "<size=",
+                    ((float)num / 1.75f).ToString(),
+                    ">",
+                    text,
+                    " ",
+                    "<color=white>Plague mode</color>",
+                    "</size>"
+                }));
+            }
         }
     }
     public static class Helper //все дерьмо из этого класса нужно в отедльную библиотеку чтобы не засорять мод
@@ -500,7 +522,7 @@ namespace FunPlusEssentials.Other
             MultiplayerChat.HLIDELGJEON(Paint(senderName, nameColor), Paint(text, textColor), "Team A");
             // RoomMultiplayerMenu.PGIHKEOJBCH = new Color(1, 0, 0, 1);
         }
-        public static void SetRoomProperty(string property, string parameter)
+        public static void SetRoomProperty(string property, Il2CppSystem.Object parameter)
         {
             Hashtable newsettings = new Hashtable();
             newsettings[property] = parameter;

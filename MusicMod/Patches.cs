@@ -170,11 +170,27 @@ namespace FunPlusEssentials.Patches
     [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "FixedUpdate")]
     public static class RoomMultiplayerMenuFixedUpdate
     {
+        [HarmonyLib.HarmonyPrefix]
+        static bool Prefix(RoomMultiplayerMenu __instance)
+        {
+            if (Plague.Enabled) return false;
+            else return true;
+        }
         [HarmonyLib.HarmonyPostfix]
         static void Postfix(RoomMultiplayerMenu __instance)
         {
             if (RMMFix.Instance != null) __instance.HGKEEDKPGOD = RMMFix.Instance.leadingPlayer;
             //Msg("yes");
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "OnGUI")]
+    public static class RoomMultiplayerMenuOnGUI
+    {
+        [HarmonyLib.HarmonyPrefix]
+        static bool Prefix(RoomMultiplayerMenu __instance)
+        {
+            if (Plague.Enabled) return false;
+            else return true;
         }
     }
 
@@ -198,6 +214,7 @@ namespace FunPlusEssentials.Patches
             Helper.Room.AddComponent<MusicPlayer>();
             Helper.Room.AddComponent<HudHider>();
             Helper.Room.AddComponent<FunRPCHandler>();
+            if (Plague.Enabled) Helper.Room.AddComponent<PlagueController>();
             if (Config.scoreboardEnabled)
             {
                 Helper.Room.AddComponent<RMMFix>();
@@ -334,7 +351,23 @@ namespace FunPlusEssentials.Patches
                 Notifier.Show("<color=red>Missing custom content!</color>\nThis room uses custom content. Please download the missing files:\n" + missingNPCs);
                 return false;
             }
-            if (PhotonNetwork.isMasterClient) MapManager.CheckForCustomContent();
+            if (PhotonNetwork.isMasterClient)
+            {
+                MapManager.CheckForCustomContent();
+                if (Plague.Enabled) Helper.SetRoomProperty("Plague", "true");
+            }
+            else
+            {
+                Plague.Enabled = false;
+                if (PhotonNetwork.room.customProperties["Plague"] != null)
+                {
+                    if (PhotonNetwork.room.customProperties["Plague"].ToString() == "true")
+                    {
+                        Plague.Enabled = true;
+                    }
+                }
+            }
+
             return true;
         }
     }
@@ -395,6 +428,7 @@ namespace FunPlusEssentials.Patches
         {
             MapManager.AddCustomMaps();
             __instance.gameObject.AddComponent<LobbyHelper>().lobby = __instance;
+            //__instance.MHDLCNKEEGN.Add(new LobbyMenu.AllModes() { modeID = "PLG", modeName = "PLAGUE" });
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(LobbyMenu), "OnEnable")]
