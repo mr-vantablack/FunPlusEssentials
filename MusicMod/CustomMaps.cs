@@ -139,6 +139,7 @@ namespace FunPlusEssentials.CustomContent
         public static void CheckMapsFolder()
         {
             Directory.CreateDirectory(customMapsDirectory);
+            Directory.CreateDirectory(Config.mainPath + @"\Plague");
             mapsFiles = Helper.GetAllDirectories(customMapsDirectory);
             foreach (FileSystemInfo dir in mapsFiles)
             {

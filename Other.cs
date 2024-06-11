@@ -498,10 +498,6 @@ namespace FunPlusEssentials.Other
 
         #endregion
 
-        public static AudioClip RandomSound(List<AudioClip> sounds)
-        {
-            return sounds[UnityEngine.Random.Range(0, sounds.Count)];
-        }
         static T CopyComponent<T>(T original, GameObject destination) where T : Component
         {
             Il2CppSystem.Type type = original.GetIl2CppType();
@@ -532,12 +528,6 @@ namespace FunPlusEssentials.Other
             newsettings[property] = parameter;
             PhotonNetwork.room.SetCustomProperties(newsettings);
         }
-        public static void SetRoomProperty(string property, string parameter)
-        {
-            Hashtable newsettings = new Hashtable();
-            newsettings[property] = parameter;
-            PhotonNetwork.room.SetCustomProperties(newsettings);
-        }
         public static void SetPropertyV2(string property, string parameter)
         {
             Hashtable hashtable = new Hashtable
@@ -561,29 +551,16 @@ namespace FunPlusEssentials.Other
             }
         }
 
-        public static Il2CppSystem.Object GetRoomProperty(string propertyName)
-        {
-            return PhotonNetwork.room.CustomProperties[propertyName];
-        }
         public static Il2CppSystem.Object GetProperty(PhotonPlayer player, string property)
         {
-            try
+            foreach (PlayerProperties pp in GameObject.FindObjectsOfType<PlayerProperties>())
             {
-                foreach (PlayerProperties pp in GameObject.FindObjectsOfType<PlayerProperties>())
+                if (pp.gameObject.GetComponent<PhotonView>().owner.ID == player.ID)
                 {
-                    var pv = pp.gameObject.GetComponent<PhotonView>();
-                    if (pv != null && pv.owner.ID == player.ID)
-                    {
-                        return pp.GetProperties(property);
-                    }
+                    return pp.GetProperties(property);
                 }
-                return null;
             }
-            catch (Exception e) 
-            {
-                CuteLogger.Quack($"ебучий нулл референс в GetProperty: {e.Message}");
-                return null;
-            }
+            return null;
         }
         public static object GetPropertyV2(PhotonPlayer player, string keyName)
         {

@@ -202,6 +202,15 @@ namespace FunPlusEssentials.Patches
 
         static void Prefix()
         {
+            if (PhotonNetwork.room.customProperties["Plague"] != null)
+            {
+                Plague.Enabled = true;
+            }
+            if (Plague.Enabled)
+            {
+                Helper.Room.AddComponent<PlagueController>();
+                Helper.RoomMultiplayerMenu.KCIGKBNBPNN = "INF";
+            }
         }
         static void Postfix(RoomMultiplayerMenu __instance)
         {
@@ -214,7 +223,7 @@ namespace FunPlusEssentials.Patches
             Helper.Room.AddComponent<MusicPlayer>();
             Helper.Room.AddComponent<HudHider>();
             Helper.Room.AddComponent<FunRPCHandler>();
-            if (Plague.Enabled) Helper.Room.AddComponent<PlagueController>();
+            
             if (Config.scoreboardEnabled)
             {
                 Helper.Room.AddComponent<RMMFix>();
@@ -361,10 +370,7 @@ namespace FunPlusEssentials.Patches
                 Plague.Enabled = false;
                 if (PhotonNetwork.room.customProperties["Plague"] != null)
                 {
-                    if (PhotonNetwork.room.customProperties["Plague"].ToString() == "true")
-                    {
                         Plague.Enabled = true;
-                    }
                 }
             }
 
@@ -560,10 +566,83 @@ namespace FunPlusEssentials.Patches
         public static event Event onPlayerSpawned;
         static void Postfix(PlayerDamage __instance)
         {
+            __instance.GKNFEDOCILC = new Quaternion(0f, 0f, 0f, 0f);
+            Helper.SetProperty("joined", "true");
             onPlayerSpawned?.Invoke(__instance);
         }
     }
-
+    [HarmonyLib.HarmonyPatch(typeof(PlayerMonster), "Awake")]
+    public static class PlaguePlayerMonsterSpawnPatch
+    {
+        static void Postfix(PlayerMonster __instance)
+        {
+            __instance.gameObject.AddComponent<PlagueMonster>();
+        }
+    }
+    //
+    [HarmonyLib.HarmonyPatch(typeof(RagdollController), "BLACJABKHFN")]
+    public static class PlagueRespawnPatch
+    {
+        static bool Prefix(RagdollController __instance)
+        {
+            if (!Plague.Enabled) return true;
+            __instance.NADEDDKIIJL--;
+            if (__instance.NADEDDKIIJL == 0)
+            {
+                __instance.ODAHLNNDKEJ();
+                if (PhotonNetwork.offlineMode)
+                {
+                    PhotonNetwork.Disconnect();
+                }
+                GameObject.FindWithTag("Network").GetComponent<RoomMultiplayerMenu>().SpawnPlayer("Team B");
+                UnityEngine.Object.Destroy(__instance.gameObject);
+            }
+            return false;
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "SpawnPlayer")]
+    public static class PlagueSpawnPatch
+    {
+        static bool Prefix(ref string teamName, RoomMultiplayerMenu __instance)
+        {
+            if (!Plague.Enabled) return true;
+            var team_1 = __instance.OJPBAOICLJK;
+            var team_2 = __instance.KGLOGDGOELM;
+            var Player = __instance.CNLHJAICIBH;
+            var playerPrefab = __instance.BGOEEADMCBE;
+            if (Player != null)
+            {
+                PhotonNetwork.Destroy(Player);
+            }
+            if (teamName == string.Empty)
+            {
+                teamName = team_1.teamName;
+            }
+            Helper.SetProperty("TeamName", teamName);
+            if (teamName == team_1.teamName)
+            {
+                int num = UnityEngine.Random.Range(0, team_1.spawnPoints.Length);
+                __instance.CNLHJAICIBH = PhotonNetwork.NOOU(playerPrefab.name, team_1.spawnPoints[num].position, team_1.spawnPoints[num].rotation, 0);
+                __instance.CNLHJAICIBH.name = PhotonNetwork.player.name;
+            }
+            else
+            {
+                PlagueController.Instance.SpawnInfectedPlayer();
+            }
+            __instance.DIAFJILHGPC.SetActive(false);
+            return false;
+        }
+        //
+    }
+    [HarmonyLib.HarmonyPatch(typeof(RoomMultiplayerMenu), "Update")]
+    public static class PlagueRoomPatch
+    {
+        static void Postfix(RoomMultiplayerMenu __instance)
+        {
+            if (Plague.Enabled) Cursor.visible = __instance.IOMIAHNBDOG;
+            Application.targetFrameRate = Config.fpsLock;
+        }
+    }
     [HarmonyLib.HarmonyPatch(typeof(Volume), "Awake")]
     public static class VolumeStart
     {
@@ -662,6 +741,7 @@ namespace FunPlusEssentials.Patches
         [HarmonyLib.HarmonyPostfix]
         static void Postfix(WeaponScript __instance)
         {
+            __instance.GKNFEDOCILC = new Quaternion(0f, 0f, 0f, 0f);
             if (Config.fov > 65 && Config.fov <= 100)
             {
                 __instance.KKCIIEDNLEO = new Vector3(0f, 0f, ((65 - Config.fov) / 75) * -1);
@@ -925,8 +1005,8 @@ namespace FunPlusEssentials.Patches
         {
             if (!Config.postProcessingEnabled)
             {
-                GameObject.Destroy(__instance.gameObject);
-                Helper.Player.AddComponent<AudioListener>();
+                GameObject.Destroy(__instance.transform.GetComponentInChildren<BeautifyEffect.Beautify>());
+                GameObject.Destroy(__instance.transform.GetComponentInChildren<PostProcessingBehaviour>());
             }
         }
     }

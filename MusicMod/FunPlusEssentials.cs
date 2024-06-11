@@ -39,12 +39,13 @@ namespace FunPlusEssentials
             if (sceneName != "Updater" && sceneName != "MainMenu")
             {
                 // if (MapManager.useCustomNPCs) NPCManager.LoadBundles();
-                MapManager.CheckForCustomMap(sceneName);
-                
+                MapManager.CheckForCustomMap(sceneName);             
                 PhotonNetwork.isMessageQueueRunning = true;
             }
             if (sceneName == "MainMenu")
             {
+                Plague.Enabled = false;
+                PhotonNetwork.automaticallySyncScene = true;
                 Helper.SetPropertyV2("FPE", FPE.AppInfo.Version.ToString());
                 MapManager.useCustomNPCs = false;
                 MapManager.isCustomMap = false;
@@ -58,6 +59,7 @@ namespace FunPlusEssentials
                 var t = GameObject.Find("Offlink (7)").transform.GetChild(0);
                 GameObject.CreatePrimitive(PrimitiveType.Cube).transform.position = t.position;
             }
+            QualitySettings.vSyncCount = Config.vSyncCount;
         }
 
         public override void OnApplicationStart()

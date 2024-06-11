@@ -43,7 +43,9 @@ namespace FunPlusEssentials.Essentials
             { "EnableInfectedFilters", "true" },
             { "EnablePostProcessing", "true" },
             { "EnableCustomServers", "false" },
-            { "CustomServerAppID", "" }
+            { "CustomServerAppID", "" },
+            { "FPSLock", "60" },
+            { "V-SyncCount", "1" }
         };
         public static bool logsEnabled, blacklistEnabled, 
         musicEnabled, securityEnabled, noFileSizeLimit, 
@@ -51,6 +53,8 @@ namespace FunPlusEssentials.Essentials
         postProcessingEnabled, customServersEnabled;
         public static KeyCode scoreboardKey, hideHudKey, proneKey;
         public static float fov;
+        public static int fpsLock = 60;
+        public static int vSyncCount = 1;
         public static string nicknameColor = "", customServerAppId = "";
 
         public static void SetUpConfig()
@@ -74,6 +78,8 @@ namespace FunPlusEssentials.Essentials
             postProcessingEnabled = Convert.ToBoolean(config.Read("EnablePostProcessing"));
             customServersEnabled = Convert.ToBoolean(config.Read("EnableCustomServers"));
             customServerAppId = config.Read("CustomServerAppID");
+            fpsLock = Convert.ToInt32(config.Read("FPSLock"));
+            vSyncCount = Convert.ToInt32(config.Read("V-SyncCount"));
             if (!Enum.TryParse(config.Read("ScoreboardKeyCode"), out scoreboardKey)) { scoreboardKey = KeyCode.F1; }
             if (!Enum.TryParse(config.Read("HideHUDKeyCode"), out hideHudKey)) { hideHudKey = KeyCode.H; }
             if (!Enum.TryParse(config.Read("ProneKeyCode"), out proneKey)) { proneKey = KeyCode.C; }
