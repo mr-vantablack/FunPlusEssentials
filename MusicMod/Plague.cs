@@ -59,6 +59,34 @@ namespace FunPlusEssentials
         Massacre,
         ARMAGEDDON
     }
+    public class PlagueClass
+    {
+        public string ClassName;
+        public float Armor;
+        public float Health;
+        public float RunSpeed;
+        public float JumpHeight;
+        public List<string> Weapons;
+    }
+
+    [RegisterTypeInIl2Cpp]
+    public class PlayerClass : MonoBehaviour
+    {
+        public PlayerClass(IntPtr ptr) : base(ptr) { }
+        public PhotonView photonView;
+        public float hp = 100f, maxHp = 100f;
+        public void Awake()
+        {
+            hp = 100f;
+            maxHp = 100f;
+            photonView = GetComponent<PhotonView>();
+        }
+        public void Update()
+        {
+
+        }
+    }
+
     [RegisterTypeInIl2Cpp, UsingRPC]
     public class PlagueController : MonoBehaviour
     {
@@ -81,9 +109,14 @@ namespace FunPlusEssentials
         public AudioSource _musicSource, _soundsSource, _otherSource;
         private bool _countdownPlayed, _winPlayed, _roundStartPlayed;
 
+        public float _armor, _jumpHeight, _runSpeed;
+        public PlagueClass _playerClass;
+
+        public int _testint;
+
         private bool _plagueStarted, _restarting, _survivorsWin, _infectedWin;
         private bool _waitingForPlayers, _playersListUpdated, _lpFlag;
-        private bool _refTimeSet;
+        private bool _refTimeSet, _classSet;
         private bool _debugMode;
         private float _referenceTime, _startCdTime;
         private float _plagueTimer, _countDown;
@@ -92,7 +125,72 @@ namespace FunPlusEssentials
         private PlagueMode _mode;
         private List<PhotonPlayer> _allPlayers, _teamAPlayers, _teamBPlayers;
 
-        
+        public void SurvivorClassSetUp(int classID)
+        {
+            CuteLogger.Meow($"SurvivorClassSetUp: {classID.ToString()}");
+            _playerClass = new PlagueClass();
+            if (classID == 1)
+            {
+                _playerClass.ClassName = "Soldier";
+                _playerClass.Weapons = new List<string>()
+                {
+                    "XIX",
+                    "MP5N"
+                };
+                _playerClass.Armor = 25;
+                _playerClass.RunSpeed = 10f;
+                _playerClass.JumpHeight = 1f;
+            }
+            if (classID == 2)
+            {
+                _playerClass.ClassName = "Medic";
+                _playerClass.Weapons = new List<string>()
+                {
+                    "XIX",
+                    "MCS870"
+                };
+                _playerClass.Armor = 10;
+                _playerClass.RunSpeed = 10.25f;
+                _playerClass.JumpHeight = 1.25f;
+            }
+            if (classID == 3)
+            {
+                _playerClass.ClassName = "Heavy";
+                _playerClass.Weapons = new List<string>()
+                {
+                    "Shorty",
+                    "MCS870",
+                    "Grenade Launcher"
+                };
+                _playerClass.Armor = 50;
+                _playerClass.RunSpeed = 9f;
+                _playerClass.JumpHeight = 0.8f;
+            }
+            if (classID == 4)
+            {
+                _playerClass.ClassName = "Sniper";
+                _playerClass.Weapons = new List<string>()
+                {
+                    "XIX II",
+                    "M40A3"
+                };
+                _playerClass.Armor = 0;
+                _playerClass.RunSpeed = 11f;
+                _playerClass.JumpHeight = 2f;
+            }
+            Helper.FPSController.AALHECCKHFD.baseHeight = _playerClass.JumpHeight;
+            Helper.FPSController.HKCDMBALAAK.RunSpeed = _playerClass.RunSpeed;
+            Helper.RemoveWeapons();
+            foreach (string weapon in _playerClass.Weapons)
+            {
+                Helper.GiveWeapon(weapon);
+            }
+            //Helper.SetProperty("MaxHP", _playerClass.Health.ToString());
+            Helper.SetProperty("Armor", new Il2CppSystem.Single() { m_value = _playerClass.Armor }.BoxIl2CppObject());
+            //damageMultiplier
+            _classSet = true;
+        }
+
         void SetUpAudio()
         {
             _musicSource = rmm.gameObject.GetComponent<AudioSource>();
@@ -166,6 +264,18 @@ namespace FunPlusEssentials
         
         void LateUpdate()
         {
+            if (Input.GetKeyDown(KeyCode.Keypad7))
+            {
+                rmm.SpawnPlayer("Team B");
+            }
+            if (Input.GetKeyDown(KeyCode.Keypad8))
+            {
+                rmm.SpawnPlayer("Team A");
+            }
+            if (Input.GetKeyDown(KeyCode.Keypad9))
+            {
+                _testint++;
+            }
         }
         void Update()
         {
@@ -176,15 +286,21 @@ namespace FunPlusEssentials
             {
                 MelonCoroutines.Start(UpdatePlayersList());
             }
-            if (!_plagueStarted && !_waitingForPlayers) 
+            if (!_plagueStarted && !_waitingForPlayers)
             {
                 //10 sec count down
                 _countDown = 10f - ((float)PhotonNetwork.time - _startCdTime);
                 if (!_countdownPlayed)
                 {
-                    _countdownPlayed=true;
+                    _countdownPlayed = true;
                     PlaySound(_countdownSound);
                 }
+            }
+            if (!_classSet)
+            {
+               // CuteLogger.Meow("_classSet");
+                _classSet = true;
+                RandomizePlagueClass();
             }
             if (_plagueStarted && !_waitingForPlayers)
             {
@@ -202,15 +318,19 @@ namespace FunPlusEssentials
                         CuteLogger.Meow("_referenceTime update");
                         _referenceTime = (float)PhotonNetwork.time;
                         _refTimeSet = true;
-                    }
-                    if (!_roundStartPlayed && PhotonNetwork.isMasterClient)
+                    }                  
+                    if (!_roundStartPlayed)
                     {
-                        InfectRandomPlayer();
                         _roundStartPlayed = true;
-                        PhotonNetwork.room.IsOpen = true;
-                        PhotonNetwork.room.IsVisible = true;
+                        if (PhotonNetwork.isMasterClient)
+                        {
+                            CuteLogger.Meow("InfectRandomPlayer update");
+                            InfectRandomPlayer();
+                            PhotonNetwork.room.IsOpen = true;
+                            PhotonNetwork.room.IsVisible = true;
+                        }
                         PlaySound(Helper.RandomSound(_roundStartSounds));
-                    }
+                    }                  
                 }
                 _plagueTimer = 80 - ((float)PhotonNetwork.time - _referenceTime);
                 if (_plagueTimer <= 0 && !_restarting)
@@ -221,14 +341,11 @@ namespace FunPlusEssentials
         }
         void FixedUpdate()
         {
-            if (Input.GetKeyDown(KeyCode.Keypad7))
-            {
-                rmm.SpawnPlayer("Team B");
-            }
-            if (Input.GetKeyDown(KeyCode.Keypad8))
-            {
-                rmm.SpawnPlayer("Team A");
-            }
+            
+        }
+        public void RandomizePlagueClass()
+        {
+            SurvivorClassSetUp(UnityEngine.Random.Range(1, 5));
         }
         public void InfectRandomPlayer()
         {
@@ -306,6 +423,8 @@ namespace FunPlusEssentials
             yield return new WaitForSeconds(PlayerListUpdateTime);
             _playersListUpdated = false;
         }
+
+        
         IEnumerator Govno()
         {
             yield return new WaitForSeconds(3f);
@@ -335,6 +454,7 @@ namespace FunPlusEssentials
             rmm.CNLHJAICIBH = PhotonNetwork.NOOU("INF/PlayerNewborn", team_2.spawnPoints[num].position + Vector3.up, team_2.spawnPoints[num].rotation, 0);
             rmm.CNLHJAICIBH.name = PhotonNetwork.player.NickName;
             rmm.CNLHJAICIBH.GetComponent<PhotonView>().RPC("InfectedSoundRPC", PhotonTargets.All, null);
+            _playerClass = null;
             //PlaySound(Helper.RandomSound(_infectedSounds));
         }
         [FunRPC]
@@ -377,9 +497,11 @@ namespace FunPlusEssentials
                 _countDown = _startCdTime;
                 _refTimeSet = false;
             }
+            _classSet = false;
             _lpFlag = false;
             _winPlayed = false;
             _survivorsWin = false;
+            _playerClass = null;
             _infectedWin = false;
             _roundStartPlayed = false;
             _countdownPlayed = false;
@@ -424,7 +546,10 @@ namespace FunPlusEssentials
             };
 
             GUI.color = Color.white;
-
+            if (_plagueStarted && _classSet && _playerClass != null)
+            {
+                GUI.Label(new Rect(Screen.width - 150f, Screen.height - 200f, 100f, 100f), "Class: " + _playerClass.ClassName, timerStyle);
+            }
             if (_countDown > 0f && !_waitingForPlayers && !_restarting)
             {
                 //The virus has been set loose...
@@ -451,7 +576,7 @@ namespace FunPlusEssentials
             }
             if (_debugMode)
             {
-                this.DrawOutline(new Rect((float)Screen.width / 2f, (float)Screen.height * 0.138888f + 150f, 100f, 50f), string.Concat(new object[]
+                DrawOutline(new Rect((float)Screen.width / 2f, (float)Screen.height * 0.138888f + 150f, 100f, 50f), string.Concat(new object[]
                 {
                     _roundDuration
                 }), 1, timerStyle);

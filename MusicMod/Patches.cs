@@ -566,11 +566,33 @@ namespace FunPlusEssentials.Patches
         public static event Event onPlayerSpawned;
         static void Postfix(PlayerDamage __instance)
         {
+            if (Plague.Enabled) { __instance.AKCNDMPBBJP = 1; }
             __instance.GKNFEDOCILC = new Quaternion(0f, 0f, 0f, 0f);
             Helper.SetProperty("joined", "true");
             onPlayerSpawned?.Invoke(__instance);
         }
     }
+    [HarmonyLib.HarmonyPatch(typeof(PlayerDamage), "Update")]
+    public static class PlagueMaxHPPatch
+    {
+        static void Postfix(PlayerDamage __instance)
+        {
+            if (!Plague.Enabled) return;
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(PlayerDamage), "E100050")]
+    public static class PlagueDamagePatch
+    {
+        static void Prefix(ref float damage, ref string botName, PlayerDamage __instance)
+        {
+            if (Plague.Enabled && Helper.GetProperty(__instance.GetComponent<PhotonView>().owner, "Armor") != null)
+            {
+                damage = damage - (damage * Helper.GetProperty(__instance.GetComponent<PhotonView>().owner, "Armor").Unbox<float>() / 100);
+                 CuteLogger.Meow(damage.ToString());
+            }
+        }
+    }
+
     [HarmonyLib.HarmonyPatch(typeof(PlayerMonster), "Awake")]
     public static class PlaguePlayerMonsterSpawnPatch
     {
@@ -624,6 +646,7 @@ namespace FunPlusEssentials.Patches
                 int num = UnityEngine.Random.Range(0, team_1.spawnPoints.Length);
                 __instance.CNLHJAICIBH = PhotonNetwork.NOOU(playerPrefab.name, team_1.spawnPoints[num].position, team_1.spawnPoints[num].rotation, 0);
                 __instance.CNLHJAICIBH.name = PhotonNetwork.player.name;
+                PlagueController.Instance.RandomizePlagueClass();
             }
             else
             {
@@ -742,9 +765,10 @@ namespace FunPlusEssentials.Patches
         static void Postfix(WeaponScript __instance)
         {
             __instance.GKNFEDOCILC = new Quaternion(0f, 0f, 0f, 0f);
-            if (Config.fov > 65 && Config.fov <= 100)
+            if (Config.fov > 65 && Config.fov <= 120)
             {
-                __instance.KKCIIEDNLEO = new Vector3(0f, 0f, ((65 - Config.fov) / 75) * -1);
+                var cam = GameObject.FindObjectOfType<Flashlight>().gameObject.GetComponent<Camera>();
+                if (cam != null) { cam.fieldOfView = Config.fov - 10; }
                 __instance.FFGIIOODMGK = Config.fov;
 
             }
@@ -920,9 +944,10 @@ namespace FunPlusEssentials.Patches
     public static class MachineGunOneShot
     {
         [HarmonyLib.HarmonyPostfix]
-        static void Postfix()
+        static void Postfix(WeaponScript.OKEJDECKCDJ __instance)
         {
-
+            //__instance.__4__this
+           
         }
     }
 

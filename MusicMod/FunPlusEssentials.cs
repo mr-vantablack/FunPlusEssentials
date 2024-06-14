@@ -8,7 +8,7 @@ using System.Collections;
 using FunPlusEssentials.Other;
 using UnhollowerRuntimeLib;
 
-[assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "4.15", "Vantablack")]
+[assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "4.2", "Vantablack")]
 [assembly: MelonGame("ZeoWorks", "Slendytubbies 3")]
 
 namespace FunPlusEssentials
@@ -67,7 +67,10 @@ namespace FunPlusEssentials
             AppInfo.Name = Info.Name;
             AppInfo.Version = Info.Version;
         }
-
+        public override void OnInitializeMelon()
+        {
+            
+        }
         public override void OnApplicationLateStart()
         {
             Config.SetUpConfig();

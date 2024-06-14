@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using UnhollowerBaseLib;
 using UnhollowerRuntimeLib;
 using FunPlusEssentials.CustomContent;
+using Random = System.Random;
 
 namespace FunPlusEssentials.Other
 {
@@ -307,6 +308,8 @@ namespace FunPlusEssentials.Other
         private static UpdaterV2 _updaterV2;
         private static Volume _console;
 
+        private static Random _random = new Random();
+
 
         #endregion
 
@@ -497,7 +500,21 @@ namespace FunPlusEssentials.Other
 
 
         #endregion
-
+        public static int Random(int min, int max)
+        {
+            return _random.Next(min, max);
+        }
+        public static void GiveWeapon(string weaponName)
+        {
+            WeaponManager.DHFOMKJHLBM.Add(WeaponManager.transform.Find(weaponName).GetComponent<WeaponScript>());
+        }
+        public static void RemoveWeapons()
+        {
+            foreach (WeaponScript weapon in WeaponManager.DHFOMKJHLBM)
+            {
+                WeaponManager.DHFOMKJHLBM.Remove(weapon);
+            }
+        }
         public static AudioClip RandomSound(List<AudioClip> sounds)
         {
             return sounds[UnityEngine.Random.Range(0, sounds.Count)];
@@ -547,6 +564,20 @@ namespace FunPlusEssentials.Other
             PhotonNetwork.player.SetCustomProperties(hashtable);
         }
         public static void SetProperty(string property, string parameter)
+        {
+            Hashtable hashtable = new Hashtable
+            {
+                [property] = parameter
+            };
+            foreach (PlayerProperties pp in GameObject.FindObjectsOfType<PlayerProperties>())
+            {
+                if (pp.GetComponent<PhotonView>().ownerId == PhotonNetwork.player.ID)
+                {
+                    pp.SetProperties(hashtable);
+                }
+            }
+        }
+        public static void SetProperty(string property, Il2CppSystem.Object parameter)
         {
             Hashtable hashtable = new Hashtable
             {
