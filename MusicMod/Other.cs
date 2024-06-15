@@ -265,7 +265,7 @@ namespace FunPlusEssentials.Other
                     "</size>"
                 }));
             }
-           /* if (lobby.FANLKBJODCL && !lobby.EJLDOIOJGPC && (lobby.NNKFEAPBLCK == 3))
+            if (lobby.FANLKBJODCL && !lobby.EJLDOIOJGPC && (lobby.NNKFEAPBLCK == 3))
             {
                 GUI.depth = depth;
                 GUI.skin = lobby.BIPMFIBNFBC;
@@ -286,7 +286,7 @@ namespace FunPlusEssentials.Other
                     "<color=white>Plague mode</color>",
                     "</size>"
                 }));
-            }*/
+            }
         }
     }
     public static class Helper //все дерьмо из этого класса нужно в отедльную библиотеку чтобы не засорять мод
@@ -500,6 +500,7 @@ namespace FunPlusEssentials.Other
 
 
         #endregion
+
         public static int Random(int min, int max)
         {
             return _random.Next(min, max);

@@ -18,6 +18,8 @@ using static MelonLoader.MelonLogger;
 using UnityEngine.UI;
 using BeautifyEffect;
 using UnityEngine.PostProcessing;
+using CodeStage.AntiCheat.ObscuredTypes;
+using static Il2CppSystem.Collections.Hashtable;
 
 namespace FunPlusEssentials.Patches
 {
@@ -200,7 +202,7 @@ namespace FunPlusEssentials.Patches
         public delegate void Event(RoomMultiplayerMenu instance);
         public static event Event onRoomSpawned;
 
-        static void Prefix()
+        static void Prefix(RoomMultiplayerMenu __instance)
         {
             if (PhotonNetwork.room.customProperties["Plague"] != null)
             {
@@ -208,8 +210,8 @@ namespace FunPlusEssentials.Patches
             }
             if (Plague.Enabled)
             {
-                Helper.Room.AddComponent<PlagueController>();
-                Helper.RoomMultiplayerMenu.KCIGKBNBPNN = "INF";
+                __instance.gameObject.AddComponent<PlagueController>();
+                __instance.KCIGKBNBPNN = "INF";
             }
         }
         static void Postfix(RoomMultiplayerMenu __instance)
@@ -223,7 +225,10 @@ namespace FunPlusEssentials.Patches
             Helper.Room.AddComponent<MusicPlayer>();
             Helper.Room.AddComponent<HudHider>();
             Helper.Room.AddComponent<FunRPCHandler>();
-            
+            if (Plague.Enabled)
+            {
+                __instance.PPMMEFIMPGL = new Il2CppReferenceArray<ObscuredString>(new ObscuredString[1] { "Fireaxe" });
+            }
             if (Config.scoreboardEnabled)
             {
                 Helper.Room.AddComponent<RMMFix>();
@@ -598,7 +603,7 @@ namespace FunPlusEssentials.Patches
     {
         static void Postfix(PlayerMonster __instance)
         {
-            __instance.gameObject.AddComponent<PlagueMonster>();
+            if (!__instance.GetComponent<PhotonView>().isMine) __instance.gameObject.AddComponent<PlagueMonster>();
         }
     }
     //
@@ -764,7 +769,7 @@ namespace FunPlusEssentials.Patches
         [HarmonyLib.HarmonyPostfix]
         static void Postfix(WeaponScript __instance)
         {
-            __instance.GKNFEDOCILC = new Quaternion(0f, 0f, 0f, 0f);
+            if (Plague.Enabled) __instance.GKNFEDOCILC = new Quaternion(0f, 0f, 0f, 0f);
             if (Config.fov > 65 && Config.fov <= 120)
             {
                 var cam = GameObject.FindObjectOfType<Flashlight>().gameObject.GetComponent<Camera>();
@@ -947,7 +952,77 @@ namespace FunPlusEssentials.Patches
         static void Postfix(WeaponScript.OKEJDECKCDJ __instance)
         {
             //__instance.__4__this
-           
+
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(Bullet), "Start")]
+    public static class BulletStart
+    {
+        [HarmonyLib.HarmonyPostfix]
+        static void Postfix(Bullet __instance)
+        {
+            //machinegun FMPLNFBLHKJ
+            //shotgun MMIKHOPCECE
+            //knife EKODJEHEFDE
+            if (Helper.WeaponManager != null)
+            {
+                var weapon = Helper.WeaponManager.FGGENNCGLJI;
+                if (weapon.name == "XIX")
+                {
+                    __instance.CJKBHAHOLMJ = 15; //damage
+                    //__instance.HHBHJIDDGIL = weapon.bulletForce; //force
+                    //__instance.DHHNMAIFIFB = weapon.bulledSpeed; //speed
+                    //__instance.LNEDFJIMHDL = weapon.bulletLifeTime; //lifetime
+                }
+                if (weapon.name == "AKM")
+                {
+                    __instance.CJKBHAHOLMJ = 15;
+                }
+                if (weapon.name == "MK16")
+                {
+                    __instance.CJKBHAHOLMJ = 25;
+                }
+                if (weapon.name == "MP5N")
+                {
+                    __instance.CJKBHAHOLMJ = 10;
+                }
+                if (weapon.name == "XIX II")
+                {
+                    __instance.CJKBHAHOLMJ = 20;
+                }
+                if (weapon.name == "M40A3")
+                {
+                    __instance.CJKBHAHOLMJ = 100;
+                }
+                if (weapon.name == "Fireaxe")
+                {
+                    __instance.CJKBHAHOLMJ = 100;
+                }
+                if (weapon.name == "M249-Saw")
+                {
+                    __instance.CJKBHAHOLMJ = 25;
+                }
+                if (weapon.name == "44 Combat")
+                {
+                    __instance.CJKBHAHOLMJ = 30;
+                }
+                if (weapon.name == "VZ61")
+                {
+                    __instance.CJKBHAHOLMJ = 10;
+                }
+                if (weapon.name == "Katana")
+                {
+                    __instance.CJKBHAHOLMJ = 300;
+                }
+                if (weapon.name == "Machete")
+                {
+                    __instance.CJKBHAHOLMJ = 200;
+                }
+                if (weapon.name == "Shorty")
+                {
+                    __instance.CJKBHAHOLMJ = 10;
+                }
+            }
         }
     }
 
@@ -1041,11 +1116,11 @@ namespace FunPlusEssentials.Patches
         [HarmonyLib.HarmonyPostfix]
         static void Postfix(ref Il2CppSystem.Collections.Generic.List<Il2CppSystem.Reflection.MethodInfo> __result, ref Il2CppSystem.Type type)
         {
-            if (RPCManager.IsUsingRPC(type))
+            if (PhotonManager.IsUsingRPC(type))
             {
                 var t = type;
                 var list = type.GetMethods((Il2CppSystem.Reflection.BindingFlags)(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));
-                RPCManager.rpcMethodsCache.TryGetValue(RPCManager.rpcMethodsCache.Keys.Where(n => n.Name == t.Name).FirstOrDefault(), out var methods);
+                PhotonManager.rpcMethodsCache.TryGetValue(PhotonManager.rpcMethodsCache.Keys.Where(n => n.Name == t.Name).FirstOrDefault(), out var methods);
                 foreach (Il2CppSystem.Reflection.MethodInfo methodInfo in list)
                 {
                     foreach (MethodInfo method in methods)

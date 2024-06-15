@@ -18,7 +18,7 @@ namespace FunPlusEssentials
     public class UsingRPC : Attribute
     {
     }
-    public static class RPCManager
+    public static class PhotonManager
     {
         public static Dictionary<Type, List<MethodInfo>> rpcMethodsCache = new Dictionary<Type, List<MethodInfo>>();
 
@@ -35,7 +35,20 @@ namespace FunPlusEssentials
                 }
             }
         }
-
+        public static void RegisterSerializeView(PhotonView view, Component component)
+        {
+            var type = component.GetIl2CppType();
+            var method = type.GetMethod("OnPhotonSerializeView");
+            if (method != null)
+            {
+                view.ObservedComponents.Add(component);
+                view.m_OnSerializeMethodInfos.Add(component, method);
+            }
+            else
+            {
+                CuteLogger.Bark("RegisterSerializeView() failed: Method not found.");
+            }
+        }
         public static bool IsUsingRPC(Il2CppSystem.Type type)
         {
             foreach (Type t in rpcMethodsCache.Keys)

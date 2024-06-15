@@ -10,14 +10,22 @@ using FunPlusEssentials.CustomContent;
 using FunPlusEssentials.Essentials;
 using FunPlusEssentials.Other;
 using FunPlusEssentials.Patches;
+using HarmonyLib;
+using Il2CppSystem;
+using Il2CppSystem.Reflection;
 using MelonLoader;
 using UnhollowerBaseLib;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.UI;
 using static Il2CppSystem.Guid;
 using static MelonLoader.MelonLogger;
 using static PunTeams;
 using static ShopSystem;
+using BindingFlags = System.Reflection.BindingFlags;
+using IntPtr = System.IntPtr;
+using MethodInfo = Il2CppSystem.Reflection.MethodInfo;
+
 
 namespace FunPlusEssentials
 {
@@ -31,9 +39,17 @@ namespace FunPlusEssentials
     {
         public PlagueMonster(IntPtr ptr) : base(ptr) { }
         public AudioSource _soundsSource;
+        public PhotonView _photonView;
+        public PlayerMonster _playerMonster;
+        public FPScontroller _fps;
+        public float _hp;
+        public float _currentHp;
+        public PlagueClass _class;
+        public GameObject _HUD, _healthBar;
 
         public void Awake()
         {
+            
             _soundsSource = gameObject.AddComponent<AudioSource>();
             var mixer = FindObjectOfType<AudioMixerManager>().EEJANKGKOBO;
             _soundsSource.outputAudioMixerGroup = mixer.FindMatchingGroups("SFX")[0];
@@ -42,12 +58,82 @@ namespace FunPlusEssentials
             _soundsSource.minDistance = 4f;
             _soundsSource.maxDistance = 30f;
             _soundsSource.spread = 100f;
+            _photonView = GetComponent<PhotonView>();
+            _playerMonster = GetComponent<PlayerMonster>();
+            _fps = GetComponent<FPScontroller>();
+            _photonView.synchronization = ViewSynchronization.UnreliableOnChange;
+            PhotonManager.RegisterSerializeView(_photonView, this);
+            if (_photonView.isMine)
+            {
+                _HUD = new GameObject("HUD");
+                _HUD.transform.SetParent(base.gameObject.transform);
+                _HUD.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+                _HUD.AddComponent<CanvasScaler>().referenceResolution = new Vector2(800f, 600f);
+                GameObject gameObject = new GameObject("HealthBarBackground");
+                gameObject.transform.SetParent(_HUD.transform);
+                gameObject.AddComponent<CanvasRenderer>();
+                gameObject.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.5f);
+                gameObject.GetComponent<RectTransform>().anchoredPosition = new Vector2(100f, 16f);
+                gameObject.GetComponent<RectTransform>().anchorMax = new Vector2(0.8f, 0.033f);
+                gameObject.GetComponent<RectTransform>().anchorMin = new Vector2(0.65f, 0f);
+                gameObject.GetComponent<RectTransform>().offsetMax = new Vector2(190f, 22f);
+                gameObject.GetComponent<RectTransform>().offsetMin = new Vector2(10f, 10f);
+                gameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(180f, 12f);
+                gameObject.GetComponent<RectTransform>().pivot = new Vector2(0f, -2f);
+                _healthBar = new GameObject("HealthBar");
+                _healthBar.transform.SetParent(_HUD.transform);
+                _healthBar.AddComponent<CanvasRenderer>();
+                _healthBar.AddComponent<Image>().color = new Color(1f, 0f, 0f, 0.5f);
+                _healthBar.GetComponent<RectTransform>().anchoredPosition = new Vector2(1f, 0f);
+                _healthBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.798f, 0.031f);
+                _healthBar.GetComponent<RectTransform>().anchorMin = new Vector2(0.652f, 0.002f);
+                _healthBar.GetComponent<RectTransform>().offsetMax = new Vector2(190f, 22f);
+                _healthBar.GetComponent<RectTransform>().offsetMin = new Vector2(10f, 10f);
+                _healthBar.GetComponent<RectTransform>().sizeDelta = new Vector2(180f, 12f);
+                _healthBar.GetComponent<RectTransform>().pivot = new Vector2(0f, -2f);
+            }
         }
+        public void SetUp()
+        {
+            _playerMonster.PIIDNIGPCDK = _class.Health;
+            _playerMonster.OMFJFIPPGPE = (int)_class.Damage;
+            _fps.AALHECCKHFD.baseHeight = _class.JumpHeight;
+            _fps.HKCDMBALAAK.RunSpeed = _class.RunSpeed;
+        }
+
         [FunRPC]
         public void InfectedSoundRPC()
         {
             CuteLogger.Meow("InfectedSoundRPC");
-            _soundsSource.PlayOneShot(Helper.RandomSound(PlagueController.Instance._infectedSounds));
+            _soundsSource.PlayOneShot(Helper.RandomSound(PlagueAssets.Instance._infectedSounds));
+        }
+        public void OnPhotonSerializeView(Il2CppSystem.Object stream, Il2CppSystem.Object info)
+        {
+            var s = stream.Cast<PhotonStream>();
+            var i = info.Cast<PhotonMessageInfo>();
+            if (_playerMonster != null)
+            {
+                if (s.isWriting)
+                {
+                    s.SendNext(new Il2CppSystem.Single() { m_value = _playerMonster.PIIDNIGPCDK }.BoxIl2CppObject());
+                }
+                else
+                {
+                    _playerMonster.PIIDNIGPCDK = s.ReceiveNext().Unbox<float>();
+                }
+            }
+        }
+        public void OnGUI()
+        {
+            if (_photonView.isMine)
+            {
+                if (_playerMonster.PIIDNIGPCDK >= 0f)
+                {
+                    _healthBar.transform.localScale = new Vector3(_playerMonster.PIIDNIGPCDK / _class.Health, 1f, 1f);
+                    return;
+                }
+                _healthBar.transform.localScale = Vector3.zero;
+            }
         }
     }
     public enum PlagueMode
@@ -66,6 +152,8 @@ namespace FunPlusEssentials
         public float Health;
         public float RunSpeed;
         public float JumpHeight;
+        public float Damage;
+        public string Prefab;
         public List<string> Weapons;
     }
 
@@ -74,16 +162,118 @@ namespace FunPlusEssentials
     {
         public PlayerClass(IntPtr ptr) : base(ptr) { }
         public PhotonView photonView;
-        public float hp = 100f, maxHp = 100f;
+        public PlayerMonster playerMonster;
+        public string hp;
         public void Awake()
         {
-            hp = 100f;
-            maxHp = 100f;
+            hp = "s";
             photonView = GetComponent<PhotonView>();
+            playerMonster = GetComponent<PlayerMonster>();
+
+            PhotonManager.RegisterSerializeView(photonView, this);
+            // foreach (var methodinfo in type.GetMethods((Il2CppSystem.Reflection.BindingFlags)AccessTools.all))
+            // {
+            //  CuteLogger.Meow(methodinfo.Name);
+            //}
         }
-        public void Update()
+        public void Test3(int N, float d)
+        { }
+        public void Test2(int s)
+        { }
+        public void Test(Il2CppSystem.Object KOHGOLCGCAN, Il2CppSystem.Object BPDJHBDKJDN)
+        {
+            //(PhotonStream)KOHGOLCGCAN
+        }
+        public void OnSerialize()
+        {
+            CuteLogger.Meow(Il2CppSystem.Reflection.MethodInfo.GetCurrentMethod().Name);
+        }
+        public void OnPhotonSerializeView(Il2CppSystem.Object KOHGOLCGCAN, Il2CppSystem.Object BPDJHBDKJDN)
+        {
+            if (KOHGOLCGCAN == null)
+            {
+                CuteLogger.Meow(Il2CppSystem.Reflection.MethodInfo.GetCurrentMethod().Name);
+                return;
+            }
+            else
+            {
+                var s = KOHGOLCGCAN.Cast<PhotonStream>();
+                var m = BPDJHBDKJDN.Cast<PhotonMessageInfo>();
+                if (s.isWriting)
+                {
+                    s.SendNext(hp);
+                }
+                else
+                {
+                    hp = s.ReceiveNext().ToString();
+                }
+            }
+        }
+        public void OnGUI()
         {
 
+        }
+    }
+    [RegisterTypeInIl2Cpp]
+    public class PlagueAssets : MonoBehaviour
+    {
+        public PlagueAssets(IntPtr ptr) : base(ptr) { }
+        public List<AudioClip> _infectedWinSounds, _survivorsWinSounds, _infectedSounds, _roundStartSounds;
+        public AudioClip _ambience, _countdownSound;
+        public GameObject _bullet, _meleeBullet;
+        public static bool _inited;
+        public static PlagueAssets Instance { get; set; }
+
+        public void Awake()
+        {
+            // DontDestroyOnLoad(this);
+            Instance = this;
+            MelonCoroutines.Start(LoadAssets());
+            DontDestroyOnLoad(gameObject);
+        }
+        public IEnumerator LoadAssets()
+        {
+            _infectedWinSounds = new List<AudioClip>();
+            _survivorsWinSounds = new List<AudioClip>();
+            _infectedSounds = new List<AudioClip>();
+            _roundStartSounds = new List<AudioClip>();
+            var assetBundleCreateRequest = Il2CppAssetBundleManager.LoadFromFile(Config.mainPath + @"\Plague\plague assets");
+            yield return assetBundleCreateRequest;
+            for (int i = 1; i < 5; i++)
+            {
+                _survivorsWinSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"survivorsWin{i}"));
+                _infectedSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"infected{i}"));
+                _roundStartSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"roundStart{i}"));
+            }
+            for (int i = 1; i < 6; i++)
+            {
+                _infectedWinSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"infectedWin{i}"));
+            }
+            for (int i = 1; i < 3; i++)
+            {
+                // _roundStartSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"prepare{i}"));
+            }
+            _ambience = assetBundleCreateRequest.Load<AudioClip>($"ambience1");
+            _countdownSound = assetBundleCreateRequest.Load<AudioClip>($"countdown1");
+            //_skybox = assetBundleCreateRequest.Load<Material>($"skybox");
+            assetBundleCreateRequest.Unload(false);
+            foreach (AudioClip clip in _infectedWinSounds)
+            {
+                clip.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            }
+            foreach (AudioClip clip in _survivorsWinSounds)
+            {
+                clip.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            }
+            foreach (AudioClip clip in _infectedSounds)
+            {
+                clip.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            }
+            foreach (AudioClip clip in _roundStartSounds)
+            {
+                clip.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            }
+            _countdownSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
         }
     }
 
@@ -103,8 +293,7 @@ namespace FunPlusEssentials
         private RoomMultiplayerMenu rmm => Helper.RoomMultiplayerMenu;
         public static PlagueController Instance { get; set; }
 
-        public List<AudioClip> _infectedWinSounds, _survivorsWinSounds, _infectedSounds, _roundStartSounds;
-        public AudioClip _ambience, _countdownSound;
+
         private Material _skybox;
         public AudioSource _musicSource, _soundsSource, _otherSource;
         private bool _countdownPlayed, _winPlayed, _roundStartPlayed;
@@ -146,7 +335,7 @@ namespace FunPlusEssentials
                 _playerClass.ClassName = "Medic";
                 _playerClass.Weapons = new List<string>()
                 {
-                    "XIX",
+                    "VZ61",
                     "MCS870"
                 };
                 _playerClass.Armor = 10;
@@ -180,7 +369,7 @@ namespace FunPlusEssentials
             }
             Helper.FPSController.AALHECCKHFD.baseHeight = _playerClass.JumpHeight;
             Helper.FPSController.HKCDMBALAAK.RunSpeed = _playerClass.RunSpeed;
-            Helper.RemoveWeapons();
+            // Helper.RemoveWeapons();
             foreach (string weapon in _playerClass.Weapons)
             {
                 Helper.GiveWeapon(weapon);
@@ -190,7 +379,50 @@ namespace FunPlusEssentials
             //damageMultiplier
             _classSet = true;
         }
+        public PlagueClass InfectedClassSetUp(int classID)
+        {
+            CuteLogger.Meow($"InfectedClassSetUp: {classID.ToString()}");
+            _playerClass = new PlagueClass();
+            if (classID == 1)
+            {
+                _playerClass.ClassName = "Runner";
+                _playerClass.RunSpeed = 11.5f;
+                _playerClass.JumpHeight = 3f;
+                _playerClass.Health = 60;
+                _playerClass.Damage = 40;
+                _playerClass.Prefab = "INF/PlayerNewborn";
+            }
+            if (classID == 2)
+            {
+                _playerClass.ClassName = "Jumper";
+                _playerClass.RunSpeed = 10.5f;
+                _playerClass.JumpHeight = 4.5f;
+                _playerClass.Health = 55;
+                _playerClass.Damage = 30;
+                _playerClass.Prefab = "VS/PlayerNewborn";
+            }
+            if (classID == 3)
+            {
+                _playerClass.ClassName = "Tank";
+                _playerClass.RunSpeed = 9.5f;
+                _playerClass.JumpHeight = 2.5f;
+                _playerClass.Health = 400;
+                _playerClass.Damage = 101;
+                _playerClass.Prefab = "VS/PlayerGeneral";
+            }
+            if (classID == 4)
+            {
+                _playerClass.ClassName = "Berserker";
+                _playerClass.RunSpeed = 10.5f;
+                _playerClass.JumpHeight = 3f;
+                _playerClass.Health = 150;
+                _playerClass.Damage = 30;
+                _playerClass.Prefab = "VS/PlayerDroid";
+            }
 
+            _classSet = true;
+            return _playerClass;
+        }
         void SetUpAudio()
         {
             _musicSource = rmm.gameObject.GetComponent<AudioSource>();
@@ -204,23 +436,23 @@ namespace FunPlusEssentials
         }
         void Awake()
         {
+            _countdownPlayed = true;
             _mode = PlagueMode.Infection;
             Instance = this;
             _totalRounds = 0;
             SetUpAudio();
-            MelonCoroutines.Start(LoadAssets());
-          //  RenderSettings.skybox = _skybox;
+            //  RenderSettings.skybox = _skybox;
             _allPlayers = new List<PhotonPlayer>();
             _teamAPlayers = new List<PhotonPlayer>();
             _teamBPlayers = new List<PhotonPlayer>();
             _roundDuration = float.Parse(Helper.GetRoomProperty("RD004'").ToString());
             if (PhotonNetwork.isMasterClient)
-            {          
+            {
                 OnPhotonPlayerConnected.onPhotonPlayerConnected += OnPlayerJoined;
                 OnPhotonPlayerDisconnected.onPhotonPlayerDisonnected += OnPlayerLeft;
                 _waitingForPlayers = true;
                 _musicSource.loop = true;
-                _musicSource.PlayOneShot(_ambience);
+                _musicSource.PlayOneShot(PlagueAssets.Instance._ambience);
                 _startCdTime = (float)PhotonNetwork.time;
                 _countDown = _startCdTime;
                 Helper.SetRoomProperty(CDTime, new Il2CppSystem.Single() { m_value = _startCdTime }.BoxIl2CppObject());
@@ -230,7 +462,7 @@ namespace FunPlusEssentials
                 _referenceTime = Helper.GetRoomProperty(RefTime).Unbox<float>();
                 _startCdTime = Helper.GetRoomProperty(CDTime).Unbox<float>();
                 _countDown = _startCdTime;
-                _refTimeSet = 10f - ((float)PhotonNetwork.time - _startCdTime) <= 0f;
+                _refTimeSet = 20f - ((float)PhotonNetwork.time - _startCdTime) <= 0f;
             }
             //else
             //{
@@ -251,7 +483,7 @@ namespace FunPlusEssentials
                 PhotonNetwork.room.IsVisible = false;
             }
         }
-        
+
         public void OnPlayerJoined(PhotonPlayer player)
         {
 
@@ -261,7 +493,7 @@ namespace FunPlusEssentials
 
         }
 
-        
+
         void LateUpdate()
         {
             if (Input.GetKeyDown(KeyCode.Keypad7))
@@ -289,16 +521,17 @@ namespace FunPlusEssentials
             if (!_plagueStarted && !_waitingForPlayers)
             {
                 //10 sec count down
-                _countDown = 10f - ((float)PhotonNetwork.time - _startCdTime);
+                _countDown = 20f - ((float)PhotonNetwork.time - _startCdTime);
                 if (!_countdownPlayed)
                 {
                     _countdownPlayed = true;
-                    PlaySound(_countdownSound);
+                    PlayMusic(Helper.RandomSound(PlagueAssets.Instance._roundStartSounds));
+                    MelonCoroutines.Start(PlaySoundDelayed(PlagueAssets.Instance._countdownSound, 9.8f));
                 }
             }
             if (!_classSet)
             {
-               // CuteLogger.Meow("_classSet");
+                // CuteLogger.Meow("_classSet");
                 _classSet = true;
                 RandomizePlagueClass();
             }
@@ -318,7 +551,7 @@ namespace FunPlusEssentials
                         CuteLogger.Meow("_referenceTime update");
                         _referenceTime = (float)PhotonNetwork.time;
                         _refTimeSet = true;
-                    }                  
+                    }
                     if (!_roundStartPlayed)
                     {
                         _roundStartPlayed = true;
@@ -329,8 +562,8 @@ namespace FunPlusEssentials
                             PhotonNetwork.room.IsOpen = true;
                             PhotonNetwork.room.IsVisible = true;
                         }
-                        PlaySound(Helper.RandomSound(_roundStartSounds));
-                    }                  
+                        //PlaySound(Helper.RandomSound(PlagueAssets.Instance._roundStartSounds));
+                    }
                 }
                 _plagueTimer = 80 - ((float)PhotonNetwork.time - _referenceTime);
                 if (_plagueTimer <= 0 && !_restarting)
@@ -341,7 +574,7 @@ namespace FunPlusEssentials
         }
         void FixedUpdate()
         {
-            
+
         }
         public void RandomizePlagueClass()
         {
@@ -359,29 +592,7 @@ namespace FunPlusEssentials
         {
             MelonCoroutines.Start(RestartRound());
         }
-        public IEnumerator LoadAssets()
-        {
-            _infectedWinSounds = new List<AudioClip>();
-            _survivorsWinSounds = new List<AudioClip>();
-            _infectedSounds = new List<AudioClip>();
-            _roundStartSounds = new List<AudioClip>();
-            var assetBundleCreateRequest = Il2CppAssetBundleManager.LoadFromFile(Config.mainPath + @"\Plague\plague assets");
-            yield return assetBundleCreateRequest;
-            for (int i = 1; i < 5; i++)
-            {
-                _infectedWinSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"infectedWin{i}"));
-                _survivorsWinSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"survivorsWin{i}"));
-                _infectedSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"infected{i}"));
-            }
-            for (int i = 1; i < 3; i++)
-            {
-                _roundStartSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"prepare{i}"));
-            }
-            _ambience = assetBundleCreateRequest.Load<AudioClip>($"ambience1");
-            _countdownSound = assetBundleCreateRequest.Load<AudioClip>($"countdown1");
-            _skybox = assetBundleCreateRequest.Load<Material>($"skybox");
-            assetBundleCreateRequest.Unload(false);
-        }
+
         public IEnumerator UpdatePlayersList()
         {
             //CuteLogger.Meow("Updated list");
@@ -424,7 +635,7 @@ namespace FunPlusEssentials
             _playersListUpdated = false;
         }
 
-        
+
         IEnumerator Govno()
         {
             yield return new WaitForSeconds(3f);
@@ -440,6 +651,12 @@ namespace FunPlusEssentials
             _soundsSource.loop = loop;
             _soundsSource.PlayOneShot(clip, 1f);
         }
+        public IEnumerator PlaySoundDelayed(AudioClip clip, float delay, bool loop = false)
+        {
+            yield return new WaitForSeconds(delay);
+            _soundsSource.loop = loop;
+            _soundsSource.PlayOneShot(clip, 1f);
+        }
 
         [FunRPC]
         public void InfectPlayer()
@@ -451,10 +668,15 @@ namespace FunPlusEssentials
         {
             var team_2 = rmm.KGLOGDGOELM;
             int num = UnityEngine.Random.Range(0, team_2.spawnPoints.Length);
-            rmm.CNLHJAICIBH = PhotonNetwork.NOOU("INF/PlayerNewborn", team_2.spawnPoints[num].position + Vector3.up, team_2.spawnPoints[num].rotation, 0);
+            int num2 = UnityEngine.Random.Range(0, 5);
+            var infClass = InfectedClassSetUp(num2);
+            rmm.CNLHJAICIBH = PhotonNetwork.NOOU(infClass.Prefab, team_2.spawnPoints[num].position + new Vector3(0f, 4f, 0f), team_2.spawnPoints[num].rotation, 0);
+            var pm = rmm.CNLHJAICIBH.AddComponent<PlagueMonster>();
+            pm._class = infClass;
+            pm.SetUp();
             rmm.CNLHJAICIBH.name = PhotonNetwork.player.NickName;
             rmm.CNLHJAICIBH.GetComponent<PhotonView>().RPC("InfectedSoundRPC", PhotonTargets.All, null);
-            _playerClass = null;
+            _playerClass = infClass;
             //PlaySound(Helper.RandomSound(_infectedSounds));
         }
         [FunRPC]
@@ -463,7 +685,7 @@ namespace FunPlusEssentials
             CuteLogger.Meow("InfectedWin");
             MelonCoroutines.Start(RestartRound());
             _infectedWin = true;
-            PlayMusic(Helper.RandomSound(_infectedWinSounds));
+            PlayMusic(Helper.RandomSound(PlagueAssets.Instance._infectedWinSounds));
         }
         [FunRPC]
         public void SurvivorsWin()
@@ -471,7 +693,7 @@ namespace FunPlusEssentials
             CuteLogger.Meow("SurvivorsWin");
             MelonCoroutines.Start(RestartRound());
             _survivorsWin = true;
-            PlayMusic(Helper.RandomSound(_survivorsWinSounds));
+            PlayMusic(Helper.RandomSound(PlagueAssets.Instance._survivorsWinSounds));
         }
         IEnumerator RestartRound()
         {
@@ -528,7 +750,7 @@ namespace FunPlusEssentials
             }
         }
 
-        private void CheckPlayersCount() 
+        private void CheckPlayersCount()
         {
             if (PhotonNetwork.room.PlayerCount < 2)
             {
@@ -556,7 +778,7 @@ namespace FunPlusEssentials
                 DrawOutline(new Rect(Screen.width / 2f, Screen.height * 0.010563f + 50f, 100f, 50f), "The virus is in the air...", 1, timerStyle);
                 DrawOutline(new Rect(Screen.width / 2f, Screen.height * 0.010563f + 100f, 100f, 50f), string.Format("Round starts in {0} seconds", Mathf.CeilToInt(_countDown) % 60), 1, timerStyle);
             }
-            else if(_plagueStarted && !_restarting)
+            else if (_plagueStarted && !_restarting)
                 DrawOutline(new Rect(Screen.width / 2f, Screen.height * 0.010563f, 100f, 50f), string.Format("{0:00}:{1:00}", Mathf.CeilToInt(_plagueTimer) / 60, Mathf.CeilToInt(_plagueTimer) % 60), 1, timerStyle);
             if (_restarting && !_waitingForPlayers)
             {

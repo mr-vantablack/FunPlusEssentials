@@ -133,8 +133,12 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>D:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\UnityEngine.UIElementsModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UIModule">
-      <HintPath>..\..\..\..\Desktop\PRE-BETA\MelonLoader\Managed\UnityEngine.UIModule.dll</HintPath>
+      <HintPath>V:\Programs\Slendytubbies 3 Multiplayer v2_3 (32bit)\ST3 2.5\MelonLoader\Managed\UnityEngine.UIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UmbraModule">
       <HintPath>..\..\..\..\Desktop\PRE-BETA\MelonLoader\Managed\UnityEngine.UmbraModule.dll</HintPath>

@@ -45,6 +45,13 @@ namespace FunPlusEssentials
             if (sceneName == "MainMenu")
             {
                 Plague.Enabled = false;
+                if (!PlagueAssets._inited) 
+                {
+                    var pa = new GameObject();
+                    pa.AddComponent<PlagueAssets>();
+                    pa.hideFlags = HideFlags.HideAndDontSave;
+                    PlagueAssets._inited = true;
+                }
                 PhotonNetwork.automaticallySyncScene = true;
                 Helper.SetPropertyV2("FPE", FPE.AppInfo.Version.ToString());
                 MapManager.useCustomNPCs = false;
@@ -79,7 +86,7 @@ namespace FunPlusEssentials
             MapManager.SetUp();
             NPCManager.Init();
             CustomWeapons.Init();
-            RPCManager.Init();
+            PhotonManager.Init();
             CuteLogger.ClearLogs();
         }
 
