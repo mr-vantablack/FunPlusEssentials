@@ -266,14 +266,16 @@ namespace FunPlusEssentials.CustomContent
                 MelonCoroutines.Start(zaebalo(wa, ws));
             }
         }
-        private static Transform SetUpCustomProjectile(Transform dummy, Transform projectileObj, WeaponInfo weapon)
+        public static Transform SetUpCustomProjectile(Transform dummy, Transform projectileObj, WeaponInfo weapon)
         {
             if (projectileObj != null && weapon != null)
             {
                 var b = dummy.GetComponent<Bullet>();
                 var bullet = projectileObj.gameObject.GetComponent<Bullet>();
+                if (bullet == null) { bullet = projectileObj.gameObject.AddComponent<Bullet>(); }
                 foreach (GameObject g in b.FABFPAOEEHE)
                 {
+                    if (bullet.FABFPAOEEHE.Contains(g)) continue;
                     bullet.FABFPAOEEHE.Add(g);
                 }
                 if (weapon.bulletDamage != 0) bullet.CJKBHAHOLMJ = weapon.bulletDamage;
@@ -427,6 +429,7 @@ namespace FunPlusEssentials.CustomContent
         public bool useScope;
         public int aimFov;
         public bool aimAnimation;
+        public bool canAim = true;
 
         public int shopPrice;
         public bool shopAvailable;
@@ -436,6 +439,7 @@ namespace FunPlusEssentials.CustomContent
         public int bulletDamage = 0;
         public int bulledSpeed = 0;
         public int bulletForce = 0;
+        public bool bulletParticles = true;
 
         public float recoilPower;
         public float shakePower;

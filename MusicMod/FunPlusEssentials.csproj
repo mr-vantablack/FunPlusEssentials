@@ -194,7 +194,21 @@
     <Compile Include="Essentials.cs" />
     <Compile Include="FunPlusEssentials.cs" />
     <Compile Include="Other.cs" />
-    <Compile Include="Plague.cs" />
+    <Compile Include="Patches\MainMenuPatches\LobbyMenu.cs" />
+    <Compile Include="Patches\PhotonPatches\PhotonNetwork.cs" />
+    <Compile Include="Patches\PlayerPatches\PlayerMonster.cs" />
+    <Compile Include="Plague\PlagueLocales.cs" />
+    <Compile Include="Plague\PlaguePatches\PlagueAssets.cs" />
+    <Compile Include="Plague\PlaguePatches\PlaguePatches.cs" />
+    <Compile Include="Patches\PlayerPatches\PlayerDamage.cs" />
+    <Compile Include="Patches\PlayerPatches\PlayerNetworkController.cs" />
+    <Compile Include="Patches\PlayerPatches\Weapons.cs" />
+    <Compile Include="Patches\RoomPatches\MultiplayerChat.cs" />
+    <Compile Include="Patches\RoomPatches\RoomMultiplayerMenu.cs" />
+    <Compile Include="Patches\RoomPatches\SurvivalMechanics.cs" />
+    <Compile Include="Patches\RoomPatches\Volume.cs" />
+    <Compile Include="Patches\RoomPatches\WhoKilledWho.cs" />
+    <Compile Include="Plague\Plague.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RPC.cs" />
   </ItemGroup>

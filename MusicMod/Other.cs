@@ -265,7 +265,7 @@ namespace FunPlusEssentials.Other
                     "</size>"
                 }));
             }
-            if (lobby.FANLKBJODCL && !lobby.EJLDOIOJGPC && (lobby.NNKFEAPBLCK == 3))
+            if (lobby.FANLKBJODCL && !lobby.EJLDOIOJGPC && (lobby.NNKFEAPBLCK == 3) && Config.plagueEnabled && PlagueAssets._inited)
             {
                 GUI.depth = depth;
                 GUI.skin = lobby.BIPMFIBNFBC;
@@ -436,7 +436,7 @@ namespace FunPlusEssentials.Other
             {
                 if (_weaponManager == null)
                 {
-                    _weaponManager = GameObject.FindObjectOfType<WeaponManager>();
+                    _weaponManager = Player.GetComponentInChildren<WeaponManager>();
                 }
                 return _weaponManager;
             }
@@ -505,9 +505,9 @@ namespace FunPlusEssentials.Other
         {
             return _random.Next(min, max);
         }
-        public static void GiveWeapon(string weaponName)
+        public static void GiveWeapon(WeaponManager weaponManager, string weaponName)
         {
-            WeaponManager.DHFOMKJHLBM.Add(WeaponManager.transform.Find(weaponName).GetComponent<WeaponScript>());
+            weaponManager.DHFOMKJHLBM.Add(WeaponManager.transform.Find(weaponName).GetComponent<WeaponScript>());
         }
         public static void RemoveWeapons()
         {

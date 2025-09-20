@@ -8,6 +8,7 @@ using System.Collections;
 using FunPlusEssentials.Other;
 using UnhollowerRuntimeLib;
 
+
 [assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "4.2", "Vantablack")]
 [assembly: MelonGame("ZeoWorks", "Slendytubbies 3")]
 
@@ -45,12 +46,11 @@ namespace FunPlusEssentials
             if (sceneName == "MainMenu")
             {
                 Plague.Enabled = false;
-                if (!PlagueAssets._inited) 
+                if (!PlagueAssets._inited && Config.plagueEnabled && !MelonUtils.IsGame32Bit())
                 {
                     var pa = new GameObject();
                     pa.AddComponent<PlagueAssets>();
                     pa.hideFlags = HideFlags.HideAndDontSave;
-                    PlagueAssets._inited = true;
                 }
                 PhotonNetwork.automaticallySyncScene = true;
                 Helper.SetPropertyV2("FPE", FPE.AppInfo.Version.ToString());

@@ -61,7 +61,7 @@ namespace FunPlusEssentials.CustomContent
         public static List<FunNPCInfo> NPCInfos = new List<FunNPCInfo>();
         //public static List<GameObject> npcPool = new List<GameObject>();
         public static Dictionary<string, GameObject[]> loadedBundles = new Dictionary<string, GameObject[]>();
-        static void SetLayerAllChildren(Transform root, int layer)
+        public static void SetLayerAllChildren(Transform root, int layer)
         {
             var children = root.GetComponentsInChildren<Transform>(includeInactive: true);
             foreach (var child in children)
@@ -163,6 +163,11 @@ namespace FunPlusEssentials.CustomContent
         }
         public static void SetUpCustomNPC(string npcName, GameObject dummy, NPCType type)
         {
+            if (Plague.Enabled)
+            {
+                PlagueAssets.SetUpCustomNPC(npcName, dummy, type);
+                return;
+            }
             CuteLogger.Meow("Loading custom NPC: " + npcName);
             FunNPCInfo npcInfo = CheckNPCInfos(npcName);
             if (npcInfo == null) return;

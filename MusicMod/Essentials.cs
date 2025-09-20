@@ -47,10 +47,15 @@ namespace FunPlusEssentials.Essentials
             { "FPSLock", "60" },
             { "V-SyncCount", "1" }
         };
+        public static string[,] plagueKeys =
+        {
+            { "Enabled", "false" },
+            { "Language", "en" }
+        };
         public static bool logsEnabled, blacklistEnabled, 
         musicEnabled, securityEnabled, noFileSizeLimit, 
         noRichText, scoreboardEnabled, filtersEnabled, 
-        postProcessingEnabled, customServersEnabled;
+        postProcessingEnabled, customServersEnabled, plagueEnabled;
         public static KeyCode scoreboardKey, hideHudKey, proneKey;
         public static float fov;
         public static int fpsLock = 60;
@@ -64,6 +69,10 @@ namespace FunPlusEssentials.Essentials
             for (int i = 0; i < keys.GetLength(0); i++)
             {
                 if (!config.KeyExists(keys[i, 0])) { config.Write(keys[i, 0], keys[i, 1]); }
+            }
+            for (int i = 0; i < plagueKeys.GetLength(0); i++)
+            {
+                if (!config.KeyExists(plagueKeys[i, 0], "PlagueMode")) { config.Write(plagueKeys[i, 0], plagueKeys[i, 1], "PlagueMode"); }
             }
             logsEnabled = Convert.ToBoolean(config.Read("EnableModLogs"));
             blacklistEnabled = Convert.ToBoolean(config.Read("EnableBlackList"));
@@ -80,6 +89,8 @@ namespace FunPlusEssentials.Essentials
             customServerAppId = config.Read("CustomServerAppID");
             fpsLock = Convert.ToInt32(config.Read("FPSLock"));
             vSyncCount = Convert.ToInt32(config.Read("V-SyncCount"));
+            plagueEnabled = Convert.ToBoolean(config.Read("Enabled", "PlagueMode"));
+            PlagueLocales.SetLanguage(config.Read("Language", "PlagueMode"));
             if (!Enum.TryParse(config.Read("ScoreboardKeyCode"), out scoreboardKey)) { scoreboardKey = KeyCode.F1; }
             if (!Enum.TryParse(config.Read("HideHUDKeyCode"), out hideHudKey)) { hideHudKey = KeyCode.H; }
             if (!Enum.TryParse(config.Read("ProneKeyCode"), out proneKey)) { proneKey = KeyCode.C; }
@@ -313,6 +324,12 @@ namespace FunPlusEssentials.Essentials
                 Helper.MultiplayerChat.IOMLGNJCHHK = hide;
                 Helper.WhoKilledWho.JOMPBHFEANP = hide;
                 Helper.Player.transform.Find("HUD").gameObject.SetActive(!hide);
+            }
+            else
+            {
+                hidden = hide;
+                Helper.MultiplayerChat.IOMLGNJCHHK = hide;
+                Helper.WhoKilledWho.JOMPBHFEANP = hide;
             }
         }
         void Update()
