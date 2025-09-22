@@ -21,13 +21,14 @@ namespace FunPlusEssentials
     public class PlagueAssets : MonoBehaviour
     {
         public PlagueAssets(IntPtr ptr) : base(ptr) { }
-        public List<AudioClip> _infectedWinSounds, _survivorsWinSounds, _drawSounds, _infectedSounds, _roundStartSounds, _hitSounds, _cursedStart, _survivorStart, _nemesisStart, _swarmStart, _armageddonStart;
+        public List<AudioClip> _infectedWinSounds, _survivorsWinSounds, _drawSounds, _infectedSounds, _roundStartSounds, _hitSounds, _cursedStart, _survivorStart, _nemesisStart, _swarmStart, _armageddonStart, _landMineSounds;
         public AudioClip _ambience, _countdownSound, _rageSound, _healSound, _supplyDropSound, _supplyPickupSound;
         public AudioClip _hunterSound, _nemesisSound, _invisStart, _invisEnd;
-        public GameObject _bullet, _meleeBullet, _blood, _greenSmoke, _medKit, _supplyBox;
+        public GameObject _bullet, _meleeBullet, _blood, _greenSmoke, _medKit, _supplyBox, _wire, _landMine, _explosion;
         public Dictionary<string, GameObject[]> _loadedPrefabs;
         public List<WeaponInfo> _weapons;
-        public Texture2D _medkitIcon, _invisibleIcon, _rageIcon, _lustIcon;
+        public List<GameObject> _equipmentVest;
+        public Texture2D _medkitIcon, _invisibleIcon, _rageIcon, _lustIcon, _wireIcon, _landMineIcon, _scanMineIcon;
         public static bool _inited;
         public static PlagueAssets Instance { get; set; }
 
@@ -402,10 +403,12 @@ namespace FunPlusEssentials
             _survivorStart = new List<AudioClip>();
             _nemesisStart = new List<AudioClip>();
             _drawSounds = new List<AudioClip>();
+            _landMineSounds = new List<AudioClip>();
+            _equipmentVest = new List<GameObject>();
             yield return MelonCoroutines.Start(LoadWeaponsAssets());
             var assetBundleCreateRequest = Il2CppAssetBundleManager.LoadFromFile(Config.mainPath + @"\Plague\plague assets");
             yield return assetBundleCreateRequest;
-            for (int i = 1; i < 5; i++)
+            for (int i = 1; i < 6; i++)
             {
                 _roundStartSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"roundStart{i}"));
             }
@@ -418,6 +421,7 @@ namespace FunPlusEssentials
             {
                 _infectedSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"infected{i}"));
                 _hitSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"hit{i}"));
+                _landMineSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"mineSound{i}"));
             }
             for (int i = 1; i < 3; i++)
             {
@@ -426,6 +430,10 @@ namespace FunPlusEssentials
                 _armageddonStart.Add(assetBundleCreateRequest.Load<AudioClip>($"armageddonStart{i}"));
                 _swarmStart.Add(assetBundleCreateRequest.Load<AudioClip>($"swarmStart{i}"));
                 _drawSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"draw{i}"));
+            }
+            for (int i = 1; i < 3; i++)
+            {
+                _equipmentVest.Add(assetBundleCreateRequest.Load<GameObject>($"Vest{i}"));
             }
             _cursedStart.Add(assetBundleCreateRequest.Load<AudioClip>($"cursedStart"));
             _supplyDropSound = assetBundleCreateRequest.Load<AudioClip>($"supplyboxDrop");
@@ -442,10 +450,16 @@ namespace FunPlusEssentials
             _invisStart = assetBundleCreateRequest.Load<AudioClip>("invisibleStart");
             _invisEnd = assetBundleCreateRequest.Load<AudioClip>("invisibleEnd");
             _supplyBox = assetBundleCreateRequest.Load<GameObject>("SupplyCrate");
+            _wire = assetBundleCreateRequest.Load<GameObject>("Wire");
+            _landMine = assetBundleCreateRequest.Load<GameObject>("LandMine");
+            _explosion = assetBundleCreateRequest.Load<GameObject>("Explosion");
             _medkitIcon = assetBundleCreateRequest.Load<Texture2D>("medkitIcon");
             _invisibleIcon = assetBundleCreateRequest.Load<Texture2D>("invisibleIcon");
             _rageIcon = assetBundleCreateRequest.Load<Texture2D>("rageIcon");
             _lustIcon = assetBundleCreateRequest.Load<Texture2D>("lustIcon");
+            _wireIcon = assetBundleCreateRequest.Load<Texture2D>("wireIcon");
+            _landMineIcon = assetBundleCreateRequest.Load<Texture2D>("landMineIcon");
+            _scanMineIcon = assetBundleCreateRequest.Load<Texture2D>("scanMineIcon");
             //_skybox = assetBundleCreateRequest.Load<Material>($"skybox");
             assetBundleCreateRequest.Unload(false);
             assetBundleCreateRequest = Il2CppAssetBundleManager.LoadFromFile(Config.mainPath + @"\Plague\hunter");
@@ -515,6 +529,14 @@ namespace FunPlusEssentials
             {
                 clip.hideFlags = HideFlags.DontUnloadUnusedAsset;
             }
+            foreach (AudioClip clip in _landMineSounds)
+            {
+                clip.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            }
+            foreach (GameObject obj in _equipmentVest)
+            {
+                obj.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            }
             _hunterSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _invisStart.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _invisEnd.hideFlags = HideFlags.DontUnloadUnusedAsset;
@@ -528,10 +550,17 @@ namespace FunPlusEssentials
             _greenSmoke.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _medKit.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _supplyBox.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            _wire.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            _landMine.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            _explosion.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            _wireIcon.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _medkitIcon.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _invisibleIcon.hideFlags= HideFlags.DontUnloadUnusedAsset;
             _rageIcon.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _lustIcon.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            _landMineIcon.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            _scanMineIcon.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            SetUpShaders();
             PlagueAssets._inited = true;
             foreach (GameObject[] obj in _loadedPrefabs.Values)
             {
@@ -568,6 +597,45 @@ namespace FunPlusEssentials
                     weapon.scope.hideFlags = HideFlags.DontUnloadUnusedAsset;
                 }
                 assetBundleCreateRequest.Unload(false);
+            }
+        }
+
+        public void SetUpShaders()
+        {
+            var shader = Shader.Find("Standard");
+            foreach (var s in _medKit.GetComponentsInChildren<Renderer>())
+            {
+                s.material.shader = shader;
+            }
+            foreach (var s in _supplyBox.GetComponentsInChildren<Renderer>())
+            {
+                s.material.shader = shader;
+            }
+            foreach (var s in _wire.GetComponentsInChildren<Renderer>())
+            {
+                s.material.shader = shader;
+            }
+            foreach (var s in _blood.GetComponentsInChildren<Renderer>(true))
+            {
+                s.material.shader = Shader.Find(s.material.shader.name);
+            }
+            foreach (var p in _loadedPrefabs.Values)
+            {
+                foreach (var o in p)
+                {
+                    foreach (var s in o.GetComponentsInChildren<Renderer>())
+                    {
+                        s.material.shader = Shader.Find(s.material.shader.name);
+                    }
+                }
+            }
+            _landMine.GetComponent<Renderer>().material.shader = shader;
+            foreach (var p in _equipmentVest)
+            {
+                foreach (var s in p.GetComponentsInChildren<Renderer>())
+                {
+                    s.material.shader = shader;
+                }
             }
         }
     }

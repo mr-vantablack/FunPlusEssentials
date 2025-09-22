@@ -9,7 +9,7 @@ namespace FunPlusEssentials
     public static class PlagueLocales
     {
         public static string restartingText, roundStartsText, virusText, abilityRageText, abilityInvText, abilityMedkitText, usePresstext, survivorsWinText, drawText, infectedWinText, classText,
-            openSupplyText;
+            openSupplyText, abilityWireText, abilityMineText;
         public static string[] pickupSupplyText;
         public static void SetLanguage(string language)
         {
@@ -30,6 +30,8 @@ namespace FunPlusEssentials
             abilityRageText = "Ярость [G]";
             abilityInvText = "Невидимость [G]";
             abilityMedkitText = "Аптечка [G]";
+            abilityWireText = "Колючка [G]";
+            abilityMineText = "Мина-ловушка [G]";
             usePresstext = "Использовать [E]";
             survivorsWinText = "Выжившие победили заразу...";
             drawText = "На этот раз ничья...";
@@ -46,6 +48,8 @@ namespace FunPlusEssentials
             abilityRageText = "Rage [G]";
             abilityInvText = "Invisibility [G]";
             abilityMedkitText = "Medkit [G]";
+            abilityWireText = "Wire Trap [G]";
+            abilityMineText = "Trapmine [G]";
             usePresstext = "Use [E]";
             survivorsWinText = "Survivors defeated the plague...";
             drawText = "No one won...";

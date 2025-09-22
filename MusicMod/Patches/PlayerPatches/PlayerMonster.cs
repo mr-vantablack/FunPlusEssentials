@@ -45,6 +45,7 @@ namespace FunPlusEssentials.Patches
             if (__instance.DFLJPEDEMDH)
             {
                 GameObject.Destroy(__instance.GetComponent<CapsuleCollider>());
+                __instance.GetComponent<CharacterController>().detectCollisions = false;
             }
         }
     }

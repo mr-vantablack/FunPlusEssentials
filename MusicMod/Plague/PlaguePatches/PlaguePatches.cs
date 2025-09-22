@@ -11,6 +11,21 @@ using UnityEngine;
 
 namespace FunPlusEssentials.Patches
 {
+    [HarmonyLib.HarmonyPatch(typeof(UnityEngine.Object), "Destroy", new System.Type[] { typeof(GameObject), typeof(float) })]
+    public static class lp2
+    {
+        static void Prefix(ref UnityEngine.Object obj, ref float t)
+        {
+            if (Plague.Enabled)
+            {
+                if (obj.name == "Ragdoll")
+                {
+                    t = 10000f;
+                    obj.name = "Ragdoll?";
+                }
+            }
+        }
+    }
     [HarmonyLib.HarmonyPatch(typeof(PlayerDamage), "Update")]
     public static class PlagueMaxHPPatch
     {
@@ -75,6 +90,19 @@ namespace FunPlusEssentials.Patches
             }
         }
     }
+    [HarmonyLib.HarmonyPatch(typeof(PlayerDamage), "Awake")]
+    public static class PlagueSurvivorSpawnedPatch
+    {
+        [Harmony.HarmonyPostfix]
+        static void Postfix(PlayerDamage __instance)
+        {
+            if (Plague.Enabled)
+            {
+                var t = __instance.transform.FindChild("PLAYER_MODEL/Bip001/Bip001 Pelvis/Bip001 Spine/Bip001 Spine1/Bip001 Spine2/Bip001 Spine3");
+                var vest = GameObject.Instantiate(PlagueAssets.Instance._equipmentVest[UnityEngine.Random.Range(0, PlagueAssets.Instance._equipmentVest.Count)], t);
+            }
+        }
+    }
     [HarmonyLib.HarmonyPatch(typeof(PlayerDamage), "KOFOOHFOGHL")]
     public static class PlagueBloodPatch
     {
@@ -103,6 +131,41 @@ namespace FunPlusEssentials.Patches
                 __instance.gameObject.name = "Medkit";
                 var c = __instance.gameObject.AddComponent<MedKit>();
                 if (__instance.photonView.isMine) __instance.gameObject.AddComponent<Rigidbody>();
+                __instance.photonView.onSerializeTransformOption = OnSerializeTransform.PositionAndRotation;
+                return false;
+            }
+            if (data != null && data[0].ToString() == "Wire")
+            {
+                __instance.transform.GetChild(0).gameObject.SetActive(false);
+                GameObject.Destroy(__instance.GetComponent<Custard>());
+                GameObject.Destroy(__instance.GetComponent<BoxCollider>());
+                GameObject.Instantiate(PlagueAssets.Instance._wire, __instance.transform);
+                __instance.gameObject.name = "Wire";
+                var c = __instance.transform.FindChild("Wire(Clone)").gameObject.AddComponent<WireTrap>();
+                int p = int.Parse(data[1].ToString());
+                foreach (var player in PhotonNetwork.playerList)
+                {
+                    if (player.ID == p)
+                    {
+                        c.owner = player;
+                    }
+                }
+               // if (__instance.photonView.isMine) __instance.gameObject.AddComponent<Rigidbody>();
+                __instance.photonView.onSerializeTransformOption = OnSerializeTransform.PositionAndRotation;
+                return false;
+            }
+            if (data != null && data[0].ToString() == "LandMine")
+            {
+                __instance.transform.GetChild(0).gameObject.SetActive(false);
+                GameObject.Destroy(__instance.GetComponent<Custard>());
+                GameObject.Destroy(__instance.GetComponent<BoxCollider>());
+                GameObject.Instantiate(PlagueAssets.Instance._landMine, __instance.transform);
+                __instance.gameObject.name = "LandMine";
+                var c = __instance.transform.FindChild("LandMine(Clone)").gameObject.AddComponent<MineTrap>();
+                int p = int.Parse(data[1].ToString());
+                int type = int.Parse(data[2].ToString());
+                c.type = type;
+                // if (__instance.photonView.isMine) __instance.gameObject.AddComponent<Rigidbody>();
                 __instance.photonView.onSerializeTransformOption = OnSerializeTransform.PositionAndRotation;
                 return false;
             }

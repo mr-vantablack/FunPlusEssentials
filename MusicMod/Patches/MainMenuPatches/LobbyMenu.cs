@@ -16,6 +16,7 @@ namespace FunPlusEssentials.Patches
         public static event Event onJoinedRoom;
         static bool Prefix(LobbyMenu __instance)
         {
+            CuteLogger.Meow("Joined room");
             __instance.EJLDOIOJGPC = true;
             if (onJoinedRoom != null) onJoinedRoom.Invoke();
             string mapName = PhotonNetwork.room.customProperties["MN002'"] != null ? PhotonNetwork.room.customProperties["MN002'"].ToString() : "";
@@ -181,16 +182,14 @@ namespace FunPlusEssentials.Patches
             onLobbyEnabled?.Invoke(__instance);
         }
     }
-    [HarmonyLib.HarmonyPatch(typeof(LobbyMenu), "OnDisable")]
-    public static class LobbyMenuOnDisabled
+    [HarmonyLib.HarmonyPatch(typeof(LobbyMenu), "OnPhotonPlayerConnected")]
+    public static class lp1
     {
-        public delegate void Event();
-        public static event Event onLobbyDisabled;
-
-        [HarmonyLib.HarmonyPostfix]
-        static void Prefix()
+        [HarmonyLib.HarmonyPrefix]
+        static void Prefix(LobbyMenu __instance)
         {
-            //onLobbyDisabled?.Invoke();
+            CuteLogger.Meow("OnPhotonPlayerConnected");
         }
     }
+    
 }

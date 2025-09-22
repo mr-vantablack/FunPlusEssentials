@@ -53,6 +53,15 @@ namespace FunPlusEssentials.Patches
             if (PhotonNetwork.room.customProperties["Plague"] != null)
             {
                 Plague.Enabled = true;
+                if (!PlagueAssets._inited)
+                {
+                    CuteLogger.Quack("Plague mode is not installed");
+                    PhotonNetwork.Disconnect();
+                }
+            }
+            else
+            {
+                Plague.Enabled = false;
             }
             if (Plague.Enabled)
             {

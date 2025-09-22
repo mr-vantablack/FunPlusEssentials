@@ -109,6 +109,7 @@ namespace FunPlusEssentials.CustomContent
             Directory.CreateDirectory(mainMenuDirectory);
             if (File.Exists(mainMenuDirectory + @"\ambient.mp3"))
             {
+                GameObject.Find("Sound").GetComponent<AudioSource>().Stop();
                 WWW www = new WWW(@"file://" + mainMenuDirectory + @"\ambient.mp3");
                 yield return www;
                 if (menuMusic == null)

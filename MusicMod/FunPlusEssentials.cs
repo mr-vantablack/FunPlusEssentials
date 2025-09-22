@@ -9,7 +9,7 @@ using FunPlusEssentials.Other;
 using UnhollowerRuntimeLib;
 
 
-[assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "4.2", "Vantablack")]
+[assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "5.0", "Vantablack")]
 [assembly: MelonGame("ZeoWorks", "Slendytubbies 3")]
 
 namespace FunPlusEssentials
@@ -46,11 +46,19 @@ namespace FunPlusEssentials
             if (sceneName == "MainMenu")
             {
                 Plague.Enabled = false;
-                if (!PlagueAssets._inited && Config.plagueEnabled && !MelonUtils.IsGame32Bit())
+                if (!PlagueAssets._inited && Config.plagueEnabled)
                 {
-                    var pa = new GameObject();
-                    pa.AddComponent<PlagueAssets>();
-                    pa.hideFlags = HideFlags.HideAndDontSave;
+                    if (!MelonUtils.IsGame32Bit())
+                    {
+                        var pa = new GameObject();
+                        pa.AddComponent<PlagueAssets>();
+                        pa.hideFlags = HideFlags.HideAndDontSave;
+                    }
+                    else
+                    {
+                        Notifier.Show("Plague mode is not supported in the 32-bit version of the game.", "Okay");
+                        Config.plagueEnabled = false;
+                    }
                 }
                 PhotonNetwork.automaticallySyncScene = true;
                 Helper.SetPropertyV2("FPE", FPE.AppInfo.Version.ToString());
@@ -92,9 +100,9 @@ namespace FunPlusEssentials
 
         public IEnumerator CheckModVersion()
         {
-            WWW w = new WWW("https://ippls.lh1.in/fpe-version");
+            WWW w = new WWW("https://raw.githubusercontent.com/mr-vantablack/s/refs/heads/main/version.txt");
             yield return w;
-            WWW d = new WWW("https://ippls.lh1.in/discord-link");
+            WWW d = new WWW("https://raw.githubusercontent.com/mr-vantablack/s/refs/heads/main/discord.txt");
             yield return d;
             if (w.error != null && d.error != null)
             {

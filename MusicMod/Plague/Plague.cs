@@ -20,6 +20,7 @@ using UnityEngine.AI;
 using UnityEngine.Audio;
 using UnityEngine.UI;
 using UnityStandardAssets.ImageEffects;
+using static CharacterCustomization;
 using static Il2CppSystem.Guid;
 using static MelonLoader.MelonLogger;
 using static PunTeams;
@@ -37,6 +38,7 @@ namespace FunPlusEssentials
     {
         public static bool CanBeEnabled { get; set; }
         public static bool Enabled { get; set; }
+
     }
     [RegisterTypeInIl2Cpp, UsingRPC]
     public class SupplyCrate : MonoBehaviour
@@ -136,6 +138,93 @@ namespace FunPlusEssentials
         }
     }
     [RegisterTypeInIl2Cpp]
+    public class WireTrap : MonoBehaviour
+    {
+        public WireTrap(IntPtr ptr) : base(ptr) { }
+        public bool isDamage = true;
+        public PhotonPlayer owner;
+        public float survivorsDamage = 1f;
+        public float infectedDamage = 5f;
+        public float coolDown = 0.1f;
+        private float timer = 0f;
+        public int durability;
+
+        public void Start()
+        {
+            durability = 150;
+        }
+        public void OnPhotonSerializeView(Il2CppSystem.Object stream, Il2CppSystem.Object info)
+        {
+            var s = stream.Cast<PhotonStream>();
+            var i = info.Cast<PhotonMessageInfo>();
+            if (s.isWriting)
+            {
+                s.SendNext(new Il2CppSystem.Int32() { m_value = durability }.BoxIl2CppObject());
+            }
+            else
+            {
+                durability = s.ReceiveNext().Unbox<int>();
+            }
+        }
+        public void OnTriggerStay(Collider coll)
+        {
+            if (durability <= 0 && owner.ID == PhotonNetwork.player.ID)
+            {
+                CuteLogger.Meow("Destroyed");
+                PhotonNetwork.Destroy(gameObject.transform.parent.gameObject);
+            }
+            if (isDamage)
+            {
+                if (coll.gameObject.tag == "Player")
+                {
+                    if (timer > 0)
+                    {
+                        timer -= Time.deltaTime;
+                    }
+
+                    if (timer <= 0)
+                    {
+                        timer = coolDown;
+                        durability--;
+                        CuteLogger.Meow(durability.ToString());
+                        Helper.PlayerDamage.E10030(survivorsDamage);
+                    }
+                }
+                if (coll.gameObject.tag == "monster" && coll.gameObject.name == PhotonNetwork.player.name)
+                {
+                    if (timer > 0)
+                    {
+                        timer -= Time.deltaTime;
+                    }
+
+                    if (timer <= 0)
+                    {
+                        if (owner == null) owner = PhotonNetwork.player;
+                        timer = coolDown;
+                        durability--;
+                        CuteLogger.Meow(durability.ToString());
+                        Il2CppSystem.Object[] array = new Il2CppSystem.Object[2];
+                        array[0] = new Il2CppSystem.Single() { m_value = infectedDamage }.BoxIl2CppObject();
+                        array[1] = owner;
+                        Helper.PlayerMonster.photonView.RPC("KOFOOHFOGHL", PhotonTargets.All, array);
+                    }
+                }
+            }
+        }
+        public void OnTriggerExit(Collider coll)
+        {
+            if (coll.gameObject.tag == "Player")
+            {
+                timer = 0f;
+            }
+            if (coll.gameObject.tag == "monster" && coll.gameObject.name == PhotonNetwork.player.name)
+            {
+                timer = 0f;
+            }
+        }
+    }
+
+    [RegisterTypeInIl2Cpp]
     public class MedKit : MonoBehaviour
     {
         public MedKit(IntPtr ptr) : base(ptr) { }
@@ -185,12 +274,406 @@ namespace FunPlusEssentials
             }
         }
     }
+    [RegisterTypeInIl2Cpp]
+    public class ExplosionZone : MonoBehaviour
+    {
+        public ExplosionZone(IntPtr ptr) : base(ptr) { }
+        public PhotonPlayer killer;
+        public bool activated;
+        public void Start()
+        {
+            activated = false;
+            var mixer = FindObjectOfType<AudioMixerManager>().EEJANKGKOBO;
+            GetComponent<AudioSource>().outputAudioMixerGroup = mixer.FindMatchingGroups("SFX")[0];
+        }
+        public void OnTriggerEnter(Collider coll)
+        {
+            if (activated) return;
+            if (coll.gameObject.tag == "Player")
+            {
+                Helper.PlayerDamage.E10030(200f);
+            }
+            if (coll.gameObject.tag == "monster" && coll.gameObject.name == PhotonNetwork.player.name)
+            {
+                if (killer == null) killer = PhotonNetwork.player;
+                Il2CppSystem.Object[] array = new Il2CppSystem.Object[2];
+                array[0] = new Il2CppSystem.Single() { m_value = 200f }.BoxIl2CppObject();
+                array[1] = killer;
+                Helper.PlayerMonster.photonView.RPC("KOFOOHFOGHL", PhotonTargets.All, array);
+            }
+            activated = true;
+        }
+    }
 
+    [RegisterTypeInIl2Cpp]
+    public class MineTrap : MonoBehaviour
+    {
+        public MineTrap(IntPtr ptr) : base(ptr) { }
+
+        public AudioSource source;
+        public Animator animator;
+        public int type=1;
+        public GameObject parent;
+        public bool ready, activated;
+        public float lifetime = 90f;
+
+        public void Start()
+        {
+            ready = false;
+            activated = false;
+            parent = transform.parent.gameObject;
+            source = GetComponent<AudioSource>();
+            animator = GetComponent<Animator>();
+            var mixer = FindObjectOfType<AudioMixerManager>().EEJANKGKOBO;
+            source.outputAudioMixerGroup = mixer.FindMatchingGroups("SFX")[0];
+            source.maxDistance = 10;
+            source.PlayOneShot(PlagueAssets.Instance._landMineSounds[0]);
+            var handler = parent.AddComponent<LandMineRPCHandler>();
+            handler.animator = animator;
+            handler.source = source;
+            handler.mine = this;
+            var coll = GetComponent<SphereCollider>();
+            if (type == 1)
+            {
+                animator.Play("MineDeploy1");
+                coll.radius = 1.2f;
+            }
+            if (type == 0)
+            {
+                animator.Play("MineDeploy0");
+                coll.radius = 3.5f;
+            }
+            MelonCoroutines.Start(Deploying());
+        }
+        public IEnumerator Deploying()
+        {
+            yield return new WaitForSeconds(4.7f);
+            ready = true;
+        }
+        public void Update()
+        {
+            if (!ready) return;
+            if (type == 1) return;
+            if (lifetime > 0)
+            {
+                lifetime -= Time.deltaTime;
+            }
+            else
+            {
+                if (parent.GetComponent<PhotonView>().isMine)
+                {
+                    PhotonNetwork.Destroy(parent);
+                }
+            }
+        }
+        public void OnTriggerEnter(Collider coll)
+        {
+            if (!ready) return;
+            if (activated) return;
+
+            if (type == 1)
+            {
+                var s = new Il2CppSystem.Single() { m_value = Random.Range(0.25f, 0.5f) }.BoxIl2CppObject();
+                if (coll.gameObject.tag == "Player")
+                {
+                    parent.GetComponent<PhotonView>().RPC("Explode", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { s }));
+                }
+                if (coll.gameObject.tag == "monster" && coll.gameObject.name == PhotonNetwork.player.name)
+                {
+                    parent.GetComponent<PhotonView>().RPC("Explode", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { s }));
+                }
+            }
+        }
+        public void OnTriggerStay(Collider coll)
+        {
+            if (type == 0)
+            {
+                if (coll.gameObject.tag == "Player")
+                {
+
+                }
+                if (coll.gameObject.tag == "monster")
+                {
+                    if (animator.GetCurrentAnimatorClipInfo(0)[0].clip.name != "MineScan")
+                    {
+                        animator.Play("MineScan");
+                    }
+                    if (!source.isPlaying)
+                    {
+                        source.maxDistance = 25;
+                        source.PlayOneShot(PlagueAssets.Instance._landMineSounds[1]);
+                    }
+                }
+            }
+        }
+    }
+    [RegisterTypeInIl2Cpp, UsingRPC]
+    public class LandMineRPCHandler : MonoBehaviour
+    {
+        public LandMineRPCHandler(IntPtr ptr) : base(ptr) { }
+        public Animator animator;
+        public AudioSource source;
+        public MineTrap mine;
+        [FunRPC]
+        public void Explode(Il2CppSystem.Object delay)
+        {
+
+            mine.activated = true;
+            MelonCoroutines.Start(ActivateMine(delay.Unbox<float>()));
+        }
+        public IEnumerator ActivateMine(float delay)
+        {
+            animator.Play("MineActivate");
+            source.PlayOneShot(PlagueAssets.Instance._landMineSounds[2]);
+            yield return new WaitForSeconds(delay);
+            var expl = GameObject.Instantiate(PlagueAssets.Instance._explosion, transform.position, transform.rotation);
+            var e = expl.AddComponent<ExplosionZone>();
+            var owner = GetComponent<PhotonView>().owner;
+            e.killer = owner;
+            if (owner.ID == PhotonNetwork.player.ID)
+            {
+                PhotonNetwork.Destroy(gameObject);
+            }
+        }
+    }
+
+    [RegisterTypeInIl2Cpp]
+    public class MineSpawner : MonoBehaviour
+    {
+        public MineSpawner(IntPtr ptr) : base(ptr) { }
+        public float cooldown = 30f;
+        public float timer;
+        public bool ready;
+        public static MineSpawner Instance;
+        public GameObject mine, previewMine;
+        private bool isInPreviewMode = false;
+        private float rotationAmount = 0f;
+        public int selectedType = 1;
+        public void Awake()
+        {
+            ready = true;
+            Instance = this;
+            timer = 0;
+            mine = PlagueAssets.Instance._landMine;
+        }
+        public void OnDisable()
+        {
+            if (previewMine != null) GameObject.Destroy(previewMine);
+        }
+        public void Update()
+        {
+            if (timer > 0)
+            {
+                timer -= Time.deltaTime;
+                ready = false;
+            }
+            else
+            {
+                ready = true;
+            }
+            if (ready)
+            {
+                HandleObjectPlacement();
+                // PlaceWire();
+            }
+            if (Input.GetKeyDown(KeyCode.N))
+            {
+                timer = 0;
+            }
+            if (Input.GetKeyDown(KeyCode.B))
+            {
+                if (selectedType == 1) { selectedType = 0; return; }
+                if (selectedType == 0) { selectedType = 1; return; }
+            }
+        }
+        void HandleObjectPlacement()
+        {
+            if (Input.GetKeyDown(KeyCode.G) && !isInPreviewMode)
+            {
+                EnterPreviewMode();
+            }
+
+            if (isInPreviewMode)
+            {
+                UpdatePreviewPosition();
+                RotatePreviewWithScroll();
+
+                if (Input.GetKeyUp(KeyCode.G) && isInPreviewMode)
+                {
+                    isInPreviewMode = false;
+                    timer = cooldown;
+                    PlaceMine();
+                }
+            }
+        }
+        public void PlaceMine()
+        {
+            CuteLogger.Quack("mine spawned");
+            var r = PhotonNetwork.NOOU("Custard", previewMine.transform.position, previewMine.transform.rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "LandMine", PhotonNetwork.player.ID.ToString(), selectedType.ToString() }));
+            GameObject.Destroy(previewMine);
+        }
+        void EnterPreviewMode()
+        {
+            previewMine = Instantiate(mine);
+            Collider[] colliders = previewMine.GetComponentsInChildren<Collider>();
+            foreach (Collider col in colliders)
+            {
+                col.enabled = false;
+            }
+            isInPreviewMode = true;
+        }
+
+        void UpdatePreviewPosition()
+        {
+            int layerMask = 1 << 0;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            var isValidPosition = Physics.Raycast(ray, out hit, 5f, layerMask, QueryTriggerInteraction.Ignore);
+            previewMine.transform.rotation = Quaternion.Euler(0, rotationAmount, 0);
+            if (isValidPosition)
+            {
+                var currentPosition = hit.point + hit.normal * 0.1f;
+                previewMine.transform.position = currentPosition;
+                Quaternion baseRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+                Quaternion additionalRotation = Quaternion.Euler(0, rotationAmount, 0);
+                previewMine.transform.rotation = additionalRotation * baseRotation;
+            }
+            else
+            {
+                previewMine.transform.position = new Vector3(0, -1000, 0);
+            }
+        }
+
+        void RotatePreviewWithScroll()
+        {
+           // rotationAmount += Input.mouseScrollDelta.y * 10f;
+        }
+        public void OnGUI()
+        {
+        }
+    }
+
+    [RegisterTypeInIl2Cpp]
+    public class WireSpawner : MonoBehaviour
+    {
+        public WireSpawner(IntPtr ptr) : base(ptr) { }
+        public float cooldown = 40f;
+        public float timer;
+        public bool ready;
+        public static WireSpawner Instance;
+        public GameObject wire, previewWire;
+        private bool isInPreviewMode = false, rotated = false;
+        private float rotationAmount = 0f;
+        public void Awake()
+        {
+            ready = true;
+            Instance = this;
+            timer = 0;
+            wire = PlagueAssets.Instance._wire;
+        }
+        public void OnDisable()
+        {
+            if (previewWire != null) GameObject.Destroy(previewWire);
+        }
+        public void Update()
+        {
+            if (timer > 0)
+            {
+                timer -= Time.deltaTime;
+                ready = false;
+            }
+            else
+            {
+                ready = true;
+            }
+            if (ready)
+            {
+                HandleObjectPlacement();
+               // PlaceWire();
+            }
+            if (Input.GetKeyDown(KeyCode.B))
+            {
+                rotated = true;
+            }
+            if (Input.GetKeyUp(KeyCode.B))
+            {
+                rotated = false;
+            }
+        }
+        void HandleObjectPlacement()
+        {
+            if (Input.GetKeyDown(KeyCode.G) && !isInPreviewMode)
+            {
+                EnterPreviewMode();
+            }
+
+            if (isInPreviewMode)
+            {
+                UpdatePreviewPosition();
+                RotatePreviewWithScroll();
+
+                if (Input.GetKeyUp(KeyCode.G) && isInPreviewMode)
+                {
+                    isInPreviewMode = false;
+                    timer = cooldown;
+                    PlaceWire();
+                }
+            }
+        }
+        public void PlaceWire()
+        {
+            CuteLogger.Quack("wire spawned");
+            var r = PhotonNetwork.NOOU("Custard", previewWire.transform.position, previewWire.transform.rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "Wire", PhotonNetwork.player.ID.ToString() }));
+            GameObject.Destroy(previewWire);
+        }
+        void EnterPreviewMode()
+        {
+            previewWire = Instantiate(wire);
+            Collider[] colliders = previewWire.GetComponentsInChildren<Collider>();
+            foreach (Collider col in colliders)
+            {
+                col.enabled = false;
+            }
+            isInPreviewMode = true;
+        }
+
+        void UpdatePreviewPosition()
+        {
+            int layerMask = 1 << 0;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+            var isValidPosition = Physics.Raycast(ray, out hit, 5f, layerMask, QueryTriggerInteraction.Ignore);
+            previewWire.transform.rotation = Quaternion.Euler(0, rotationAmount, 0);
+            if (isValidPosition)
+            {
+                var currentPosition = hit.point + hit.normal * 0.6f;
+                previewWire.transform.position = currentPosition;
+                if (rotated)
+                {
+                    Quaternion baseRotation = Quaternion.FromToRotation(Vector3.down, hit.normal);
+                    Quaternion additionalRotation = Quaternion.Euler(0, rotationAmount, 0);
+                    previewWire.transform.rotation = additionalRotation * baseRotation;
+                }
+            }
+            else
+            {
+                previewWire.transform.position = new Vector3(0, -1000, 0);
+            }
+        }
+
+        void RotatePreviewWithScroll()
+        {
+            if (!rotated) rotationAmount += Input.mouseScrollDelta.y * 10f;
+        }
+        public void OnGUI()
+        {
+        }
+    }
     [RegisterTypeInIl2Cpp]
     public class MedKitSpawner : MonoBehaviour
     {
         public MedKitSpawner(IntPtr ptr) : base(ptr) { }
-        public float cooldown = 20f;
+        public float cooldown = 25f;
         public float timer;
         public bool ready;
         public static MedKitSpawner Instance;
@@ -316,7 +799,9 @@ namespace FunPlusEssentials
             if (pv.isMine) Instance = this;
             if (pv.isMine) plagueMonster = gameObject.GetComponent<PlagueMonster>();
             ready = true;
-            light = gameObject.AddComponent<Light>();
+            var killmepls = new GameObject();
+            killmepls.transform.SetParent(transform, false);
+            light = killmepls.AddComponent<Light>();
             light.color = Color.red;
             light.intensity = 5f;
             light.enabled = false;
@@ -366,18 +851,20 @@ namespace FunPlusEssentials
         private Light light;
         public void Start()
         {
-            var l = gameObject.GetComponent<Light>();
-            if (l != null) { GameObject.Destroy(l); }
             MelonCoroutines.Start(Govno3());
         }
         public IEnumerator Govno3()
         {
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.1f);
             filter = gameObject.AddComponent<CameraFilterPack_Colors_Adjust_PreFilters>();
             CuteLogger.Quack("Added CFP");
-            light = gameObject.AddComponent<Light>();
+            var killmepls = new GameObject("fucking light");
+            killmepls.transform.SetParent(transform, false);
+            light = killmepls.AddComponent<Light>();
             CuteLogger.Quack("Added Light");
+            light.enabled = true;
             light.range = 500f;
+            CuteLogger.Quack("500");
             light.renderMode = LightRenderMode.ForcePixel;
             CuteLogger.Quack("Light configured");
             light.enabled = false;
@@ -385,6 +872,8 @@ namespace FunPlusEssentials
             filter.IAIGCDCDAFP = CameraFilterPack_Colors_Adjust_PreFilters.HILHDCJPDFP.BlackAndWhite_Red;
             filter.enabled = false;
             CuteLogger.Quack("Filter disabled");
+            var l = gameObject.GetComponent<Light>();
+            if (l != null) { GameObject.Destroy(l); }
         }
         public void Update()
         {
@@ -471,7 +960,6 @@ namespace FunPlusEssentials
         {
             if (_photonView.isMine && !_knockbacked)
             {
-                _knockbacked = true;
                 var r = GetComponent<InfectedRage>(); if (r != null) { if (r.rage) return; }
                 var i = GetComponent<PhantomInvisibility>(); if (i != null) { if (i.active) return; }
                 MelonCoroutines.Start(DoKnockback());
@@ -479,8 +967,9 @@ namespace FunPlusEssentials
         }
         public IEnumerator DoKnockback()
         {
-            _fps.HKCDMBALAAK.RunSpeed = _class.RunSpeed / 2f;
-            yield return new WaitForSeconds(Random.RandomRange(0.1f, 0.3f));
+            _knockbacked = true;
+            _fps.HKCDMBALAAK.RunSpeed = 4f;
+            yield return new WaitForSeconds(Random.RandomRange(0.2f, 0.4f));
             _fps.HKCDMBALAAK.RunSpeed = _class.RunSpeed;
             _knockbacked = false;
         }
@@ -754,7 +1243,7 @@ namespace FunPlusEssentials
                 _playerClass.Health = 100;
                 _playerClass.Armor = 0;
                 _playerClass.RunSpeed = 10.25f;
-                _playerClass.JumpHeight = 1.25f;
+                _playerClass.JumpHeight = 1.1f;
             }
             if (classID == 3)
             {
@@ -767,11 +1256,11 @@ namespace FunPlusEssentials
                 _playerClass.Health = 150;
                 _playerClass.Armor = 30;
                 _playerClass.RunSpeed = 9f;
-                _playerClass.JumpHeight = 0.8f;
+                _playerClass.JumpHeight = 0.9f;
             }
             if (classID == 4)
             {
-                _playerClass.ClassName = "Sniper";
+                _playerClass.ClassName = "Scout";
                 _playerClass.Weapons = new List<string>()
                 {
                     "XIX II",
@@ -780,7 +1269,7 @@ namespace FunPlusEssentials
                 _playerClass.Health = 100;
                 _playerClass.Armor = 0;
                 _playerClass.RunSpeed = 11f;
-                _playerClass.JumpHeight = 2f;
+                _playerClass.JumpHeight = 1.5f;
             }
             if (classID == 777)
             {
@@ -805,6 +1294,7 @@ namespace FunPlusEssentials
             MelonCoroutines.Start(Govno2());
             //Helper.SetProperty("MaxHP", _playerClass.Health.ToString());
             Helper.SetProperty("Armor", new Il2CppSystem.Single() { m_value = _playerClass.Armor }.BoxIl2CppObject());
+            Helper.SetProperty("Class", _playerClass.ClassName);
             //damageMultiplier
             _classSet = true;
         }
@@ -816,6 +1306,7 @@ namespace FunPlusEssentials
             {
                 _playerClass.ClassName = "Runner";
                 _playerClass.RunSpeed = 11.5f;
+                _playerClass.WalkSpeed = 4f;
                 _playerClass.JumpHeight = 3f;
                 _playerClass.Health = 60;
                 _playerClass.Damage = 40;
@@ -825,6 +1316,7 @@ namespace FunPlusEssentials
             {
                 _playerClass.ClassName = "Jumper";
                 _playerClass.RunSpeed = 10.5f;
+                _playerClass.WalkSpeed = 4f;
                 _playerClass.JumpHeight = 5f;
                 _playerClass.Health = 60;
                 _playerClass.Damage = 30;
@@ -834,6 +1326,7 @@ namespace FunPlusEssentials
             {
                 _playerClass.ClassName = "Tank";
                 _playerClass.RunSpeed = 9.5f;
+                _playerClass.WalkSpeed = 4f;
                 _playerClass.JumpHeight = 2f;
                 _playerClass.Health = 300;
                 _playerClass.Damage = 101;
@@ -845,6 +1338,7 @@ namespace FunPlusEssentials
             {
                 _playerClass.ClassName = "Hunter";
                 _playerClass.RunSpeed = 10.5f;
+                _playerClass.WalkSpeed = 4f;
                 _playerClass.JumpHeight = 3f;
                 _playerClass.Health = 150;
                 _playerClass.Damage = 40;
@@ -855,7 +1349,7 @@ namespace FunPlusEssentials
             {
                 _playerClass.ClassName = "Phantom";
                 _playerClass.RunSpeed = 10.5f;
-                _playerClass.WalkSpeed = 7f;
+                _playerClass.WalkSpeed = 4f;
                 _playerClass.JumpHeight = 2.7f;
                 _playerClass.Health = 100;
                 _playerClass.Damage = 30;
@@ -957,7 +1451,6 @@ namespace FunPlusEssentials
         {
 
         }
-
 
         void LateUpdate()
         {
@@ -1242,7 +1735,7 @@ namespace FunPlusEssentials
         }
         IEnumerator Govno2()
         {
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.3f);
             foreach (string weapon in _playerClass.Weapons)
             {
                 Helper.GiveWeapon(FindObjectOfType<WeaponManager>(), weapon);
@@ -1253,6 +1746,14 @@ namespace FunPlusEssentials
             if (_playerClass.ClassName == "Medic")
             {
                 Helper.Player.AddComponent<MedKitSpawner>();
+            }
+            if (_playerClass.ClassName == "Heavy")
+            {
+                Helper.Player.AddComponent<WireSpawner>();
+            }
+            if (_playerClass.ClassName == "Scout")
+            {
+                Helper.Player.AddComponent<MineSpawner>();
             }
         }
         public void PlayMusic(AudioClip clip, bool loop = false)
@@ -1342,10 +1843,24 @@ namespace FunPlusEssentials
             _draw = true;
             PlayMusic(Helper.RandomSound(PlagueAssets.Instance._drawSounds));
         }
+        public void DestroyAllRagdolls()
+        {
+            var s = GameObject.FindObjectsOfType<RagdollMode>();
+            if (s != null)
+            {
+                foreach (RagdollMode ragdoll in s)
+                {
+                    UnityEngine.Object.Destroy(ragdoll.gameObject);
+                }
+            }
+        }
         public void DestroyAllCrates()
         {
             var s = GameObject.FindObjectsOfType<SupplyCrate>();
             var m = GameObject.FindObjectsOfType<MedKit>();
+            var w = GameObject.FindObjectsOfType<WireTrap>();
+            var t = GameObject.FindObjectsOfType<MineTrap>();
+
             if (s != null)
             {
                 foreach (SupplyCrate supply in s)
@@ -1360,6 +1875,22 @@ namespace FunPlusEssentials
                 {
                     medkit.GetComponent<PhotonView>().ownerId = PhotonNetwork.player.ID;
                     PhotonNetwork.Destroy(medkit.gameObject);
+                }
+            }
+            if (w != null)
+            {
+                foreach (WireTrap wire in w)
+                {
+                    wire.transform.parent.gameObject.GetComponent<PhotonView>().ownerId = PhotonNetwork.player.ID;
+                    PhotonNetwork.Destroy(wire.transform.parent.gameObject);
+                }
+            }
+            if (t != null)
+            {
+                foreach (MineTrap mine in t)
+                {
+                    mine.transform.parent.gameObject.GetComponent<PhotonView>().ownerId = PhotonNetwork.player.ID;
+                    PhotonNetwork.Destroy(mine.transform.parent.gameObject);
                 }
             }
         }
@@ -1399,7 +1930,7 @@ namespace FunPlusEssentials
             _restarting = false;
             _totalRounds++;
             _supplyDrop = false;
-            
+            DestroyAllRagdolls();
             if (_totalRounds > 0 && PhotonNetwork.isMasterClient)
             {
                 Helper.SetRoomProperty("PlagueMode", "Infection");
@@ -1505,6 +2036,31 @@ namespace FunPlusEssentials
                     if (MedKitSpawner.Instance.ready) GUI.Label(new Rect(x - 120, y, 100f, 100f), PlagueLocales.abilityMedkitText, infoStyle);
                     else GUI.Label(new Rect(x - 120, y, 100f, 100f), $"[{Mathf.FloorToInt(MedKitSpawner.Instance.timer % 60).ToString()}s]", infoStyle);
                     GUI.DrawTexture(new Rect(Screen.width - 200, y, 64, 64), PlagueAssets.Instance._medkitIcon);
+                }
+            }
+            if (_playerClass.ClassName == "Heavy")
+            {
+                if (WireSpawner.Instance != null)
+                {
+                    var x = Screen.width - 200;
+                    var y = Screen.height - 250;
+
+                    if (WireSpawner.Instance.ready) GUI.Label(new Rect(x - 120, y, 100f, 100f), PlagueLocales.abilityWireText, infoStyle);
+                    else GUI.Label(new Rect(x - 120, y, 100f, 100f), $"[{Mathf.FloorToInt(WireSpawner.Instance.timer % 60).ToString()}s]", infoStyle);
+                    GUI.DrawTexture(new Rect(Screen.width - 200, y, 64, 64), PlagueAssets.Instance._wireIcon);
+                }
+            }
+            if (_playerClass.ClassName == "Scout")
+            {
+                if (MineSpawner.Instance != null)
+                {
+                    var x = Screen.width - 200;
+                    var y = Screen.height - 250;
+
+                    if (MineSpawner.Instance.ready) GUI.Label(new Rect(x - 120, y, 100f, 100f), PlagueLocales.abilityMineText, infoStyle);
+                    else GUI.Label(new Rect(x - 120, y, 100f, 100f), $"[{Mathf.FloorToInt(MineSpawner.Instance.timer % 60).ToString()}s]", infoStyle);
+                    if (MineSpawner.Instance.selectedType == 1) GUI.DrawTexture(new Rect(Screen.width - 200, y, 64, 64), PlagueAssets.Instance._landMineIcon);
+                    if (MineSpawner.Instance.selectedType == 0) GUI.DrawTexture(new Rect(Screen.width - 200, y, 64, 64), PlagueAssets.Instance._scanMineIcon);
                 }
             }
             if (_playerClass.ClassName == "Phantom")
