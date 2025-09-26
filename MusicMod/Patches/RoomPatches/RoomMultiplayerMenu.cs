@@ -1,4 +1,4 @@
-﻿using CodeStage.AntiCheat.ObscuredTypes;
+﻿using Il2CppCodeStage.AntiCheat.ObscuredTypes;
 using FunPlusEssentials.CustomContent;
 using FunPlusEssentials.Essentials;
 using FunPlusEssentials.Fun;
@@ -9,9 +9,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnhollowerBaseLib;
 using UnityEngine.SceneManagement;
 using UnityEngine;
+using Il2Cpp;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 namespace FunPlusEssentials.Patches
 {

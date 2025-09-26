@@ -1,11 +1,12 @@
 ﻿using FunPlusEssentials.Essentials;
 using FunPlusEssentials.Other;
+using Il2Cpp;
+using Il2CppSystem.Text.RegularExpressions;
 using MelonLoader;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace FunPlusEssentials.Patches

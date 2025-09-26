@@ -15,9 +15,11 @@ using System.Collections;
 using System.CodeDom;
 using static MelonLoader.MelonLogger;
 using UnityEngine.AI;
-using UnhollowerBaseLib;
 using static FunPlusEssentials.CustomContent.FunNPCInfo;
 using System.Reflection;
+using Il2Cpp;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Newtonsoft.Json;
 
 namespace FunPlusEssentials.CustomContent
 {
@@ -491,7 +493,7 @@ namespace FunPlusEssentials.CustomContent
                     return;
                 }
                 var json = File.ReadAllText(npcFiles[i].FullName + @"\npc.json");
-                var npc = JSON.Load(json).Make<FunNPCInfo>();
+                var npc = JsonConvert.DeserializeObject<FunNPCInfo>(json);
                 npc.path = npcFiles[i].FullName;
                 NPCInfos.Add(npc);
             }

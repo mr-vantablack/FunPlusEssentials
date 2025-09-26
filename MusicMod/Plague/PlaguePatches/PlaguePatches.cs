@@ -1,12 +1,13 @@
 ﻿using FunPlusEssentials.Essentials;
 using FunPlusEssentials.Other;
+using Il2Cpp;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Il2CppSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UnhollowerBaseLib;
 using UnityEngine;
 
 namespace FunPlusEssentials.Patches
@@ -84,7 +85,7 @@ namespace FunPlusEssentials.Patches
                     if (pm != null)
                     {
                         CuteLogger.Meow("Healed");
-                        pm.RPC("HealRPC", PhotonTargets.All, null);
+                        pm.RPC("HealRPC", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
                     }
                 }
             }
@@ -93,7 +94,7 @@ namespace FunPlusEssentials.Patches
     [HarmonyLib.HarmonyPatch(typeof(PlayerDamage), "Awake")]
     public static class PlagueSurvivorSpawnedPatch
     {
-        [Harmony.HarmonyPostfix]
+        [HarmonyLib.HarmonyPostfix]
         static void Postfix(PlayerDamage __instance)
         {
             if (Plague.Enabled)
@@ -106,7 +107,7 @@ namespace FunPlusEssentials.Patches
     [HarmonyLib.HarmonyPatch(typeof(PlayerDamage), "KOFOOHFOGHL")]
     public static class PlagueBloodPatch
     {
-        [Harmony.HarmonyPostfix]
+        [HarmonyLib.HarmonyPostfix]
         static void Postfix(ref float CJKBHAHOLMJ, ref PhotonPlayer HMBMNJKMGLD, PlayerDamage __instance)
         {
             if (Plague.Enabled)

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.UI;
 using UnityEngine;
+using Il2Cpp;
 
 namespace FunPlusEssentials.Patches
 {

@@ -6,7 +6,7 @@ using FunPlusEssentials.CustomContent;
 using UnityEngine;
 using System.Collections;
 using FunPlusEssentials.Other;
-using UnhollowerRuntimeLib;
+using Il2Cpp;
 
 
 [assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "5.0", "Vantablack")]

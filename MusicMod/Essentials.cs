@@ -11,14 +11,18 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
 using System.IO;
-using CodeStage.AntiCheat.Storage;
-using UnhollowerBaseLib;
+using Il2CppCodeStage.AntiCheat.Storage;
 using UnityEngine.SceneManagement;
 using FunPlusEssentials.Patches;
 using System.Xml.Linq;
-using UnityEngine.Networking.Match;
 using System.Reflection;
 using static MelonLoader.MelonLogger;
+using Il2Cpp;
+using Il2CppSystem.Text.RegularExpressions;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Il2CppPhoton;
+using MonoBehaviour = UnityEngine.MonoBehaviour;
+using FunPlusEssentials.CustomContent;
 
 namespace FunPlusEssentials.Essentials
 {
@@ -202,7 +206,110 @@ namespace FunPlusEssentials.Essentials
             }
         }
     }
+    [RegisterTypeInIl2Cpp]
+    public class Callbacker : MonoBehaviour
+    {
+        public Callbacker(IntPtr ptr) : base(ptr) { }
+        public static Callbacker Instance;
 
+        public void Start()
+        {
+            Instance = this;
+            CuteLogger.Quack("callbacker start");
+        }
+        private void OnConnectedToPhoton()
+        {
+            CuteLogger.Quack("callbacker connected to photon cloud");
+        }
+        private void OnJoinedRoom()
+        {
+            CuteLogger.Meow("Joined room");
+            Helper.LobbyMenu.EJLDOIOJGPC = true;
+            string mapName = PhotonNetwork.room.customProperties["MN002'"] != null ? PhotonNetwork.room.customProperties["MN002'"].ToString() : "";
+            var scene = mapName;
+            scene = scene.Replace(" (Day)", "");
+            scene = scene.Replace(" (Dusk)", "");
+            scene = scene.Replace(" (Night)", "");
+            string customNPCs = PhotonNetwork.room.customProperties["customContent"] != null ? PhotonNetwork.room.customProperties["customContent"].ToString() : "";
+            CuteLogger.Meow(scene);
+            foreach (MapInfo map in MapManager.customMaps)
+            {
+                if (scene == map.map.mapName)
+                {
+                    string ver = PhotonNetwork.room.customProperties["mapVersion"] != null ? PhotonNetwork.room.customProperties["mapVersion"].ToString() : "";
+                    if (ver != "" && ver != map.version)
+                    {
+                        CuteLogger.Meow(ConsoleColor.Red, "Disconnected. Map version mismatch.");
+                        if (!PhotonNetwork.isOfflineMode) { PhotonNetwork.Disconnect(); }
+                        Notifier.Show($"<color=red>Map version mismatch!</color>\nYour program version is {map.version}, while the host map version is {ver}.\nPlease download the required map version.");
+                    }
+                    string dependencies = "";
+                    if (map.usingCustomNPCs)
+                    {
+                        MapManager.useCustomNPCs = true;
+                        for (int i = 0; i < map.dependencies.Count; i++)
+                        {
+                            CuteLogger.Meow("checking");
+                            var npc = NPCManager.CheckNPCInfos(map.dependencies[i]);
+                            if (npc == null) dependencies += map.dependencies[i] + ", ";
+                        }
+                    }
+                    if (dependencies != "")
+                    {
+                        CuteLogger.Meow(ConsoleColor.Red, "Disconnected. Missing custom content.");
+                        if (!PhotonNetwork.isOfflineMode) { PhotonNetwork.Disconnect(); }
+                        else { Helper.LobbyMenu.CPFFBHEDEPF.ReturnToMenu(); }
+                        Notifier.Show("<color=red>Missing custom content!</color>\nThis map uses custom content. Please download the missing files:\n" + dependencies);
+                    }
+                }
+            }
+            string missingNPCs = "";
+            if (customNPCs != null && customNPCs != "")
+            {
+                MapManager.useCustomNPCs = true;
+                foreach (string npcName in customNPCs.Split('|'))
+                {
+                    if (npcName != null && npcName != "")
+                    {
+                        var npc = NPCManager.CheckNPCInfos(npcName);
+                        var weapon = CustomWeapons.CheckWeaponInfos(npcName);
+                        if (npc == null && weapon == null)
+                        {
+                            missingNPCs += npcName + ", ";
+                        }
+                    }
+                }
+            }
+            if (missingNPCs != "")
+            {
+                CuteLogger.Meow(ConsoleColor.Red, "Disconnected. Missing custom content.");
+                if (!PhotonNetwork.isOfflineMode) { PhotonNetwork.Disconnect(); }
+                Notifier.Show("<color=red>Missing custom content!</color>\nThis room uses custom content. Please download the missing files:\n" + missingNPCs);
+            }
+            if (PhotonNetwork.isMasterClient)
+            {
+                MapManager.CheckForCustomContent();
+                if (Plague.Enabled) Helper.SetRoomProperty("Plague", "true");
+            }
+            else
+            {
+                Plague.Enabled = false;
+                if (PhotonNetwork.room.customProperties["Plague"] != null)
+                {
+                    if (PlagueAssets._inited)
+                    {
+                        Plague.Enabled = true;
+                    }
+                    else
+                    {
+                        CuteLogger.Meow(ConsoleColor.Red, "Disconnected. Missing custom content.");
+                        if (!PhotonNetwork.isOfflineMode) { PhotonNetwork.Disconnect(); }
+                        Notifier.Show("<color=red>Missing custom content!</color>\nThis room uses custom content. Please download the missing files:\nPlagueMode");
+                    }
+                }
+            }
+        }
+    }
     public static class CommandHandler
     {
         public static bool canRespawn = true;

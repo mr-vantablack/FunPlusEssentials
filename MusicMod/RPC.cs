@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using FunPlusEssentials.CustomContent;
 using FunPlusEssentials.Other;
+using Il2Cpp;
 using MelonLoader;
-using UnhollowerBaseLib;
 using UnityEngine;
 
 namespace FunPlusEssentials
@@ -15,7 +15,7 @@ namespace FunPlusEssentials
     public class FunRPC : Attribute
     {
     }
-    public class UsingRPC : Attribute
+    public class HandleRPC : Attribute
     {
     }
     public static class PhotonManager
@@ -28,7 +28,7 @@ namespace FunPlusEssentials
             {
                 foreach (Type type in assembly.GetTypes())
                 {
-                    if (type.IsClass && type.GetCustomAttribute<UsingRPC>() != null)
+                    if (type.IsClass && type.GetCustomAttribute<HandleRPC>() != null)
                     {
                         rpcMethodsCache.Add(type, type.GetMethods().Where(m => m.GetCustomAttribute<FunRPC>() != null).ToList());
                     }
@@ -49,7 +49,7 @@ namespace FunPlusEssentials
                 CuteLogger.Bark("RegisterSerializeView() failed: Method not found.");
             }
         }
-        public static bool IsUsingRPC(Il2CppSystem.Type type)
+        public static bool IsHandleRPC(Il2CppSystem.Type type)
         {
             foreach (Type t in rpcMethodsCache.Keys)
             {
@@ -59,7 +59,7 @@ namespace FunPlusEssentials
         }
     }
 
-    [RegisterTypeInIl2Cpp, UsingRPC]
+    [RegisterTypeInIl2Cpp, HandleRPC]
     public class FunRPCHandler : MonoBehaviour
     {
         public FunRPCHandler(IntPtr ptr) : base(ptr) { }

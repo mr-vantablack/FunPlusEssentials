@@ -6,12 +6,11 @@ using MelonLoader;
 using System.IO;
 using System;
 using FunPlusEssentials.Essentials;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
+using Hashtable = Il2CppExitGames.Client.Photon.Hashtable;
 using System.Collections.Generic;
-using UnhollowerBaseLib;
-using UnhollowerRuntimeLib;
 using FunPlusEssentials.CustomContent;
 using Random = System.Random;
+using Il2Cpp;
 
 namespace FunPlusEssentials.Other
 {

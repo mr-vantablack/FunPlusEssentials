@@ -7,19 +7,18 @@ using System.Text.RegularExpressions;
 using FunPlusEssentials.Fun;
 using UnityEngine.SceneManagement;
 using MelonLoader;
-using ExitGames.Client.Photon;
+using Il2CppExitGames.Client.Photon;
 using System.Reflection;
 using System.Collections.Generic;
-using UnhollowerRuntimeLib;
 using Harmony;
 using System.Linq;
-using UnhollowerBaseLib;
 using static MelonLoader.MelonLogger;
 using UnityEngine.UI;
-using BeautifyEffect;
+using Il2CppBeautifyEffect;
 using UnityEngine.PostProcessing;
-using CodeStage.AntiCheat.ObscuredTypes;
+using Il2CppCodeStage.AntiCheat.ObscuredTypes;
 using static Il2CppSystem.Collections.Hashtable;
+using Il2Cpp;
 
 namespace FunPlusEssentials.Patches
 {
@@ -286,7 +285,7 @@ namespace FunPlusEssentials.Patches
         {
             if (!Config.postProcessingEnabled)
             {
-                GameObject.Destroy(__instance.transform.GetComponentInChildren<BeautifyEffect.Beautify>());
+                GameObject.Destroy(__instance.transform.GetComponentInChildren<Il2CppBeautifyEffect.Beautify>());
                 GameObject.Destroy(__instance.transform.GetComponentInChildren<PostProcessingBehaviour>());
             }
         }

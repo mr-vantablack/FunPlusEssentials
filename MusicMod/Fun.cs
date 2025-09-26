@@ -3,13 +3,13 @@ using System.Collections;
 using UnityEngine;
 using MelonLoader;
 using Convert = System.Convert;
-using Hashtable = ExitGames.Client.Photon.Hashtable;
+using Hashtable = Il2CppExitGames.Client.Photon.Hashtable;
 using static MelonLoader.MelonLogger;
 using UnityEngine.Networking;
 using FunPlusEssentials.Essentials;
 using FunPlusEssentials.Other;
 using FunPlusEssentials.Patches;
-using UnhollowerBaseLib;
+using Il2Cpp;
 
 namespace FunPlusEssentials.Fun
 {

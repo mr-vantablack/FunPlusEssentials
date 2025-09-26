@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using CodeStage.AntiCheat.Storage;
+using Il2CppCodeStage.AntiCheat.Storage;
 using FunPlusEssentials.CustomContent;
 using FunPlusEssentials.Essentials;
 using FunPlusEssentials.Other;
@@ -14,22 +14,23 @@ using HarmonyLib;
 using Il2CppSystem;
 using Il2CppSystem.Reflection;
 using MelonLoader;
-using UnhollowerBaseLib;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Audio;
 using UnityEngine.UI;
 using UnityStandardAssets.ImageEffects;
-using static CharacterCustomization;
+using static Il2Cpp.CharacterCustomization;
 using static Il2CppSystem.Guid;
 using static MelonLoader.MelonLogger;
-using static PunTeams;
-using static ShopSystem;
+using static Il2Cpp.PunTeams;
+using static Il2Cpp.ShopSystem;
 using static UnityEngine.UI.Navigation;
 using BindingFlags = System.Reflection.BindingFlags;
 using IntPtr = System.IntPtr;
 using MethodInfo = Il2CppSystem.Reflection.MethodInfo;
 using Random = UnityEngine.Random;
+using Il2Cpp;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 
 namespace FunPlusEssentials
@@ -40,7 +41,7 @@ namespace FunPlusEssentials
         public static bool Enabled { get; set; }
 
     }
-    [RegisterTypeInIl2Cpp, UsingRPC]
+    [RegisterTypeInIl2Cpp, HandleRPC]
     public class SupplyCrate : MonoBehaviour
     {
         public SupplyCrate(IntPtr ptr) : base(ptr) { }
@@ -75,7 +76,7 @@ namespace FunPlusEssentials
             {
                 opened = true;
                 PlagueController.Instance.PlaySound(PlagueAssets.Instance._supplyPickupSound);
-                pv.RPC("OpenRPC", PhotonTargets.All, null);
+                pv.RPC("OpenRPC", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
                 Heal(100f);
                 GiveWeapons();
             }
@@ -137,6 +138,40 @@ namespace FunPlusEssentials
             PhotonNetwork.Destroy(gameObject);
         }
     }
+    [RegisterTypeInIl2Cpp, HandleRPC]
+    public class WireTrapRPCHandler : MonoBehaviour
+    {
+        public WireTrapRPCHandler(IntPtr ptr) : base(ptr) { }
+        public WireTrap wire;
+        public PhotonView view;
+        public void Awake()
+        {
+            view = GetComponent<PhotonView>();
+            view.synchronization = ViewSynchronization.UnreliableOnChange;
+            PhotonManager.RegisterSerializeView(gameObject.GetComponent<PhotonView>(), this);
+        }
+        [FunRPC]
+        public void Break()
+        {
+            wire.durability--;
+            CuteLogger.Meow(wire.durability.ToString());
+        }
+        public void OnPhotonSerializeView(Il2CppSystem.Object stream, Il2CppSystem.Object info)
+        {
+            if (wire == null) return;
+            var s = stream.Cast<PhotonStream>();
+            var i = info.Cast<PhotonMessageInfo>();
+            if (s.isWriting)
+            {
+                s.SendNext(new Il2CppSystem.Int32() { m_value = wire.durability }.BoxIl2CppObject());
+            }
+            else
+            {
+                wire.durability = s.ReceiveNext().Unbox<int>();
+            }
+        }
+    }
+
     [RegisterTypeInIl2Cpp]
     public class WireTrap : MonoBehaviour
     {
@@ -148,31 +183,24 @@ namespace FunPlusEssentials
         public float coolDown = 0.1f;
         private float timer = 0f;
         public int durability;
+        public PhotonView view;
 
         public void Start()
         {
-            durability = 150;
+            durability = 100;
+            transform.parent.gameObject.AddComponent<WireTrapRPCHandler>().wire = this;
+            view = transform.parent.gameObject.GetComponent<PhotonView>();
         }
-        public void OnPhotonSerializeView(Il2CppSystem.Object stream, Il2CppSystem.Object info)
-        {
-            var s = stream.Cast<PhotonStream>();
-            var i = info.Cast<PhotonMessageInfo>();
-            if (s.isWriting)
-            {
-                s.SendNext(new Il2CppSystem.Int32() { m_value = durability }.BoxIl2CppObject());
-            }
-            else
-            {
-                durability = s.ReceiveNext().Unbox<int>();
-            }
-        }
-        public void OnTriggerStay(Collider coll)
+        public void Update()
         {
             if (durability <= 0 && owner.ID == PhotonNetwork.player.ID)
             {
                 CuteLogger.Meow("Destroyed");
                 PhotonNetwork.Destroy(gameObject.transform.parent.gameObject);
             }
+        }
+        public void OnTriggerStay(Collider coll)
+        {
             if (isDamage)
             {
                 if (coll.gameObject.tag == "Player")
@@ -185,8 +213,7 @@ namespace FunPlusEssentials
                     if (timer <= 0)
                     {
                         timer = coolDown;
-                        durability--;
-                        CuteLogger.Meow(durability.ToString());
+                        view.RPC("Break", owner, new Il2CppReferenceArray<Il2CppSystem.Object>(0));                     
                         Helper.PlayerDamage.E10030(survivorsDamage);
                     }
                 }
@@ -201,8 +228,7 @@ namespace FunPlusEssentials
                     {
                         if (owner == null) owner = PhotonNetwork.player;
                         timer = coolDown;
-                        durability--;
-                        CuteLogger.Meow(durability.ToString());
+                        view.RPC("Break", owner, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
                         Il2CppSystem.Object[] array = new Il2CppSystem.Object[2];
                         array[0] = new Il2CppSystem.Single() { m_value = infectedDamage }.BoxIl2CppObject();
                         array[1] = owner;
@@ -285,6 +311,12 @@ namespace FunPlusEssentials
             activated = false;
             var mixer = FindObjectOfType<AudioMixerManager>().EEJANKGKOBO;
             GetComponent<AudioSource>().outputAudioMixerGroup = mixer.FindMatchingGroups("SFX")[0];
+            MelonCoroutines.Start(Activated());
+        }
+        private IEnumerator Activated()
+        {
+            yield return new WaitForSeconds(0.1f);
+            activated = true;
         }
         public void OnTriggerEnter(Collider coll)
         {
@@ -336,7 +368,7 @@ namespace FunPlusEssentials
             if (type == 1)
             {
                 animator.Play("MineDeploy1");
-                coll.radius = 1.2f;
+                coll.radius = 1.5f;
             }
             if (type == 0)
             {
@@ -369,23 +401,37 @@ namespace FunPlusEssentials
         public void OnTriggerEnter(Collider coll)
         {
             if (!ready) return;
-            if (activated) return;
-
+           
+        }
+        public void OnTriggerStay(Collider coll)
+        {
+            if (!ready) return;
             if (type == 1)
             {
-                var s = new Il2CppSystem.Single() { m_value = Random.Range(0.25f, 0.5f) }.BoxIl2CppObject();
-                if (coll.gameObject.tag == "Player")
+                if (activated) return;
+                if (coll.gameObject.tag == "Player" && PlagueController.Instance._mode == PlagueMode.Cursed)
                 {
+                    var s = new Il2CppSystem.Single() { m_value = Random.Range(0.25f, 0.5f) }.BoxIl2CppObject();
                     parent.GetComponent<PhotonView>().RPC("Explode", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { s }));
                 }
                 if (coll.gameObject.tag == "monster" && coll.gameObject.name == PhotonNetwork.player.name)
                 {
-                    parent.GetComponent<PhotonView>().RPC("Explode", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { s }));
+                    var inv = PhantomInvisibility.Instance;
+                    if (inv != null)
+                    {
+                        if (!inv.active)
+                        {
+                            var s = new Il2CppSystem.Single() { m_value = Random.Range(0.25f, 0.5f) }.BoxIl2CppObject();
+                            parent.GetComponent<PhotonView>().RPC("Explode", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { s }));
+                        }
+                    }
+                    else
+                    {
+                        var s = new Il2CppSystem.Single() { m_value = Random.Range(0.25f, 0.5f) }.BoxIl2CppObject();
+                        parent.GetComponent<PhotonView>().RPC("Explode", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { s }));
+                    }
                 }
             }
-        }
-        public void OnTriggerStay(Collider coll)
-        {
             if (type == 0)
             {
                 if (coll.gameObject.tag == "Player")
@@ -402,12 +448,27 @@ namespace FunPlusEssentials
                     {
                         source.maxDistance = 25;
                         source.PlayOneShot(PlagueAssets.Instance._landMineSounds[1]);
+                        if (coll.gameObject.name == PhotonNetwork.player.name)
+                        {
+                            var inv = PhantomInvisibility.Instance;
+                            if (inv != null)
+                            {
+                                if (inv.active) { inv.pv.RPC("ExposedRPC", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(0)); }
+                            }
+                        }
                     }
                 }
             }
         }
+        public void E100010(Il2CppReferenceArray<Il2CppSystem.Object> tempStorage)
+        {
+            if (!ready) return;
+            if (activated) return;
+            var s = new Il2CppSystem.Single() { m_value = Random.Range(0.25f, 0.5f) }.BoxIl2CppObject();
+            parent.GetComponent<PhotonView>().RPC("Explode", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { s }));
+        }
     }
-    [RegisterTypeInIl2Cpp, UsingRPC]
+    [RegisterTypeInIl2Cpp, HandleRPC]
     public class LandMineRPCHandler : MonoBehaviour
     {
         public LandMineRPCHandler(IntPtr ptr) : base(ptr) { }
@@ -417,7 +478,7 @@ namespace FunPlusEssentials
         [FunRPC]
         public void Explode(Il2CppSystem.Object delay)
         {
-
+            CuteLogger.Meow("kaboom");
             mine.activated = true;
             MelonCoroutines.Start(ActivateMine(delay.Unbox<float>()));
         }
@@ -434,7 +495,7 @@ namespace FunPlusEssentials
             {
                 PhotonNetwork.Destroy(gameObject);
             }
-        }
+        }      
     }
 
     [RegisterTypeInIl2Cpp]
@@ -697,14 +758,14 @@ namespace FunPlusEssentials
             if (Input.GetKeyDown(KeyCode.G) && ready)
             {
                 timer = cooldown;
-                var r = PhotonNetwork.NOOU("Custard", gameObject.transform.position + gameObject.transform.forward, gameObject.transform.rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "Medkit" }));
+                var r = PhotonNetwork.NOOU("Custard", gameObject.transform.position + transform.forward + transform.up, gameObject.transform.rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "Medkit" }));
             }
         }
         public void OnGUI()
         {
         }
     }
-    [RegisterTypeInIl2Cpp, UsingRPC]
+    [RegisterTypeInIl2Cpp, HandleRPC]
     public class PhantomInvisibility : MonoBehaviour
     {
         public PhantomInvisibility(IntPtr ptr) : base(ptr) { }
@@ -715,6 +776,7 @@ namespace FunPlusEssentials
         public GameObject blackExplosion, blackSmoke;
         public float cooldown = 35f, duration = 10f, timer;
         public static PhantomInvisibility Instance;
+        private object _ctoken;
 
         public void Start()
         {
@@ -747,7 +809,25 @@ namespace FunPlusEssentials
             if (ready && Input.GetKeyDown(KeyCode.G) && pv.isMine && _enabled)
             {
                 timer = cooldown;
-                pv.RPC("InvisRPC", PhotonTargets.All, null);
+                pv.RPC("InvisRPC", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
+            }
+        }
+        [FunRPC]
+        public void ExposedRPC()
+        {
+            if (active)
+            {
+                MelonCoroutines.Stop(_ctoken);
+                active = false;
+                if (pv.isMine)
+                {
+                    pv.RPC("InvisSoundRPC", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { new Il2CppSystem.Boolean() { m_value = false }.BoxIl2CppObject() }));
+                    plagueMonster._fps.HKCDMBALAAK.RunSpeed = plagueMonster._class.RunSpeed;
+                }
+                body.SetActive(true);
+                blackExplosion.SetActive(false);
+                blackExplosion.SetActive(true);
+                blackSmoke.SetActive(false);
             }
         }
         public IEnumerator Invisibility()
@@ -779,10 +859,10 @@ namespace FunPlusEssentials
         [FunRPC]
         public void InvisRPC()
         {
-            MelonCoroutines.Start(Invisibility());
+            _ctoken = MelonCoroutines.Start(Invisibility());
         }
     }
-    [RegisterTypeInIl2Cpp, UsingRPC]
+    [RegisterTypeInIl2Cpp, HandleRPC]
     public class InfectedRage : MonoBehaviour
     {
         public InfectedRage(IntPtr ptr) : base(ptr) { }
@@ -822,8 +902,8 @@ namespace FunPlusEssentials
             if (ready && Input.GetKeyDown(KeyCode.G) && pv.isMine && _enabled /*&& plagueMonster._playerMonster.PIIDNIGPCDK <= plagueMonster._class.Health / 2*/)
             {
                 timer = cooldown;
-                pv.RPC("RageRPC", PhotonTargets.All, null);
-                pv.RPC("RageSoundRPC", PhotonTargets.All, null);
+                pv.RPC("RageRPC", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
+                pv.RPC("RageSoundRPC", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
             }
         }
         public IEnumerator Rage()
@@ -885,7 +965,7 @@ namespace FunPlusEssentials
         }
 
     }
-    [RegisterTypeInIl2Cpp, UsingRPC]
+    [RegisterTypeInIl2Cpp, HandleRPC]
     public class PlagueMonster : MonoBehaviour
     {
         public PlagueMonster(IntPtr ptr) : base(ptr) { }
@@ -894,8 +974,11 @@ namespace FunPlusEssentials
         public PlayerMonster _playerMonster;
         public FPScontroller _fps;
         public float _hp;
+        public Vector3 _fpvCam, _tpvCam;
+        public Transform _fpvCamTarget, _tpvCamTarget;
+        public TPSCamera _cam;
         public float _currentHp, _seekTimer;
-        public bool _randomized, _seekReady, _knockbacked;
+        public bool _randomized, _seekReady, _knockbacked, _isFpvCam;
         public PlagueClass _class;
         public GameObject _HUD, _healthBar;
         public static PlagueMonster Instance;
@@ -949,6 +1032,24 @@ namespace FunPlusEssentials
                 _healthBar.GetComponent<RectTransform>().pivot = new Vector2(0f, -2f);
             }
         }
+        public void ChangeCameraView(Transform target, Vector3 pos)
+        {
+            _cam.PFDKNPELPNC = target;
+            _cam.BIFDOBDPKKE = pos.z;
+            _cam.IHCOCLHHAGD = pos.x;
+            _cam.LOCIMKAGAMF = pos.y;
+        }
+        public IEnumerator SetUpCamera()
+        {
+            yield return new WaitForSeconds(1f);
+            _cam = GameObject.FindObjectOfType<TPSCamera>();
+            _tpvCam = new Vector3(_cam.IHCOCLHHAGD, _cam.LOCIMKAGAMF, _cam.BIFDOBDPKKE);
+            _tpvCamTarget = _cam.PFDKNPELPNC;
+            if (_class.FPVCam != Vector3.zero) { _fpvCam = _class.FPVCam; }
+            else { _fpvCam = _tpvCam; }
+            if (_class.FPVCamTarget != null) { _fpvCamTarget = transform.FindChild(_class.FPVCamTarget); }
+            else { _fpvCamTarget = _tpvCamTarget; }
+        }
         public IEnumerator RandomizeHitSound()
         {
             _randomized = true;
@@ -986,6 +1087,7 @@ namespace FunPlusEssentials
             _fps.AALHECCKHFD.baseHeight = _class.JumpHeight;
             _fps.HKCDMBALAAK.RunSpeed = _class.RunSpeed;
             if (_class.Rage) gameObject.GetComponent<InfectedRage>()._enabled = true;
+            MelonCoroutines.Start(SetUpCamera());
         }
 
         [FunRPC]
@@ -1035,6 +1137,22 @@ namespace FunPlusEssentials
             _soundsSource.maxDistance = 25f;
             if (start) _soundsSource.PlayOneShot(PlagueAssets.Instance._invisStart);
             else _soundsSource.PlayOneShot(PlagueAssets.Instance._invisEnd);
+        }
+        public void LateUpdate()
+        {
+            if (Input.GetKeyDown(KeyCode.V))
+            {
+                if (!_isFpvCam)
+                {
+                    _isFpvCam = true;
+                    ChangeCameraView(_fpvCamTarget, _fpvCam);
+                }
+                else
+                {
+                    _isFpvCam = false;
+                    ChangeCameraView(_tpvCamTarget, _tpvCam);
+                }
+            }
         }
         public void Update()
         {
@@ -1111,6 +1229,8 @@ namespace FunPlusEssentials
         public bool Rage;
         public float CameraX = 0;
         public float CameraY = 0;
+        public Vector3 FPVCam;
+        public string FPVCamTarget;
         public List<string> Weapons;
         public bool Infected;
         public bool Boss;
@@ -1171,9 +1291,8 @@ namespace FunPlusEssentials
 
         }
     }
-    
 
-    [RegisterTypeInIl2Cpp, UsingRPC]
+    [RegisterTypeInIl2Cpp, HandleRPC]
     public class PlagueController : MonoBehaviour
     {
         public PlagueController(IntPtr ptr) : base(ptr) { }
@@ -1193,7 +1312,7 @@ namespace FunPlusEssentials
 
         private Material _skybox;
         public AudioSource _musicSource, _soundsSource, _otherSource;
-        private bool _countdownPlayed, _winPlayed, _roundStartPlayed;
+        private bool _countdownPlayed, _winPlayed, _roundStartPlayed, _roundEndPlayed;
 
         public float _armor, _jumpHeight, _runSpeed;
         public PlagueClass _playerClass;
@@ -1201,7 +1320,6 @@ namespace FunPlusEssentials
         public int _testint = 1;
         public float _testx = 200, _testy = 250;
         public bool canBlood { get { return _bloodTimer <= 0; } }
-
         private bool _plagueStarted, _restarting, _survivorsWin, _infectedWin, _draw;
         private bool _waitingForPlayers, _playersListUpdated, _lpFlag;
         private bool _refTimeSet, _classSet, _supplyDrop, _showMessage;
@@ -1211,7 +1329,7 @@ namespace FunPlusEssentials
         private float _roundDuration;
         private int _totalRounds;
         private string _message;
-        private PlagueMode _mode;
+        public PlagueMode _mode;
         private PlagueMode _testMode;
         private List<PhotonPlayer> _allPlayers, _teamAPlayers, _teamBPlayers;
 
@@ -1230,7 +1348,7 @@ namespace FunPlusEssentials
                 _playerClass.Health = 125;
                 _playerClass.Armor = 15;
                 _playerClass.RunSpeed = 10f;
-                _playerClass.JumpHeight = 1f;
+                _playerClass.JumpHeight = 1.5f;
             }
             if (classID == 2)
             {
@@ -1243,7 +1361,7 @@ namespace FunPlusEssentials
                 _playerClass.Health = 100;
                 _playerClass.Armor = 0;
                 _playerClass.RunSpeed = 10.25f;
-                _playerClass.JumpHeight = 1.1f;
+                _playerClass.JumpHeight = 1.3f;
             }
             if (classID == 3)
             {
@@ -1256,7 +1374,7 @@ namespace FunPlusEssentials
                 _playerClass.Health = 150;
                 _playerClass.Armor = 30;
                 _playerClass.RunSpeed = 9f;
-                _playerClass.JumpHeight = 0.9f;
+                _playerClass.JumpHeight = 1f;
             }
             if (classID == 4)
             {
@@ -1269,7 +1387,7 @@ namespace FunPlusEssentials
                 _playerClass.Health = 100;
                 _playerClass.Armor = 0;
                 _playerClass.RunSpeed = 11f;
-                _playerClass.JumpHeight = 1.5f;
+                _playerClass.JumpHeight = 2f;
             }
             if (classID == 777)
             {
@@ -1308,9 +1426,11 @@ namespace FunPlusEssentials
                 _playerClass.RunSpeed = 11.5f;
                 _playerClass.WalkSpeed = 4f;
                 _playerClass.JumpHeight = 3f;
-                _playerClass.Health = 60;
+                _playerClass.Health = 80;
                 _playerClass.Damage = 40;
                 _playerClass.Prefab = "INF/PlayerNewborn";
+                _playerClass.FPVCamTarget = "Model/Bip001/Bip001 Pelvis/Bip001 Spine/Bip001 Spine1/Bip001 Spine2/Bip001 Spine3/Bip001 Neck/head_Slendy";
+                _playerClass.FPVCam = new Vector3(0f, 0.3f, -0.5f);
             }
             if (classID == 2)
             {
@@ -1318,9 +1438,11 @@ namespace FunPlusEssentials
                 _playerClass.RunSpeed = 10.5f;
                 _playerClass.WalkSpeed = 4f;
                 _playerClass.JumpHeight = 5f;
-                _playerClass.Health = 60;
+                _playerClass.Health = 80;
                 _playerClass.Damage = 30;
                 _playerClass.Prefab = "VS/PlayerNewborn";
+                _playerClass.FPVCamTarget = "Model/Bip001/Bip001 Pelvis/Bip001 Spine/Bip001 Spine1/Bip001 Spine2/Bip001 Spine3/Bip001 Neck/head_Slendy";
+                _playerClass.FPVCam = new Vector3(0f, 0.3f, -0.5f);
             }
             if (classID == 3)
             {
@@ -1333,6 +1455,8 @@ namespace FunPlusEssentials
                 _playerClass.Rage = true;
                 _playerClass.CustomPrefab = true;
                 _playerClass.Prefab = "Tank";
+                _playerClass.FPVCamTarget = "Tank(Clone)/Model/mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/tubby_head (3)";
+                _playerClass.FPVCam = new Vector3(0f, 0.3f, -0.4f);
             }
             if (classID == 4)
             {
@@ -1344,17 +1468,21 @@ namespace FunPlusEssentials
                 _playerClass.Damage = 40;
                 _playerClass.CustomPrefab = true;
                 _playerClass.Prefab = "Hunter";
+                _playerClass.FPVCamTarget = "MutantTubby(Clone)/Model/Idle/mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:Neck/mixamorig:Head/Low_Poly_Mask_Model07";
+                _playerClass.FPVCam = new Vector3(0f, 0.7f, -0.5f);
             }
             if (classID == 5)
             {
                 _playerClass.ClassName = "Phantom";
                 _playerClass.RunSpeed = 10.5f;
                 _playerClass.WalkSpeed = 4f;
-                _playerClass.JumpHeight = 2.7f;
+                _playerClass.JumpHeight = 3f;
                 _playerClass.Health = 100;
                 _playerClass.Damage = 30;
                 _playerClass.CustomPrefab = true;
                 _playerClass.Prefab = "Phantom";
+                _playerClass.FPVCamTarget = "Phantom(Clone)/Model/mixamorig:Hips/mixamorig:Spine/mixamorig:Spine1/mixamorig:Spine2/mixamorig:Neck/mixamorig:Head";
+                _playerClass.FPVCam = new Vector3(0f, 0.1f, -0.4f);
             }
             if (classID == 665)
             {
@@ -1365,6 +1493,8 @@ namespace FunPlusEssentials
                 _playerClass.Damage = 200;
                 _playerClass.Rage = false;
                 _playerClass.Prefab = "VS/PlayerTinkyOld";
+                _playerClass.FPVCamTarget = null;
+                _playerClass.FPVCam = Vector3.zero;
             }
             if (classID == 666)
             {
@@ -1493,7 +1623,8 @@ namespace FunPlusEssentials
             }
             if (Input.GetKeyDown(KeyCode.Keypad0))
             {
-                PlagueMonster.Instance.Knockback();
+                _mode = PlagueMode.Cursed;
+                Helper.SetRoomProperty("PlagueMode", "Cursed");
             }
         }
 
@@ -1564,6 +1695,11 @@ namespace FunPlusEssentials
                 {
                     SurvivorsWin();
                 }
+                if (Mathf.CeilToInt(_plagueTimer) == 20 && !_roundEndPlayed && _plagueStarted && _playerClass != null)
+                {
+                    _roundEndPlayed = true;
+                    if (!_playerClass.Infected) PlayMusic(Helper.RandomSound(PlagueAssets.Instance._roundEndSounds));
+                }
                 if (Mathf.CeilToInt(_plagueTimer) == _roundDuration / 2 && !_supplyDrop && _plagueStarted && _playerClass != null)
                 {
                     _supplyDrop = true;
@@ -1586,7 +1722,7 @@ namespace FunPlusEssentials
             if (canBlood) 
             {
                 GameObject.Instantiate(PlagueAssets.Instance._blood, pos, Quaternion.identity);
-                _bloodTimer = 0.2f;
+                _bloodTimer = 0.5f;
             }
         }
         public void Message(string message, string player = "", string color = "")
@@ -1603,17 +1739,17 @@ namespace FunPlusEssentials
             if (_mode == PlagueMode.LastSurvivor)
             {
                 var target = _allPlayers[UnityEngine.Random.Range(0, _allPlayers.Count)];
-                rmm.gameObject.GetComponent<PhotonView>().RPC("SetPlayerAsSurvivor", target, null);
+                rmm.gameObject.GetComponent<PhotonView>().RPC("SetPlayerAsSurvivor", target, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
                 Helper.SetRoomProperty("PlagueSurvivor", target.name.Split('|')[0]);
             }
             if (_mode == PlagueMode.Nemesis)
             {
                 var target = _allPlayers[UnityEngine.Random.Range(0, _allPlayers.Count)];
-                rmm.gameObject.GetComponent<PhotonView>().RPC("SetPlayerAsNemesis", target, null);
+                rmm.gameObject.GetComponent<PhotonView>().RPC("SetPlayerAsNemesis", target, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
                 Helper.SetRoomProperty("PlagueNemesis", target.name.Split('|')[0]);
             }
-            rmm.photonView.RPC("StartInfectionRPC", PhotonTargets.All, null);
-        }
+            rmm.photonView.RPC("StartInfectionRPC", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
+        }   
         [FunRPC]
         public void StartInfectionRPC()
         {
@@ -1656,11 +1792,11 @@ namespace FunPlusEssentials
         {
             PlagueMode mode = PlagueMode.Infection;
             var value1 = UnityEngine.Random.Range(0, 100);
-            if (value1 <= 20)
+            if (value1 <= 10)
             {
-                if (_allPlayers.Count >= 5 && _allPlayers.Count < 7) { mode = PlagueMode.Cursed; }
-                if (_allPlayers.Count >= 7 && _allPlayers.Count < 10) { mode = (PlagueMode)UnityEngine.Random.Range(1, 4); }
-                if (_allPlayers.Count >= 10) { mode = (PlagueMode)UnityEngine.Random.Range(1, 6); }
+                if (_allPlayers.Count >= 5) { mode = PlagueMode.Cursed; }
+              //  if (_allPlayers.Count >= 7 && _allPlayers.Count < 10) { mode = (PlagueMode)UnityEngine.Random.Range(1, 4); }
+               // if (_allPlayers.Count >= 10) { mode = (PlagueMode)UnityEngine.Random.Range(1, 6); }
             }
             _mode = mode;
             if (_testMode != 0) { _mode = _testMode; }
@@ -1714,12 +1850,12 @@ namespace FunPlusEssentials
                 Helper.SetRoomProperty("Players", _allPlayers.Count.ToString());
                 if (_teamAPlayers.Count <= 0 && _allPlayers.Count > 1 && !_restarting)
                 {
-                    rmm.gameObject.GetComponent<PhotonView>().RPC("InfectedWin", PhotonTargets.All, null);
+                    rmm.gameObject.GetComponent<PhotonView>().RPC("InfectedWin", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
                     //InfectedWin();
                 }
                 if (_teamBPlayers.Count <= 0 && _plagueStarted && !_restarting && _lpFlag)
                 {
-                    rmm.gameObject.GetComponent<PhotonView>().RPC("SurvivorsWin", PhotonTargets.All, null);
+                    rmm.gameObject.GetComponent<PhotonView>().RPC("SurvivorsWin", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
                     //SurvivorsWin();
                 }
             }
@@ -1814,10 +1950,10 @@ namespace FunPlusEssentials
             }
             var pm = rmm.CNLHJAICIBH.AddComponent<PlagueMonster>();
             pm._class = infClass;
-            pm.SetUp();
             rmm.CNLHJAICIBH.name = PhotonNetwork.player.NickName;
             rmm.CNLHJAICIBH.GetComponent<PhotonView>().RPC("InfectedSoundRPC", PhotonTargets.All, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { infClass.ClassName } ));
             _playerClass = infClass;
+            pm.SetUp();
             //PlaySound(Helper.RandomSound(_infectedSounds));
         }
         [FunRPC]
@@ -1927,6 +2063,7 @@ namespace FunPlusEssentials
             _infectedWin = false;
             _roundStartPlayed = false;
             _countdownPlayed = false;
+            _roundEndPlayed = false;
             _restarting = false;
             _totalRounds++;
             _supplyDrop = false;
@@ -2061,6 +2198,7 @@ namespace FunPlusEssentials
                     else GUI.Label(new Rect(x - 120, y, 100f, 100f), $"[{Mathf.FloorToInt(MineSpawner.Instance.timer % 60).ToString()}s]", infoStyle);
                     if (MineSpawner.Instance.selectedType == 1) GUI.DrawTexture(new Rect(Screen.width - 200, y, 64, 64), PlagueAssets.Instance._landMineIcon);
                     if (MineSpawner.Instance.selectedType == 0) GUI.DrawTexture(new Rect(Screen.width - 200, y, 64, 64), PlagueAssets.Instance._scanMineIcon);
+                    GUI.Label(new Rect(x - 120, y-40, 100f, 100f), PlagueLocales.changeAbilityText, infoStyle);
                 }
             }
             if (_playerClass.ClassName == "Phantom")

@@ -1,6 +1,7 @@
 ﻿using FunPlusEssentials.CustomContent;
 using FunPlusEssentials.Essentials;
 using FunPlusEssentials.Other;
+using Il2Cpp;
 using MelonLoader;
 using System;
 using System.Collections.Generic;
@@ -13,10 +14,10 @@ namespace FunPlusEssentials.Patches
     [HarmonyLib.HarmonyPatch(typeof(LadderPlayer), "Start")]
     public static class OnPlayerSpawned2
     {
-        [HarmonyLib.HarmonyPostfix]
-        static void Postfix(LadderPlayer __instance)
+        static bool Prefix(LadderPlayer __instance)
         {
-
+            //SEAN WTF IS THIS???? 
+            return false;
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(PlayerNetworkController), "Awake")]

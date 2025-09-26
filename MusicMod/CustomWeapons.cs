@@ -15,14 +15,16 @@ using System.Collections;
 using System.CodeDom;
 using static MelonLoader.MelonLogger;
 using UnityEngine.AI;
-using UnhollowerBaseLib;
 using static FunPlusEssentials.CustomContent.FunNPCInfo;
 using System.Reflection;
 using FunPlusEssentials.CustomContent;
 using Il2CppSystem.Reflection;
 using System.Security.AccessControl;
 using static Il2CppSystem.Collections.Hashtable;
-using static ShopSystem;
+using static Il2Cpp.ShopSystem;
+using Il2Cpp;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Newtonsoft.Json;
 
 namespace FunPlusEssentials.CustomContent
 {
@@ -349,7 +351,7 @@ namespace FunPlusEssentials.CustomContent
                     return;
                 }
                 var json = File.ReadAllText(weapons[i].FullName + @"\weapon.json");
-                var weapon = JSON.Load(json).Make<WeaponInfo>();
+                var weapon = JsonConvert.DeserializeObject<WeaponInfo>(json);
                 weapon.path = weapons[i].FullName;
                 customWeapons.Add(weapon);
             }

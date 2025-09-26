@@ -12,8 +12,9 @@ using UnityEngine;
 using System.Collections;
 using Harmony;
 using Il2CppSystem.Reflection;
-using static ShopSystem;
-using UnhollowerBaseLib;
+using static Il2Cpp.ShopSystem;
+using Il2Cpp;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
 
 namespace FunPlusEssentials
 {
@@ -21,7 +22,7 @@ namespace FunPlusEssentials
     public class PlagueAssets : MonoBehaviour
     {
         public PlagueAssets(IntPtr ptr) : base(ptr) { }
-        public List<AudioClip> _infectedWinSounds, _survivorsWinSounds, _drawSounds, _infectedSounds, _roundStartSounds, _hitSounds, _cursedStart, _survivorStart, _nemesisStart, _swarmStart, _armageddonStart, _landMineSounds;
+        public List<AudioClip> _infectedWinSounds, _survivorsWinSounds, _drawSounds, _infectedSounds, _roundStartSounds, _hitSounds, _cursedStart, _survivorStart, _nemesisStart, _swarmStart, _armageddonStart, _landMineSounds, _roundEndSounds;
         public AudioClip _ambience, _countdownSound, _rageSound, _healSound, _supplyDropSound, _supplyPickupSound;
         public AudioClip _hunterSound, _nemesisSound, _invisStart, _invisEnd;
         public GameObject _bullet, _meleeBullet, _blood, _greenSmoke, _medKit, _supplyBox, _wire, _landMine, _explosion;
@@ -405,6 +406,7 @@ namespace FunPlusEssentials
             _drawSounds = new List<AudioClip>();
             _landMineSounds = new List<AudioClip>();
             _equipmentVest = new List<GameObject>();
+            _roundEndSounds = new List<AudioClip>();
             yield return MelonCoroutines.Start(LoadWeaponsAssets());
             var assetBundleCreateRequest = Il2CppAssetBundleManager.LoadFromFile(Config.mainPath + @"\Plague\plague assets");
             yield return assetBundleCreateRequest;
@@ -430,10 +432,11 @@ namespace FunPlusEssentials
                 _armageddonStart.Add(assetBundleCreateRequest.Load<AudioClip>($"armageddonStart{i}"));
                 _swarmStart.Add(assetBundleCreateRequest.Load<AudioClip>($"swarmStart{i}"));
                 _drawSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"draw{i}"));
-            }
-            for (int i = 1; i < 3; i++)
-            {
                 _equipmentVest.Add(assetBundleCreateRequest.Load<GameObject>($"Vest{i}"));
+            }
+            for (int i = 1; i < 5; i++)
+            {
+                _roundEndSounds.Add(assetBundleCreateRequest.Load<AudioClip>($"roundEnd{i}"));
             }
             _cursedStart.Add(assetBundleCreateRequest.Load<AudioClip>($"cursedStart"));
             _supplyDropSound = assetBundleCreateRequest.Load<AudioClip>($"supplyboxDrop");
@@ -536,6 +539,10 @@ namespace FunPlusEssentials
             foreach (GameObject obj in _equipmentVest)
             {
                 obj.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            }
+            foreach (AudioClip clip in _roundEndSounds)
+            {
+                clip.hideFlags = HideFlags.DontUnloadUnusedAsset;
             }
             _hunterSound.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _invisStart.hideFlags = HideFlags.DontUnloadUnusedAsset;

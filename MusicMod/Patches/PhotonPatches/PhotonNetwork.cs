@@ -1,4 +1,4 @@
-﻿using ExitGames.Client.Photon;
+﻿using Il2CppExitGames.Client.Photon;
 using FunPlusEssentials.CustomContent;
 using System;
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using Il2Cpp;
 
 namespace FunPlusEssentials.Patches
 {
@@ -32,7 +33,7 @@ namespace FunPlusEssentials.Patches
         [HarmonyLib.HarmonyPostfix]
         static void Postfix(ref Il2CppSystem.Collections.Generic.List<Il2CppSystem.Reflection.MethodInfo> __result, ref Il2CppSystem.Type type)
         {
-            if (PhotonManager.IsUsingRPC(type))
+            if (PhotonManager.IsHandleRPC(type))
             {
                 var t = type;
                 var list = type.GetMethods((Il2CppSystem.Reflection.BindingFlags)(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic));

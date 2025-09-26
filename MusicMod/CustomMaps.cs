@@ -9,16 +9,18 @@ using FunPlusEssentials.CustomContent.Triggers;
 using System.Collections;
 using IniFile = FunPlusEssentials.Other.IniFile;
 using MelonLoader.TinyJSON;
-using UnhollowerBaseLib;
 using UnityEngine.UI;
-using UnhollowerRuntimeLib;
 using Il2CppSystem.Runtime.Remoting.Messaging;
 using static FunPlusEssentials.CustomContent.FunNPCInfo;
-using InControl.mod;
+using Il2CppInControl.mod;
 using System.Text.RegularExpressions;
 using System.Linq;
 using UnityEngine.SceneManagement;
 using Harmony;
+using Il2Cpp;
+using Il2CppInterop.Runtime;
+using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using Newtonsoft.Json;
 
 namespace FunPlusEssentials.CustomContent
 {
@@ -159,7 +161,7 @@ namespace FunPlusEssentials.CustomContent
                     if (File.Exists(wavesPath))
                     {
                         var json = File.ReadAllText(wavesPath);
-                        w = JSON.Load(json).Make<List<CustomWave>>();
+                        w = JsonConvert.DeserializeObject<List<CustomWave>>(json);
                     }
                     var i = new IniFile(iniPath);
                     var mapInfo = new MapInfo()
@@ -483,8 +485,8 @@ namespace FunPlusEssentials.CustomContent
 
         public static void SetUpTrigers()
         {
-            var json = File.ReadAllText(currentMap.assetsPath + @"\mapData.json");
-            JSON.MakeInto(JSON.Load(json), out m_triggers);
+           // var json = File.ReadAllText(currentMap.assetsPath + @"\mapData.json");
+           // JsonConvert.DeserializeObject<>.MakeInto(JSON.Load(json), out m_triggers);
         }
     }
 }
