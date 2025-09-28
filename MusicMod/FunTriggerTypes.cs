@@ -30,7 +30,12 @@ namespace FunPlusEssentials
     {
         public FunTrigger(IntPtr ptr) : base(ptr) { }
         public string test;
+        public GameObject obj;
 
+        void Start()
+        {
+
+        }
         void Update()
         {
 

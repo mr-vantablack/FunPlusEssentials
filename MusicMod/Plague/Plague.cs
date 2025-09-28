@@ -31,6 +31,7 @@ using MethodInfo = Il2CppSystem.Reflection.MethodInfo;
 using Random = UnityEngine.Random;
 using Il2Cpp;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using UnityEngine.Rendering;
 
 
 namespace FunPlusEssentials
@@ -154,7 +155,6 @@ namespace FunPlusEssentials
         public void Break()
         {
             wire.durability--;
-            CuteLogger.Meow(wire.durability.ToString());
         }
         public void OnPhotonSerializeView(Il2CppSystem.Object stream, Il2CppSystem.Object info)
         {
@@ -195,7 +195,6 @@ namespace FunPlusEssentials
         {
             if (durability <= 0 && owner.ID == PhotonNetwork.player.ID)
             {
-                CuteLogger.Meow("Destroyed");
                 PhotonNetwork.Destroy(gameObject.transform.parent.gameObject);
             }
         }
@@ -264,7 +263,7 @@ namespace FunPlusEssentials
         }
         public void Update()
         {
-            canOpen = !PlagueController.Instance._playerClass.Infected && Vector3.Distance(Helper.Player.transform.position, c.position) <= 1.5f;
+            if (Helper.Player != null) canOpen = !PlagueController.Instance._playerClass.Infected && Vector3.Distance(Helper.Player.transform.position, c.position) <= 1.5f;
             if (!PlagueController.Instance._playerClass.Infected && Vector3.Distance(Helper.Player.transform.position, c.position) <= 1.5f && Input.GetKeyDown(KeyCode.E))
             {
                 Heal(25f);
@@ -507,14 +506,14 @@ namespace FunPlusEssentials
         public bool ready;
         public static MineSpawner Instance;
         public GameObject mine, previewMine;
-        private bool isInPreviewMode = false;
+        private bool isInPreviewMode = false, validPos;
         private float rotationAmount = 0f;
         public int selectedType = 1;
         public void Awake()
         {
             ready = true;
             Instance = this;
-            timer = 0;
+            timer = 21;
             mine = PlagueAssets.Instance._landMine;
         }
         public void OnDisable()
@@ -537,10 +536,10 @@ namespace FunPlusEssentials
                 HandleObjectPlacement();
                 // PlaceWire();
             }
-            if (Input.GetKeyDown(KeyCode.N))
+            /*if (Input.GetKeyDown(KeyCode.N))
             {
                 timer = 0;
-            }
+            }*/
             if (Input.GetKeyDown(KeyCode.B))
             {
                 if (selectedType == 1) { selectedType = 0; return; }
@@ -561,14 +560,14 @@ namespace FunPlusEssentials
 
                 if (Input.GetKeyUp(KeyCode.G) && isInPreviewMode)
                 {
-                    isInPreviewMode = false;
-                    timer = cooldown;
-                    PlaceMine();
+                    isInPreviewMode = false;                    
+                    if (validPos) PlaceMine();
                 }
             }
         }
         public void PlaceMine()
         {
+            timer = cooldown;
             CuteLogger.Quack("mine spawned");
             var r = PhotonNetwork.NOOU("Custard", previewMine.transform.position, previewMine.transform.rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "LandMine", PhotonNetwork.player.ID.ToString(), selectedType.ToString() }));
             GameObject.Destroy(previewMine);
@@ -589,9 +588,9 @@ namespace FunPlusEssentials
             int layerMask = 1 << 0;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
-            var isValidPosition = Physics.Raycast(ray, out hit, 5f, layerMask, QueryTriggerInteraction.Ignore);
+            validPos = Physics.Raycast(ray, out hit, 5f, layerMask, QueryTriggerInteraction.Ignore);
             previewMine.transform.rotation = Quaternion.Euler(0, rotationAmount, 0);
-            if (isValidPosition)
+            if (validPos)
             {
                 var currentPosition = hit.point + hit.normal * 0.1f;
                 previewMine.transform.position = currentPosition;
@@ -623,13 +622,13 @@ namespace FunPlusEssentials
         public bool ready;
         public static WireSpawner Instance;
         public GameObject wire, previewWire;
-        private bool isInPreviewMode = false, rotated = false;
+        private bool isInPreviewMode = false, rotated = false, validPos;
         private float rotationAmount = 0f;
         public void Awake()
         {
             ready = true;
             Instance = this;
-            timer = 0;
+            timer = 21;
             wire = PlagueAssets.Instance._wire;
         }
         public void OnDisable()
@@ -676,13 +675,13 @@ namespace FunPlusEssentials
                 if (Input.GetKeyUp(KeyCode.G) && isInPreviewMode)
                 {
                     isInPreviewMode = false;
-                    timer = cooldown;
-                    PlaceWire();
+                    if (validPos) PlaceWire();
                 }
             }
         }
         public void PlaceWire()
         {
+            timer = cooldown;
             CuteLogger.Quack("wire spawned");
             var r = PhotonNetwork.NOOU("Custard", previewWire.transform.position, previewWire.transform.rotation, 0, new Il2CppReferenceArray<Il2CppSystem.Object>(new Il2CppSystem.Object[] { "Wire", PhotonNetwork.player.ID.ToString() }));
             GameObject.Destroy(previewWire);
@@ -703,9 +702,9 @@ namespace FunPlusEssentials
             int layerMask = 1 << 0;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
-            var isValidPosition = Physics.Raycast(ray, out hit, 5f, layerMask, QueryTriggerInteraction.Ignore);
+            validPos = Physics.Raycast(ray, out hit, 5f, layerMask, QueryTriggerInteraction.Ignore);
             previewWire.transform.rotation = Quaternion.Euler(0, rotationAmount, 0);
-            if (isValidPosition)
+            if (validPos)
             {
                 var currentPosition = hit.point + hit.normal * 0.6f;
                 previewWire.transform.position = currentPosition;
@@ -734,7 +733,7 @@ namespace FunPlusEssentials
     public class MedKitSpawner : MonoBehaviour
     {
         public MedKitSpawner(IntPtr ptr) : base(ptr) { }
-        public float cooldown = 25f;
+        public float cooldown = 30f;
         public float timer;
         public bool ready;
         public static MedKitSpawner Instance;
@@ -742,7 +741,7 @@ namespace FunPlusEssentials
         {
             ready = true;
             Instance = this;
-            timer = 0;
+            timer = 21;
         }
         public void Update()
         {
@@ -1061,6 +1060,7 @@ namespace FunPlusEssentials
         {
             if (_photonView.isMine && !_knockbacked)
             {
+                if (_class.ClassName == "???") return;
                 var r = GetComponent<InfectedRage>(); if (r != null) { if (r.rage) return; }
                 var i = GetComponent<PhantomInvisibility>(); if (i != null) { if (i.active) return; }
                 MelonCoroutines.Start(DoKnockback());
@@ -1331,6 +1331,8 @@ namespace FunPlusEssentials
         private string _message;
         public PlagueMode _mode;
         private PlagueMode _testMode;
+        private AmbientMode _d_AmbientMode;
+        private Color _d_AmbientLight, _d_FogColor;
         private List<PhotonPlayer> _allPlayers, _teamAPlayers, _teamBPlayers;
 
         public void SurvivorClassSetUp(int classID)
@@ -1406,8 +1408,6 @@ namespace FunPlusEssentials
                 _playerClass.Boss = true;
             }
             _playerClass.Infected = false;
-            Helper.FPSController.AALHECCKHFD.baseHeight = _playerClass.JumpHeight;
-            Helper.FPSController.HKCDMBALAAK.RunSpeed = _playerClass.RunSpeed;
             // Helper.RemoveWeapons();
             MelonCoroutines.Start(Govno2());
             //Helper.SetProperty("MaxHP", _playerClass.Health.ToString());
@@ -1437,8 +1437,8 @@ namespace FunPlusEssentials
                 _playerClass.ClassName = "Jumper";
                 _playerClass.RunSpeed = 10.5f;
                 _playerClass.WalkSpeed = 4f;
-                _playerClass.JumpHeight = 5f;
-                _playerClass.Health = 80;
+                _playerClass.JumpHeight = 6f;
+                _playerClass.Health = 100;
                 _playerClass.Damage = 30;
                 _playerClass.Prefab = "VS/PlayerNewborn";
                 _playerClass.FPVCamTarget = "Model/Bip001/Bip001 Pelvis/Bip001 Spine/Bip001 Spine1/Bip001 Spine2/Bip001 Spine3/Bip001 Neck/head_Slendy";
@@ -1451,7 +1451,7 @@ namespace FunPlusEssentials
                 _playerClass.WalkSpeed = 4f;
                 _playerClass.JumpHeight = 2f;
                 _playerClass.Health = 300;
-                _playerClass.Damage = 101;
+                _playerClass.Damage = 70;
                 _playerClass.Rage = true;
                 _playerClass.CustomPrefab = true;
                 _playerClass.Prefab = "Tank";
@@ -1477,7 +1477,7 @@ namespace FunPlusEssentials
                 _playerClass.RunSpeed = 10.5f;
                 _playerClass.WalkSpeed = 4f;
                 _playerClass.JumpHeight = 3f;
-                _playerClass.Health = 100;
+                _playerClass.Health = 120;
                 _playerClass.Damage = 30;
                 _playerClass.CustomPrefab = true;
                 _playerClass.Prefab = "Phantom";
@@ -1553,6 +1553,9 @@ namespace FunPlusEssentials
                 _countDown = _startCdTime;
                 _refTimeSet = 20f - ((float)PhotonNetwork.time - _startCdTime) <= 0f;
             }
+            _d_AmbientMode = RenderSettings.ambientMode;
+            _d_AmbientLight = new Color(RenderSettings.ambientLight.r, RenderSettings.ambientLight.g, RenderSettings.ambientLight.b, RenderSettings.ambientLight.a);
+            _d_FogColor = new Color(RenderSettings.fogColor.r, RenderSettings.fogColor.g, RenderSettings.fogColor.b, RenderSettings.fogColor.a);
             //else
             //{
             //    if (Helper.GetRoomProperty(RefTime) == null || Helper.GetRoomProperty(RefTime).ToString() == "0")
@@ -1582,7 +1585,7 @@ namespace FunPlusEssentials
 
         }
 
-        void LateUpdate()
+        /*void LateUpdate()
         {
             if (_testint != 1) return;
             if (Input.GetKeyDown(KeyCode.Keypad7))
@@ -1626,7 +1629,7 @@ namespace FunPlusEssentials
                 _mode = PlagueMode.Cursed;
                 Helper.SetRoomProperty("PlagueMode", "Cursed");
             }
-        }
+        }*/
 
         void Update()
         {
@@ -1753,12 +1756,17 @@ namespace FunPlusEssentials
         [FunRPC]
         public void StartInfectionRPC()
         {
+            if (Helper.GetRoomProperty("PlagueMode") == null) return;
             var gm = Helper.GetRoomProperty("PlagueMode").ToString();
             CuteLogger.Meow("StartInfectionRPC GM " + gm);
             if (gm == "Cursed")
             {
                 PlayMusic(Helper.RandomSound(PlagueAssets.Instance._cursedStart));
+             //   MelonCoroutines.Start(PlayAmbience(PlagueAssets.Instance._cursedAmbience, 13f));
                 MelonCoroutines.Start(ShowMessage("a horrible chill goes down your spine...", 10f));
+              //  RenderSettings.ambientMode = AmbientMode.Flat;
+              //  RenderSettings.ambientLight = new Color(1f, 0f, 0f, 1f);
+              //  RenderSettings.fogColor = new Color(1f, 0f, 0f, 1f);
             }
             if (gm == "LastSurvivor")
             {
@@ -1780,6 +1788,11 @@ namespace FunPlusEssentials
                 PlayMusic(Helper.RandomSound(PlagueAssets.Instance._swarmStart));
                 MelonCoroutines.Start(ShowMessage($"ARMAGEDDON!!!", 10f));
             }
+        }
+        public IEnumerator PlayAmbience(AudioClip ambience, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            PlayMusic(ambience, true);
         }
         public IEnumerator ShowMessage(string message, float time)
         {
@@ -1878,6 +1891,8 @@ namespace FunPlusEssentials
             }
             Helper.PlayerDamage.NILGDNBIFDC = _playerClass.Health;
             Helper.PlayerDamage.PIIDNIGPCDK = _playerClass.Health;
+            Helper.FPSController.AALHECCKHFD.baseHeight = _playerClass.JumpHeight;
+            Helper.FPSController.HKCDMBALAAK.RunSpeed = _playerClass.RunSpeed;
             Helper.SetProperty("MaxHP", new Il2CppSystem.Single() { m_value = _playerClass.Health }.BoxIl2CppObject());
             if (_playerClass.ClassName == "Medic")
             {
@@ -1894,8 +1909,8 @@ namespace FunPlusEssentials
         }
         public void PlayMusic(AudioClip clip, bool loop = false)
         {
-            _musicSource.loop = loop;
             _musicSource.PlayOneShot(clip, 1f);
+            _musicSource.loop = loop;
         }
         public void PlaySound(AudioClip clip, bool loop = false)
         {
@@ -2035,6 +2050,11 @@ namespace FunPlusEssentials
             CuteLogger.Meow("RestartRound");
             _restarting = true;
             if (PhotonNetwork.isMasterClient) PhotonNetwork.room.IsOpen = false;
+           // CuteLogger.Meow($"changing light to {_d_AmbientLight}");
+           // RenderSettings.ambientMode = _d_AmbientMode;
+           // RenderSettings.ambientLight = _d_AmbientLight;
+          //  RenderSettings.fogColor = _d_FogColor;
+            Helper.SurvivalMechanics.EGDOBKKCGFC.volume = 0.4f;
             yield return new WaitForSeconds(RestartTime);
             if (!_waitingForPlayers)
             {

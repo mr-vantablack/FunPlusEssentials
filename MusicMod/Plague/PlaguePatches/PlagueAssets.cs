@@ -23,7 +23,7 @@ namespace FunPlusEssentials
     {
         public PlagueAssets(IntPtr ptr) : base(ptr) { }
         public List<AudioClip> _infectedWinSounds, _survivorsWinSounds, _drawSounds, _infectedSounds, _roundStartSounds, _hitSounds, _cursedStart, _survivorStart, _nemesisStart, _swarmStart, _armageddonStart, _landMineSounds, _roundEndSounds;
-        public AudioClip _ambience, _countdownSound, _rageSound, _healSound, _supplyDropSound, _supplyPickupSound;
+        public AudioClip _ambience, _cursedAmbience, _countdownSound, _rageSound, _healSound, _supplyDropSound, _supplyPickupSound;
         public AudioClip _hunterSound, _nemesisSound, _invisStart, _invisEnd;
         public GameObject _bullet, _meleeBullet, _blood, _greenSmoke, _medKit, _supplyBox, _wire, _landMine, _explosion;
         public Dictionary<string, GameObject[]> _loadedPrefabs;
@@ -52,7 +52,7 @@ namespace FunPlusEssentials
                     type = WeaponScript.DOEEBEFKIJI.MACHINE_GUN,
                     fireRate = 0.3f,
                     bulletsPerClip = 7,
-                    clips = 28,
+                    clips = 35,
                     reloadTime = 2.4f,
                     aimPosX = 0,
                     aimPosY = 0,
@@ -64,7 +64,7 @@ namespace FunPlusEssentials
                     aimFov = 45,
                     bulletLifeTime = 10,
                     bulledSpeed = 500,
-                    bulletDamage = 45,
+                    bulletDamage = 65,
                     bulletForce = 15,
                     singleFire = true,
                 },
@@ -110,7 +110,7 @@ namespace FunPlusEssentials
                     aimFov = 45,
                     bulletLifeTime = 10,
                     bulledSpeed = 500,
-                    bulletDamage = 45,
+                    bulletDamage = 60,
                     bulletForce = 30,
                     useScope = true,
                     singleFire = false,
@@ -120,7 +120,7 @@ namespace FunPlusEssentials
                     name = "Balrog-1",
                     animationType = WeaponInfo.AnimationType.TwoHandPistol,
                     type = WeaponScript.DOEEBEFKIJI.MACHINE_GUN,
-                    fireRate = 0.1f,
+                    fireRate = 0.3f,
                     bulletsPerClip = 10,
                     clips = 40,
                     reloadTime = 2.1f,
@@ -134,9 +134,9 @@ namespace FunPlusEssentials
                     aimFov = 45,
                     bulletLifeTime = 10,
                     bulledSpeed = 500,
-                    bulletDamage = 30,
+                    bulletDamage = 45,
                     bulletForce = 10,
-                    singleFire = true,
+                    singleFire = false,
                 },
                 new WeaponInfo()
                 {
@@ -444,6 +444,7 @@ namespace FunPlusEssentials
             _hunterSound = assetBundleCreateRequest.Load<AudioClip>($"infectedHunter");
             _nemesisSound = assetBundleCreateRequest.Load<AudioClip>($"infectedNemesis");
             _ambience = assetBundleCreateRequest.Load<AudioClip>($"ambience1");
+            _cursedAmbience = assetBundleCreateRequest.Load<AudioClip>($"cursedAmbience");
             _countdownSound = assetBundleCreateRequest.Load<AudioClip>($"countdown1");
             _rageSound = assetBundleCreateRequest.Load<AudioClip>($"rage1");
             _healSound = assetBundleCreateRequest.Load<AudioClip>($"infectedHeal1");
@@ -557,6 +558,7 @@ namespace FunPlusEssentials
             _greenSmoke.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _medKit.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _supplyBox.hideFlags = HideFlags.DontUnloadUnusedAsset;
+            _cursedAmbience.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _wire.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _landMine.hideFlags = HideFlags.DontUnloadUnusedAsset;
             _explosion.hideFlags = HideFlags.DontUnloadUnusedAsset;

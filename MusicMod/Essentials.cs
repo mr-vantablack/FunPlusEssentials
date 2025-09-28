@@ -173,7 +173,7 @@ namespace FunPlusEssentials.Essentials
         public static IEnumerator GetFPEServers()
         {
             if (!Config.customServersEnabled) { yield break; }
-            WWW w = new WWW("https://ippls.lh1.in/fpe-servers");
+            WWW w = new WWW("https://raw.githubusercontent.com/mr-vantablack/s/refs/heads/main/servers");
             yield return w;
             if (w.error != null)
             {
@@ -224,7 +224,7 @@ namespace FunPlusEssentials.Essentials
         private void OnJoinedRoom()
         {
             CuteLogger.Meow("Joined room");
-            Helper.LobbyMenu.EJLDOIOJGPC = true;
+            if (Helper.LobbyMenu != null) Helper.LobbyMenu.EJLDOIOJGPC = true;
             string mapName = PhotonNetwork.room.customProperties["MN002'"] != null ? PhotonNetwork.room.customProperties["MN002'"].ToString() : "";
             var scene = mapName;
             scene = scene.Replace(" (Day)", "");
@@ -289,7 +289,11 @@ namespace FunPlusEssentials.Essentials
             if (PhotonNetwork.isMasterClient)
             {
                 MapManager.CheckForCustomContent();
-                if (Plague.Enabled) Helper.SetRoomProperty("Plague", "true");
+                if (Plague.Enabled) 
+                {
+                    Helper.SetRoomProperty("Plague", "true");
+                    Helper.SetRoomProperty("PlagueVersion", FPE.AppInfo.Version);
+                }
             }
             else
             {
@@ -298,13 +302,21 @@ namespace FunPlusEssentials.Essentials
                 {
                     if (PlagueAssets._inited)
                     {
-                        Plague.Enabled = true;
+                        if (PhotonNetwork.room.customProperties["PlagueVersion"].ToString() != FPE.AppInfo.Version)
+                        {
+                            CuteLogger.Meow(ConsoleColor.Red, "Disconnected. Version mismatch.");
+                            if (!PhotonNetwork.isOfflineMode) { PhotonNetwork.Disconnect(); }
+                        }
+                        else
+                        {
+                            Plague.Enabled = true;
+                        }
                     }
                     else
                     {
                         CuteLogger.Meow(ConsoleColor.Red, "Disconnected. Missing custom content.");
                         if (!PhotonNetwork.isOfflineMode) { PhotonNetwork.Disconnect(); }
-                        Notifier.Show("<color=red>Missing custom content!</color>\nThis room uses custom content. Please download the missing files:\nPlagueMode");
+                        //Notifier.Show("<color=red>Missing custom content!</color>\nThis room uses custom content. Please download the missing files:\nPlagueMode");
                     }
                 }
             }

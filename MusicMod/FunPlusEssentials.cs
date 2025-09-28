@@ -9,8 +9,12 @@ using FunPlusEssentials.Other;
 using Il2Cpp;
 
 
-[assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "5.0", "Vantablack")]
+[assembly: MelonInfo(typeof(FunPlusEssentials.FPE), "Fun Plus Essentials", "5.0", "Vantablack", "https://discord.gg/rYe2ayy8zA")]
 [assembly: MelonGame("ZeoWorks", "Slendytubbies 3")]
+[assembly: MelonIncompatibleAssemblies("Fun Plus Essentials: Recalled")]
+[assembly: MelonColor(255, 255, 128, 66)]
+[assembly: MelonPlatform(MelonPlatformAttribute.CompatiblePlatforms.WINDOWS_X64)]
+[assembly: MelonPlatformDomain(MelonPlatformDomainAttribute.CompatibleDomains.IL2CPP)]
 
 namespace FunPlusEssentials
 {
@@ -45,6 +49,11 @@ namespace FunPlusEssentials
             }
             if (sceneName == "MainMenu")
             {
+                if (!(bool)MelonPreferences.GetEntry("fpe", "warning").BoxedValue)
+                {
+                    MelonPreferences.SetEntryValue<bool>("fpe", "warning", true);
+                    Notifier.Show("Warning! The FunPlusEssentials may conflict with other installed mods.\nMake sure that only FunPlusEssentials files are located in the mods folder. \nYou will not see this message again.", "I understand");
+                }
                 Plague.Enabled = false;
                 if (!PlagueAssets._inited && Config.plagueEnabled)
                 {
@@ -56,7 +65,7 @@ namespace FunPlusEssentials
                     }
                     else
                     {
-                        Notifier.Show("Plague mode is not supported in the 32-bit version of the game.", "Okay");
+                        Notifier.Show("Plague mode is not supported in the 32-bit version of the game.", "Okay :(");
                         Config.plagueEnabled = false;
                     }
                 }
@@ -84,7 +93,7 @@ namespace FunPlusEssentials
         }
         public override void OnInitializeMelon()
         {
-            
+            MelonPreferences.CreateCategory("fpe", "FunPlusEssentials").CreateEntry<bool>("warning", false, "IncompatibleModsWarning");
         }
         public override void OnApplicationLateStart()
         {
@@ -110,11 +119,13 @@ namespace FunPlusEssentials
             }
             else
             {
-                AppInfo.DiscordLink = d.text;
-                if (AppInfo.Version != w.text)
+                var version = w.text.Remove(3);
+                var discord = d.text.Remove(30);
+                AppInfo.DiscordLink = discord;
+                if (AppInfo.Version != version)
                 {
                     AppInfo.UpdateAvailable = true;
-                    CuteLogger.Quack($"Your version of the mod is outdated (v{AppInfo.Version}). It's recommended to install the latest (v{w.text}) version from our Discord ({d.text}).");
+                    CuteLogger.Quack($"Your version of the mod is outdated (v{AppInfo.Version}). It's recommended to install the latest (v{version}) version from our Discord ({discord}).");
                 }
                 else
                 {
